@@ -14,5 +14,6 @@ dependencies:
   - pip
   - ipython
   - pygraphviz
+  - plotly
   - pip:
     - pybiomart
