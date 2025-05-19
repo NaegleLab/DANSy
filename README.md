@@ -45,9 +45,7 @@ To run DANSy on a set of proteins of interest:
     ref_df, _ = generateCompleteProteome.import_proteome_files()
     
     # Generating the DANSy object
-    my_dansy = ngramNets.DomainNgramNetwork(ref=ref_df,
-                                            protsOI = my_proteins,
-                                            n = 10)
+    my_dansy = ngramNets.dansy(ref=ref_df, protsOI = my_proteins, n = 10)
 
 The DANSy object can then be used for downstream analysis and has several built-in methods to help. These include:
 
@@ -112,4 +110,6 @@ Associated notebooks:
 
 ### Applications to Differential Gene Expression Analysis
 
-Coming soon a preview is in [deg_dansy_preview.ipynb](deg_dansy_preview.ipynb)
+Coming soon, but a preview is in [deg_dansy_preview.ipynb](deg_dansy_preview.ipynb). 
+
+This analysis in the preview uses a differential gene expression dataset from the paper [Convergent approaches to delineate the metabolic regulation of tumor invasion by hyaluronic acid biosynthesis by Shimpi AA, Tan ML, et al.](https://doi.org/10.1002/adhm.202202224) with [PMID: 36479976](https://pubmed.ncbi.nlm.nih.gov/36479976/).
