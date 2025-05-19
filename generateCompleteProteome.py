@@ -77,7 +77,7 @@ def import_proteome_files(reference_file_suffix = None, ref_file_dir = None):
         d = ref_file_dir
     
     if reference_file_suffix == None:
-        reference_file_suffix = 'Jan7_2025.csv' # The current version of the reference files
+        reference_file_suffix = 'May12_2025.csv' # The current version of the reference files
     
     ref_files = listdir(d)
     for fileName in ref_files:
