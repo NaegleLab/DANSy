@@ -1,6 +1,6 @@
 from os import listdir
 import os.path as path
-import ngramUtilities
+import dansy.ngramUtilities as ngramUtilities
 import pandas as pd
 import numpy as np
 import json

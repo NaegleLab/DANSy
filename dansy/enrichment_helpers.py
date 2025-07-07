@@ -2,7 +2,7 @@ import numpy as np
 import scipy.stats as stats
 import multiprocessing as mp
 import random
-import ngramNets
+import dansy.network_separation_helpers as ns_helpers
 from tqdm import tqdm
 
 # Defining a function to calculate cohen's D since I do not want to make the assumption that there is equal variance between the random and subsampled distributions. 
@@ -49,7 +49,7 @@ def hypergeom_prune_ns(degnn, sweep):
         up_net = degnn.G.subgraph(up_check)
         dn_net = degnn.G.subgraph(dn_check)
         if len(up_net.nodes()) > 0 and len(dn_net.nodes())> 0:
-            ns = ngramNets.network_separation(up_net, dn_net, degnn.ref_data)
+            ns = ns_helpers.network_separation(up_net, dn_net, degnn.ref_data)
         else:
             ns = np.nan    
         ns_sweep.append(ns)
@@ -205,6 +205,7 @@ def individual_trial_calc(degnn, arch_weights, comp_arch_dist, ratio, sweep, ori
     return list(rand_data + subsample_data)
     
 def calculate_separation_stability(degnn, num_trials = 50, pval_sweep = np.logspace(0,-10,21), return_distributions = False,processes = 1, verbose=True, progress_bar = False):
+    
     orig_up = degnn.up_DEGs
     orig_dn = degnn.down_DEGs
     original_DEGs = list(orig_up) + list(orig_dn)

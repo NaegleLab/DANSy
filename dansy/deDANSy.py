@@ -1,0 +1,446 @@
+import pandas as pd
+import networkx as nx
+import warnings
+import random
+import numpy as np
+import itertools
+import matplotlib.pyplot as plt
+from tqdm import tqdm
+import scipy.stats as stats
+from dansy.dansy import dansy
+
+import dansy.ngramUtilities as ngramUtilities
+import dansy.generateCompleteProteome as generateCompleteProteome
+
+from dansy.network_separation_helpers import *
+
+class DEdansy(dansy):
+    '''
+    A container class of multiple Domain n-gram networks related to a differentially expressed dataset that was generated using the DESeq analysis pipeline. This provides methods to analyze and contrast pairs of domain architecture subnetworks to understand changes in functional molecular ecosystems available to different conditions.
+    '''
+    def __init__(self,dataset, id_conv = None, conv_cols = 'Gene stable ID', data_ids = 'gene_id', uniprot_ref = None,n = 10, penalty = 'dynamic',run_conversion = True, **kwargs):
+        
+        # Bare minimum attributes required for setting up an empty n-gram network.
+        self.dataset = dataset
+        self.ref = uniprot_ref
+        self._n = n
+        self.interproIDs = None
+        
+        # Converting the dataset ids for individual genes to the UniProt IDs
+        if 'dbl_check' in kwargs:
+            check_IDs_flag = kwargs['dbl_check']
+        else:
+            check_IDs_flag = False
+        
+        if run_conversion:
+            if id_conv is None:
+                raise ValueError('Missing an ID converting dataframe.')
+            else:
+                self.id_conversion_dict = create_id_conv(dataset, id_conv, conv_cols,data_ids,check_IDs_flag)
+                self.protsOI = convert_2_uniprotIDs(dataset,id_conv, conv_cols,data_ids, check_IDs_flag)
+        else:
+            self.protsOI = dataset[data_ids].tolist()
+
+        # Saving the data_id column for instances when the DEGs have to be calculated.
+        if isinstance(data_ids, list):
+            self.data_id_col = data_ids[0]
+        else:
+            self.data_id_col = data_ids
+
+        self.conversion_id_col = conv_cols
+
+        # Now making sure there is a common reference that can be used for generating the n-gram networks.
+        if self.ref is None:
+            self.add_ref_df()
+        
+        self.populate_ngramNet(**kwargs)
+        if self.verbose:
+            print('Building the reference network information.')
+        self.ref_data = build_network_reference_dict(self, penalty=penalty)
+
+
+    def DEG_network_sep(self, force_run = False):
+        ''' 
+        This computes the network separation of two conditions that designates individual genes as differentially expressed. Silently passes a nan if it fails.
+        '''
+
+        # Get the UniProt IDs for the differentially expressed genes
+        if hasattr(self, 'up_DEGs') and hasattr(self, 'down_DEGs'):
+            pass
+        else:
+            raise ValueError('DEGs do not exist. Please run calc_DEG_ngrams.')
+        
+        if len(self.up_ngrams) == 0 or len(self.down_ngrams) == 0:
+            ns = np.nan
+        else:
+            try:
+                # Generating networks for the individual DEG conditions
+                up_net = self.G.subgraph(self.up_ngrams)
+                dn_net = self.G.subgraph(self.down_ngrams)
+                ns = network_separation(up_net,dn_net, self.ref_data,force_run=force_run)
+            except:
+                ns = np.nan
+        return ns
+    
+    def calc_DEG_ngrams(self, data_cols, alpha = 0.05, fc_thres=1, contrast_name = None, batch_mode = False):
+        '''
+        Defines the DEG UniProt IDs and the associated n-grams for the datasset of interest
+        '''
+        
+        # If a contrast name has been provided setting that up within the dataset collection
+        if contrast_name == None:
+            self.DEG_comparison = 'undefined'
+        else:
+            self.DEG_comparison = contrast_name
+
+        # Checking if there was a set of DEGs that already exists and printing statement saying it will be overwritten.
+        if hasattr(self,'up_DEGs'):
+            verbose_flag = True
+            if hasattr(self, 'G_collapsed'):
+                del self.G_collapsed
+        else:
+            verbose_flag = False
+
+        # This is only for running several and wanting to keep track of general progress.
+        if batch_mode:
+            verbose_flag = False
+
+        # Recording the thresholds for DEG values
+        self.alpha = alpha
+        self.fcthres = fc_thres
+
+        # Reducing large dataframe to what is the info needed for generating the DEG networks
+        cols = [self.data_id_col]+data_cols
+        dataset_OI = self.dataset.filter(cols)
+
+        # Getting the differentially expressed genes
+        deg_up = list(dataset_OI[(dataset_OI[data_cols[1]] <= alpha) & (dataset_OI[data_cols[0]] > fc_thres)][self.data_id_col])
+        deg_dn = list(dataset_OI[(dataset_OI[data_cols[1]] <= alpha) & (dataset_OI[data_cols[0]] < -fc_thres)][self.data_id_col])
+
+        # Keeping record of the data columns for a summary
+        self.pval_data_col = data_cols[1]
+        self.fc_data_col = data_cols[0]
+
+        # And converting to the UniProt IDs to highlight n-grams within the network that were retained for each
+        up_DEGs = [v for k, v in self.id_conversion_dict.items() if k in deg_up]
+        up_DEGs = set(list(itertools.chain.from_iterable(up_DEGs)))
+        down_DEGs =  [v for k, v in self.id_conversion_dict.items() if k in deg_dn]
+        down_DEGs = set(list(itertools.chain.from_iterable(down_DEGs)))
+
+        # Now just due to random sampling issues making sure the DEGs are in alphabetical order and converting to a list
+        up_DEGs = sorted(up_DEGs)
+        down_DEGs = sorted(down_DEGs)
+
+        self.set_DEG_ngrams(up_DEGs,down_DEGs, verbose=verbose_flag)
+
+    def set_DEG_ngrams(self, up_DEGs, down_DEGs,collapse = True, verbose=True):
+        '''
+        This actually sets the DEGs so that they are calculated, but allows for custom sets to be generated for very specific purposes. It is not recommended to use this
+        '''
+        if hasattr(self,'up_DEGs') and verbose:
+            print('Will be overwriting existing DEG data.')
+
+        # Setting the DEGs
+        self.up_DEGs = up_DEGs
+        self.down_DEGs = down_DEGs
+
+        # Now getting the n-grams associated with the collective DEGs 
+        up_ngram_cands = [k for k,v in self.interpro2uniprot.items() if set(v).intersection(self.up_DEGs)]
+        down_ngram_cands = [k for k,v in self.interpro2uniprot.items() if set(v).intersection(self.down_DEGs)]
+
+        # Getting the n-gram candidates
+        up_ngram_dict = {k:set(v).intersection(self.up_DEGs) for k,v in self.interpro2uniprot.items() if k in up_ngram_cands}
+        down_ngram_dict = {k:set(v).intersection(self.down_DEGs) for k,v in self.interpro2uniprot.items() if k in down_ngram_cands}
+        
+        # Now collapsing these to the non-redundant ones
+        if collapse:
+            up_ngram_dict,_ = ngramUtilities.concatenate_ngrams(up_ngram_dict)
+            down_ngram_dict,_ = ngramUtilities.concatenate_ngrams(down_ngram_dict)
+            
+
+        # Exporting to the object
+        self.up_ngrams = [k for k in up_ngram_dict.keys()]
+        self.down_ngrams = [k for k in down_ngram_dict.keys()]
+
+
+    def plot_DEG_ns(self,pos = [],deg_labels=[], large_cc_mode=False):
+        '''
+        Using the defined differentially expressed genes displaying a network graph of the n-grams that are associated or shared between the DEG conditions.
+        '''
+
+        # Setting default labels otherwise setting the label names for the legend.
+        if deg_labels:
+            up_label = deg_labels[0]
+            down_label = deg_labels[1]
+        else:
+            up_label = 'Up'
+            down_label = 'Down'
+
+        # Retrieving the n-grams across both DEG conditions to filter out any isolates/connected components in the reference network that are not used.
+        all_deg_ngrams = set(self.up_ngrams).union(self.down_ngrams)
+
+        if large_cc_mode:
+            large_ref_cc = max(nx.connected_components(self.G), key=len)
+            all_deg_ngrams = all_deg_ngrams.intersection(large_ref_cc)
+        
+        # Setting up the node color list for plotting
+        node_colors = []
+        for node in self.G.subgraph(all_deg_ngrams):
+            if (node in self.up_ngrams) and (node in self.down_ngrams):
+                node_colors.append('tab:purple')
+            elif node in self.up_ngrams:
+                node_colors.append('tab:cyan')
+            elif node in self.down_ngrams:
+                node_colors.append('tab:red')
+            else:
+                node_colors.append('tab:gray')
+        
+        # Dropping connected components not shared with the DEGs and the reference network
+        if large_cc_mode:
+            cc_2_keep = set(large_ref_cc)
+        else:
+            cc_2_keep = set()
+            for cc in nx.connected_components(self.G):
+                if set(cc).intersection(all_deg_ngrams):
+                    cc_2_keep.update(cc)
+
+        # Getting the node positions for network drawing if not supplied.
+        if pos == [] and hasattr(self, 'network_params'):
+            if 'pos' in self.network_params:
+                pos = self.network_params['pos']
+        elif pos ==[]:
+            pos = nx.spring_layout(self.G, k=0.05)
+        
+        # Getting all the basic network parameters that are default in the n-gram networks
+        # Default values 
+        basic_network_params = {'node_size':1,
+                                  'edgecolors':'k',
+                                  'linewidths':0.1,
+                                  'width':0.25,
+                                  'edge_color':'#808080',
+                                  }
+        net_draw_params = {}
+        for param in basic_network_params:
+            if param in self.network_params:
+                net_draw_params[param] = self.network_params[param]
+            else:
+                self.network_params[param] = basic_network_params[param]
+                net_draw_params[param] = basic_network_params[param]
+
+        # Now drawing and adding legends
+        plt.figure(figsize=(2,2), dpi=300)
+        nx.draw(self.G.subgraph(cc_2_keep), pos, node_color = 'tab:gray', alpha = 0.1, **net_draw_params)
+        nx.draw(self.G.subgraph(all_deg_ngrams), pos, node_color = node_colors,**net_draw_params)
+
+        # Legend drawing
+        plt.scatter([],[],c='tab:cyan',s=1, label=up_label)
+        plt.scatter([],[],c='tab:red',s=1, label=down_label)
+        plt.scatter([],[],c='tab:purple',s=1, label='Both')
+        plt.legend(bbox_to_anchor=(1,0.5),frameon=False)
+
+
+    def deg_summary(self, detailed = False):
+        '''
+        This provides a summary of the DEG information that has been used within this dataset.
+        '''
+
+        summary_df = pd.DataFrame(index=['Contrast Name', 'p-value threshold', 'Fold change threshold', 'Up Regulated DEGs','Down Regulated DEGs'],columns=[''])
+
+        vals = [self.DEG_comparison, self.alpha, self.fcthres, len(self.up_DEGs), len(self.down_DEGs)]
+
+        for i,v in zip(summary_df.index, vals):
+            summary_df.loc[i] = v
+        
+        if detailed:
+            extended_inds = ['Data ID column','p-val data column', 'FC data column','Up-ngrams','Down ngrams','Common n-grams']
+
+            # Getting common ngram counts
+            common = set(self.up_ngrams).intersection(self.down_ngrams)
+
+            extended_vals = [self.data_id_col, self.pval_data_col,self.fc_data_col, len(self.up_ngrams), len(self.down_ngrams), len(common)]
+
+            for i,v in zip(extended_inds, extended_vals):
+                summary_df.loc[i] = v
+
+        return summary_df
+    
+    def ngram_DEG_hypergeom(self, condition):
+        '''
+        Performs the hypergeometric over-representation test on the n-grams associated with different conditions.
+
+        Parameters:
+        -----------
+            - condition: str
+                Which condition to perform the test on must be either Up or Down (case insensitive)
+
+        Returns:
+        --------
+            - p_vals: dict
+                The p-value of each n-gram given the condition relative to the whole potential universe of the n-gram reference background of the n-gram network.
+        '''
+
+        # Make the condition input all lower case
+        condition = condition.lower()
+
+        if condition == 'up':
+            ngramsOI = self.up_ngrams
+            degsOI = self.up_DEGs
+        elif condition == 'down':
+            ngramsOI = self.down_ngrams
+            degsOI = self.down_DEGs
+        else:
+            raise ValueError('Please specify either up or down.')
+        
+        p = ngram_enrichment(self, prots = degsOI, ngrams=ngramsOI)
+
+        return p
+
+## Helper functions for converting the IDs around
+
+def convert_2_uniprotIDs(df, id_conv, conv_col = 'Gene stable ID', data_id_cols = 'gene_id', dbl_check = False):
+    '''
+    This takes a dataframe of interest and converts the specified column to UniProt IDs given a second dataframe consisting of UniProt IDs, ENSEMBL ids, and gene names/synonyms retrieved using biopython. If desired there will be a double check to ensure all IDs are retrieved if an archived version of ENSEMBL has been used and gene names are requested instead.
+    '''
+
+    # Now getting all possible UniProt IDs given the IDs of interest.
+    ensembl_uni_dict = create_id_conv(df, id_conv=id_conv,conv_col=conv_col, data_id_cols=data_id_cols, dbl_check=dbl_check)
+    uniprot_IDs = set(itertools.chain.from_iterable(ensembl_uni_dict.values()))
+
+    return uniprot_IDs
+
+def create_id_conv(df, id_conv, conv_col = 'Gene stable ID', data_id_cols = 'gene_id', dbl_check = False):
+    '''
+    This is an internal function that makes a dict to convert the ensembl IDs (by default) to UniProt IDs. 
+    '''
+    # Check if a list is provided for the data_id_cols or if a single/default value provided.
+    if isinstance(data_id_cols, list):
+        if dbl_check:
+            data_id_col = data_id_cols[0]
+        else:
+            data_id_col = data_id_cols[0]
+            warnings.warn('More than one column name was provided for converting, but a double check was not designated. Ignoring additional inputs.')
+    else:
+        data_id_col = data_id_cols
+
+    # Retrieve all ENSEMBL IDs which are found within the dataset of interest
+    success_mapping_ids = set(id_conv[id_conv[conv_col].isin(df[data_id_col])]['Gene stable ID'])
+    
+    if dbl_check:
+        gene_dbl_chck = df[~df[data_id_col].isin(success_mapping_ids)][data_id_cols[1]].dropna()
+        cands = id_conv[id_conv['Gene name'].isin(gene_dbl_chck)]
+        success_mapping_ids.update(cands['Gene stable ID'])
+
+    id_dict = id_conv[id_conv['Gene stable ID'].isin(success_mapping_ids)].filter(['Gene stable ID', 'UniProtKB/Swiss-Prot ID']).drop_duplicates().dropna().to_dict('tight')
+    id_dict = id_dict['data']
+
+    # Now to ensure that all potential UniProt IDs are accounted for have to go through and put them in lists as some Ensembl IDs map to multiple proteins.
+    id_conversion = {}
+    for conversion_data in id_dict:
+        ensembl = conversion_data[0]
+        uniprot = conversion_data[1]
+        if ensembl in id_conversion:
+            id_conversion[ensembl].append(uniprot)
+        else:
+            id_conversion[ensembl] = [uniprot]
+
+    return id_conversion
+
+# Helper functions for n-gram enrichment.
+
+def ngram_enrichment(dansy, prots, collapse = True, **kwargs):
+    '''
+    Calculates the enrichment of n-grams associated with a subset of proteins within a DANSy object by Fisher's exact test.
+    
+    Note: This method can specifically analyze specific n-grams within the protein subset. However, this process should only be accessed with the deDANSy object and is not recommended to be used.
+
+    Parameters
+    ----------
+        - dansy: DANSY
+            The DANSy object which contains the proteins of interest. (This can be either the differential expression or standard class.)
+        - prots: list
+            List containing the proteins of interest for enrichment analysis.
+        - collapse: bool
+            Whether the n-grams should be collapsed to their most informative and non-redundant n-grams.
+        - kwargs: key, value mappings (Not recommended)
+            Additional keyword arguments:
+                - ngrams: list
+                    List of n-grams that are to be analyzed specifically.
+    '''
+
+    p_vals = ngram_subset_enrichment(prots, dansy.protsOI, dansy, collapse=collapse, kwargs=kwargs)
+
+    return p_vals
+
+def ngram_subset_enrichment(protsOI, full_prots,dansy_bkg, collapse = True, **kwargs):
+    '''Peform Fisher's exact test for n-grams found in a subset of proteins that may be found in the full list of proteins. This is the more general version that does not require using the full DANSy protein list.
+    
+        Parameters:
+        -----------
+            - protsOI: list
+                List containing the proteins of interest for enrichment analysis.
+            - full_prots: list
+                List containing the proteins that make up the full background list.
+            - dansy_bkg: DANSy object
+                The DANSy that the proteins and n-grams are associated with
+            - collapse: bool
+                Whether the n-grams should be collapsed to their most informative and non-redundant n-grams.
+            - kwargs: key, value mappings (Not recommended)
+                Additional keyword arguments:
+                    - ngrams: list
+                        List of n-grams that are to be analyzed specifically.
+            
+        Returns:
+        --------
+            - p_vals: dict
+                Key-value pairs of n-grams and their enrichment p-value.
+    '''
+
+    if 'ngrams' in kwargs:
+        ngrams = kwargs['ngrams']
+        
+        # Making sure all n-grams are found in at least one of the proteins. If any are not raise an error.
+        internal_check = [len(set(v).intersection(protsOI)) == 0 for k,v in dansy_bkg.interpro2uniprot.items() if k in ngrams]
+        if any(internal_check):
+            raise ValueError('At least one provided n-gram is not found in the proteins of interest.')
+    else:
+        ngrams = []
+
+    subset_prots = list(set(protsOI).intersection(full_prots)) # Ensure that the foreground proteins are found within the background (removing any which are not) 
+    M = len(subset_prots)
+    N = len(full_prots)
+    p_vals = {}
+    
+    if full_prots == dansy_bkg.protsOI:
+        full_check = True
+    else:
+        full_check = False
+
+    # Get the n-grams of the proteins of interest if they were not provided
+    if ngrams:
+        ngramsOI = ngrams
+    else:
+        ngram_cands = [k for k,v in dansy_bkg.interpro2uniprot.items() if set(v).intersection(subset_prots)]
+        ngram_dict = {k:set(v).intersection(subset_prots) for k,v in dansy_bkg.interpro2uniprot.items() if k in ngram_cands}
+
+        if collapse:
+            ngram_dict,_ = ngramUtilities.concatenate_ngrams(ngram_dict)
+        ngramsOI = [k for k in ngram_dict.keys()]
+    
+    # Now using the cdf/sf of the hypergeometric distribution to get p-values (This is equivalent to Fisher's exact)
+    for node in ngramsOI:
+        
+        # Skip the filtering if using the full background
+        if full_check:
+            full_prot_list = dansy_bkg.interpro2uniprot[node]
+        else:
+            
+            full_prot_list = [u for u in dansy_bkg.interpro2uniprot[node] if u in full_prots]
+            
+        # Now getting the numbers for the hypergeom distribution and calculating the cdf (or really sf since it is equivalent to 1-cdf)
+        k = len(set(full_prot_list).intersection(subset_prots))
+        n = len(set(full_prot_list))
+        p = stats.hypergeom.sf(k-1,N, n,M)
+        p_vals[node] = p
+
+    return p_vals
+    
