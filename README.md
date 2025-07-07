@@ -35,14 +35,13 @@ If you wish to generate the most up to date reference file to use for analysis, 
 
 To run DANSy on a set of proteins of interest:
     
-    import ngramNets
-    import generateCompleteProteome
+    import dansy
 
     # Generate the reference proteome dataframe to save time.
-    ref_df, _ = generateCompleteProteome.import_proteome_files(reference_file_suffix = your_reference_file_suffix)
+    ref_df, _ = dansy.import_proteome_files(reference_file_suffix = your_reference_file_suffix)
     
     # Generating the DANSy object
-    my_dansy = ngramNets.dansy(ref=ref_df, protsOI = my_proteins, n = 10)
+    my_dansy = dansy.dansy(ref=ref_df, protsOI = my_proteins, n = 10)
 
 The DANSy object can then be used for downstream analysis and has several built-in methods to help. These include:
 
@@ -81,7 +80,7 @@ Both the DANSy and deDANSy classes use UniProt IDs for their analysis, but for d
     # Assuming the ENSEMBL gene ids in your RNA-seq results are under a column labeled ensembl_gene_id
 
     # Generating the deDANSy
-    my_dedansy = ngramNets.DEdansy(dataset=your_RNA_seq_results,
+    my_dedansy = dansy.DEdansy(dataset=your_RNA_seq_results,
                                    id_conv=gene_ID_conv,
                                    conv_col = 'Gene stable ID',
                                    data_ids = 'ensembl_gene_id',
@@ -97,7 +96,7 @@ The deDANSy object will then convert the IDs and use those for building the n-gr
 If your dataset already has a column containing UniProt IDs, then you can build the deDANSy object as follows:
 
     # Generating the deDANSy
-    my_dedansy = ngramNets.DEdansy(dataset=your_dataset_OI,
+    my_dedansy = dansy.DEdansy(dataset=your_dataset_OI,
                                    data_ids = 'uniprot_id_column_name',
                                    uniprot_ref = ref_df,
                                    run_conversion = False)
@@ -132,7 +131,7 @@ This would perform the steps 1a and 2 from above with multiprocessing enabled an
 Once the statistics are generated from Step 3, we can then plot the data by running the follow:
 
     import pandas as pd
-    from enrichment_plotting_helpers.py import *
+    from dansy.enrichment_plotting_helpers import *
 
     # Importing the results
     raw_results = pd.read_csv(deDANSy_results_file)
