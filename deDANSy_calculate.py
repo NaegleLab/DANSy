@@ -9,9 +9,8 @@ from tqdm import tqdm
 import scipy.stats as stats
 import time
 from datetime import datetime
-import generateCompleteProteome
-import ngramNets
-from enrichment_helpers import *
+import dansy
+from dansy.enrichment_helpers import *
 import argparse
 
 def main():
@@ -51,7 +50,7 @@ def main():
     #### Setting up the reference data
     print_timed_message('Importing the Reference')
     # Importing the entire proteome
-    complete_ref,_ = generateCompleteProteome.import_proteome_files(ref_file_dir = 'data/Current_Human_Proteome/')
+    complete_ref,_ = dansy.import_proteome_files(ref_file_dir = 'data/Current_Human_Proteome/')
 
     #### pybiomart database for gene name conversions
     print_timed_message('Getting the ID conversions dataset')
@@ -61,7 +60,7 @@ def main():
     ##### Now importing the dataset
     print_timed_message('Importing the dataset')
     deg_dataset = pd.read_csv(filename)
-    degnn = ngramNets.DegDatasetNetworks(deg_dataset, gene_ID_conv,uniprot_ref=complete_ref, data_ids=data_id)
+    degnn = dansy.deDANSy(deg_dataset, gene_ID_conv,uniprot_ref=complete_ref, data_ids=data_id)
 
     #### Conducting the analysis
     print_timed_message('Now getting the baseline network separation sweeps')
@@ -140,10 +139,9 @@ def main():
     print_timed_message('Starting the false positive rate procedure.')
     fpr_res = []
     for i,cond in enumerate(conds):
-        # For reproducibility irrespective of multiprocessed or single
         
         # Reset then generate a distribution of p-values to use for the FPR calculation
-        degnn.calc_DEG_ngrams(data_cols=['log2FoldChange_'+cond,'padj_'+cond],alpha=0.05,batch_mode=True)
+        degnn.calc_DEG_ngrams(data_cols=['log2FoldChange_'+cond,'padj_'+cond],alpha=alpha,fc_thres=fcthres,batch_mode=True)
         numDEGs = len(degnn.up_DEGs) + len(degnn.down_DEGs)
         frac_up = len(degnn.up_DEGs)/numDEGs
         internal_fpr = retrieve_fpr_checks(degnn,
