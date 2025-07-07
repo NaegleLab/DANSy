@@ -556,13 +556,13 @@ def spl_inner(nodes_2_check, all_nodes, ref_net_analysis_parameters):
     return spl
 
 
-def network_separation(G_in, H_in, ref_G_data, mmd_verbose = False, force_run = False):
+def network_separation(G_in, H_in, ref_G_data, mmd_verbose = False, force_run = False, verbose = True):
     '''
     Calculates the network separation between two networks of interest that lie on a common larger, reference network.
 
     Parameters:
     -----------
-        - G_in, H_in: networkx Graph | dansy
+        - G_in, H_in: networkx Graph | DomainNgramNetwork
             - networks of interest
         - ref_G_data: dict
             - dict containing information about the larger, common network that the two given networks are subnetworks of.
@@ -600,7 +600,8 @@ def network_separation(G_in, H_in, ref_G_data, mmd_verbose = False, force_run = 
     if isinstance(G_in, dansy) and isinstance(H_in, dansy):  
         if (len(G_in.protsOI) < 20) or (len(H_in.protsOI) < 20):
             if force_run:
-                warnings.warn('At least one network does not reach recommended minimum size, but will still be analyzed.')
+                if verbose: 
+                    warnings.warn('At least one network does not reach recommended minimum size, but will still be analyzed.')
             else:
                 raise ValueError('At least one network does not reach recommended minimum size.')
             
@@ -651,7 +652,7 @@ class DEdansy(dansy):
     '''
     A container class of multiple Domain n-gram networks related to a differentially expressed dataset that was generated using the DESeq analysis pipeline. This provides methods to analyze and contrast pairs of domain architecture subnetworks to understand changes in functional molecular ecosystems available to different conditions.
     '''
-    def __init__(self,dataset, id_conv, conv_cols = 'Gene stable ID', data_ids = 'gene_id', uniprot_ref = None,n = 10, penalty = 'dynamic',run_conversion = True, **kwargs):
+    def __init__(self,dataset, id_conv = None, conv_cols = 'Gene stable ID', data_ids = 'gene_id', uniprot_ref = None,n = 10, penalty = 'dynamic',run_conversion = True, **kwargs):
         
         # Bare minimum attributes required for setting up an empty n-gram network.
         self.dataset = dataset
@@ -666,8 +667,11 @@ class DEdansy(dansy):
             check_IDs_flag = False
         
         if run_conversion:
-            self.id_conversion_dict = create_id_conv(dataset, id_conv, conv_cols,data_ids,check_IDs_flag)
-            self.protsOI = convert_2_uniprotIDs(dataset,id_conv, conv_cols,data_ids, check_IDs_flag)
+            if id_conv is None:
+                raise ValueError('Missing an ID converting dataframe.')
+            else:
+                self.id_conversion_dict = create_id_conv(dataset, id_conv, conv_cols,data_ids,check_IDs_flag)
+                self.protsOI = convert_2_uniprotIDs(dataset,id_conv, conv_cols,data_ids, check_IDs_flag)
         else:
             self.protsOI = dataset[data_ids].tolist()
 
@@ -763,7 +767,7 @@ class DEdansy(dansy):
 
         self.set_DEG_ngrams(up_DEGs,down_DEGs, verbose=verbose_flag)
 
-    def set_DEG_ngrams(self, up_DEGs, down_DEGs, verbose=True):
+    def set_DEG_ngrams(self, up_DEGs, down_DEGs,collapse = True, verbose=True):
         '''
         This actually sets the DEGs so that they are calculated, but allows for custom sets to be generated for very specific purposes. It is not recommended to use this
         '''
@@ -783,8 +787,10 @@ class DEdansy(dansy):
         down_ngram_dict = {k:set(v).intersection(self.down_DEGs) for k,v in self.interpro2uniprot.items() if k in down_ngram_cands}
         
         # Now collapsing these to the non-redundant ones
-        up_ngram_dict,_ = ngramUtilities.concatenate_ngrams(up_ngram_dict)
-        down_ngram_dict,_ = ngramUtilities.concatenate_ngrams(down_ngram_dict)
+        if collapse:
+            up_ngram_dict,_ = ngramUtilities.concatenate_ngrams(up_ngram_dict)
+            down_ngram_dict,_ = ngramUtilities.concatenate_ngrams(down_ngram_dict)
+            
 
         # Exporting to the object
         self.up_ngrams = [k for k in up_ngram_dict.keys()]
@@ -919,32 +925,118 @@ class DEdansy(dansy):
         else:
             raise ValueError('Please specify either up or down.')
         
-        # Now performing the hypergeometric test
-        M = len(degsOI)
-        N = len(self.protsOI)
-        p_vals = {}
-        for node in ngramsOI:
-            full_prot_list = self.interpro2uniprot[node]
-            
-            # Now getting the numbers for the hypergeom distribution and calculating the cdf (or really sf since it is equivalent to 1-cdf)
-            k = len(set(full_prot_list).intersection(degsOI))
-            n = len(set(full_prot_list))
-            p = stats.hypergeom.sf(k-1,N, n,M)
-            p_vals[node] = p
+        p = ngram_enrichment(self, prots = degsOI, ngrams=ngramsOI)
 
-        return p_vals
+        return p
     
+def ngram_enrichment(dansy, prots, collapse = True, **kwargs):
+    '''
+    Calculates the enrichment of n-grams associated with a subset of proteins within a DANSy object by Fisher's exact test.
+    
+    Note: This method can specifically analyze specific n-grams within the protein subset. However, this process should only be accessed with the deDANSy object and is not recommended to be used.
 
+    Parameters
+    ----------
+        - dansy: DANSY
+            The DANSy object which contains the proteins of interest. (This can be either the differential expression or standard class.)
+        - prots: list
+            List containing the proteins of interest for enrichment analysis.
+        - collapse: bool
+            Whether the n-grams should be collapsed to their most informative and non-redundant n-grams.
+        - kwargs: key, value mappings (Not recommended)
+            Additional keyword arguments:
+                - ngrams: list
+                    List of n-grams that are to be analyzed specifically.
+    '''
+
+    p_vals = ngram_subset_enrichment(prots, dansy.protsOI, dansy, collapse=collapse, kwargs=kwargs)
+
+    return p_vals
+
+def ngram_subset_enrichment(protsOI, full_prots,dansy_bkg, collapse = True, **kwargs):
+    '''Peform Fisher's exact test for n-grams found in a subset of proteins that may be found in the full list of proteins. This is the more general version that does not require using the full DANSy protein list.
+    
+        Parameters:
+        -----------
+            - protsOI: list
+                List containing the proteins of interest for enrichment analysis.
+            - full_prots: list
+                List containing the proteins that make up the full background list.
+            - dansy_bkg: DANSy object
+                The DANSy that the proteins and n-grams are associated with
+            - collapse: bool
+                Whether the n-grams should be collapsed to their most informative and non-redundant n-grams.
+            - kwargs: key, value mappings (Not recommended)
+                Additional keyword arguments:
+                    - ngrams: list
+                        List of n-grams that are to be analyzed specifically.
+            
+        Returns:
+        --------
+            - p_vals: dict
+                Key-value pairs of n-grams and their enrichment p-value.
+    '''
+
+    if 'ngrams' in kwargs:
+        ngrams = kwargs['ngrams']
+        
+        # Making sure all n-grams are found in at least one of the proteins. If any are not raise an error.
+        internal_check = [len(set(v).intersection(protsOI)) == 0 for k,v in dansy_bkg.interpro2uniprot.items() if k in ngrams]
+        if any(internal_check):
+            raise ValueError('At least one provided n-gram is not found in the proteins of interest.')
+    else:
+        ngrams = []
+
+    subset_prots = list(set(protsOI).intersection(full_prots)) # Ensure that the foreground proteins are found within the background (removing any which are not) 
+    M = len(subset_prots)
+    N = len(full_prots)
+    p_vals = {}
+    
+    if full_prots == dansy_bkg.protsOI:
+        full_check = True
+    else:
+        full_check = False
+
+    # Get the n-grams of the proteins of interest if they were not provided
+    if ngrams:
+        ngramsOI = ngrams
+    else:
+        ngram_cands = [k for k,v in dansy_bkg.interpro2uniprot.items() if set(v).intersection(subset_prots)]
+        ngram_dict = {k:set(v).intersection(subset_prots) for k,v in dansy_bkg.interpro2uniprot.items() if k in ngram_cands}
+
+        if collapse:
+            ngram_dict,_ = ngramUtilities.concatenate_ngrams(ngram_dict)
+        ngramsOI = [k for k in ngram_dict.keys()]
+    
+    # Now using the cdf/sf of the hypergeometric distribution to get p-values (This is equivalent to Fisher's exact)
+    for node in ngramsOI:
+        
+        # Skip the filtering if using the full background
+        if full_check:
+            full_prot_list = dansy_bkg.interpro2uniprot[node]
+        else:
+            
+            full_prot_list = [u for u in dansy_bkg.interpro2uniprot[node] if u in full_prots]
+            
+        # Now getting the numbers for the hypergeom distribution and calculating the cdf (or really sf since it is equivalent to 1-cdf)
+        k = len(set(full_prot_list).intersection(subset_prots))
+        n = len(set(full_prot_list))
+        p = stats.hypergeom.sf(k-1,N, n,M)
+        p_vals[node] = p
+
+    return p_vals
+    
+    
 
 def build_network_reference_dict(ref_ngram_net, penalty = None):
     '''
-    This builds the dict that contains the reference network information necessary for calculating the network separation value from a provided dansy object. 
+    This builds the dict that contains the reference network information necessary for calculating the network separation value from a provided DomainNgramNetwork object. 
     
     It is recommended to use this function to generate the reference dictionary prior to calculating network separation, especially when using a dynamic penalty and comparing several networks, to improve the execution speed of the calculation.
 
     Parameters:
     -----------
-        dnn: dansy
+        dnn: DomainNgramNetwork
             - A populated Domain N-gram network that will be used as a reference
         penalty: str or int (Optional)
             - What type of penalty will be used for network separation. If not specified will default to the dynamic method.
