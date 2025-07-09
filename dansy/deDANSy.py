@@ -11,8 +11,9 @@ from dansy.dansy import dansy
 
 import dansy.ngramUtilities as ngramUtilities
 import dansy.generateCompleteProteome as generateCompleteProteome
-
+import dansy.dedansy_algorithm as algorithm
 from dansy.network_separation_helpers import *
+
 
 class DEdansy(dansy):
     '''
@@ -40,7 +41,7 @@ class DEdansy(dansy):
                 self.protsOI = convert_2_uniprotIDs(dataset,id_conv, conv_cols,data_ids, check_IDs_flag)
         else:
             self.protsOI = dataset[data_ids].tolist()
-
+            self.id_conversion_dict = {k:k for k in self.protsOI}
         # Saving the data_id column for instances when the DEGs have to be calculated.
         if isinstance(data_ids, list):
             self.data_id_col = data_ids[0]
@@ -82,17 +83,10 @@ class DEdansy(dansy):
                 ns = np.nan
         return ns
     
-    def calc_DEG_ngrams(self, data_cols, alpha = 0.05, fc_thres=1, contrast_name = None, batch_mode = False):
+    def calc_DEG_ngrams(self, data_cols, alpha = 0.05, fc_thres=1, batch_mode = False):
         '''
         Defines the DEG UniProt IDs and the associated n-grams for the datasset of interest
         '''
-        
-        # If a contrast name has been provided setting that up within the dataset collection
-        if contrast_name == None:
-            self.DEG_comparison = 'undefined'
-        else:
-            self.DEG_comparison = contrast_name
-
         # Checking if there was a set of DEGs that already exists and printing statement saying it will be overwritten.
         if hasattr(self,'up_DEGs'):
             verbose_flag = True
@@ -295,8 +289,131 @@ class DEdansy(dansy):
 
         return p
 
-## Helper functions for converting the IDs around
+    def create_contrast_metadata(comparisons, cols,  fcs = 1,alphas = 0.05, delim='_'):
+        '''
+        This create the metadata for the deDANSy object that contains information for each comparison of interest and the cutoffs to define differentially expressed genes/proteins (DEGs).
 
+        Parameters:
+        -----------
+            - comparisons: list
+                All comparisons that will be used that match what is provided in the deDANSy dataset
+            - cols: list
+                The stems of both columns used to define DEGs (foldchange first)
+            - fcs: float or list
+                The fold-change cutoff. Can either be a single value or a list of values of the same size as comparisons
+            - alphas: float or list
+                The p-value cutoff. Can either be a single value or a list of values of the same size as comparisons
+            - delim: str
+                Delimiter used in column names separating the stem of the column from the comparison
+        Returns:
+        --------
+            - comp_meta: pandas DataFrame
+                - DataFrame where each row is a single comparison
+        '''
+
+        # Checking parameter inputs
+        fc_list_flag = False
+        if isinstance(fcs, list):
+            fc_list_flag = True
+            if len(fcs) == 1:
+                fcs = fcs[0]
+                fc_list_flag = False
+            if len(fcs) != len(comparisons):
+                raise ValueError('Provide either a single value or list of values for each comparison of fold-change cutoffs')
+        
+        alpha_list_flag = False
+        if isinstance(alphas, list):
+            alpha_list_flag = True
+            if len(alphas) == 1:
+                alpha_list_flag = False
+                alphas = alphas[0]
+            if len(alphas) != len(comparisons):
+                raise ValueError('Provide either a single value or list of values for each comparison of p-value cutoffs')
+        
+        comp_meta = pd.DataFrame(columns=['fc_col', 'fc_thres','pval_col','alpha'], index=comparisons)
+
+        for i,c in enumerate(comparisons):
+            comp_meta.loc[c,'fc_col'] = delim.join([cols[0],c])
+            comp_meta.loc[c,'pval_col'] = delim.join([cols[1],c])
+            
+            # Get the corresponding values for the cutoffs
+            if fc_list_flag:
+                f = fcs[i]
+            else:
+                f = fcs
+
+            if alpha_list_flag:
+                a = alphas[i]
+            else:
+                a = alphas
+            comp_meta.loc[c,'fc_thres'] = f
+            comp_meta.loc[c,'alpha'] = a
+            
+        return comp_meta
+
+def calculate_scores(self, conds, alpha = 0.05, fc_thres = 1, fpr_trials=50, min_pval = -10, num_ss_trials = 100, processes = 1, seed=None, verbose=True, overwrite=False):
+    '''This calculates the separation and distinct functional neighborhood scores for a deDANSy instance. It creates new attributes for the deDANSy instance containing all the information of interest. If scores for a condition have been generated, this will raise a warning and overwrite existing scores.
+    
+    Parameters:
+    -----------
+        - dedansy: deDANSy object
+            The base deDANSy object containing all n-grams and expression data
+        - conds: list or str
+            The conditions that will be compared
+        - alpha: float (Optional)
+            p-value cutoff to designate DEGs
+        - fc_thres: float (Optional)
+            Fold change cutoff to designate DEGs
+        - fpr_trials: int (Optional)
+            Number of FPR trials to perform.
+        - min_pval: int (Optional)
+            The log10 transform of the minimum p-value to use for the p-value pruning sweep step.
+        - num_ss_trials: int (Optional)
+            The number of subsampled (and random) networks used to build distributions for comparing the network separation and IQR
+        - processes: int (Optional)
+            Number of processes to use if multiprocessing is desired. (Recommended having 4-8 when feasible)
+        - seed: int
+            Seed for random numbers. If not provided will use system time
+
+    Returns:
+    --------
+        - dedansy_scores: pandas DataFrame
+            All scores, p-values, and FPR values for each condition
+        - dedansy_raw_dists: pandas DataFrame
+            For each condition the raw values that made up the distributions for each score
+        - dedansy_fpr_dists: pandas DataFrame
+            For each condition the p-values from the random FPR trials for calculating the FPR'''
+    
+    # Check for existing scores for all conditions provided
+    if hasattr(self, 'scores'):
+        a = set(conds).intersection(self.scores.index)
+        if len(a) >= 1:
+            if overwrite:
+                raise warnings.warn('At least one condition has existing scores that will be overwritten.')
+            else:
+                raise warnings.warn('At least one condition has existing scores that will be kept.')
+    else:
+        a = set()
+
+    temp_scores, temp_raw_dists, temp_fpr_dists = algorithm.calculate_scores(self, conds, alpha, fc_thres,fpr_trials,min_pval, num_ss_trials,processes,seed, verbose)
+
+    if hasattr(self, 'scores'):
+        cur_scores = self.scores
+        if overwrite:
+            cur_scores.update(temp_scores)
+        new_scores = cur_scores.combine_first(temp_scores)
+        new_raw_dist = self.raw_dists.combine_first(temp_raw_dists)
+        new_fpr_dist = self.fpr_dists.combine_first(temp_fpr_dists)
+    else:
+        new_scores = temp_scores
+        new_raw_dist = temp_raw_dists
+        new_fpr_dist = temp_fpr_dists
+    
+    self.scores = new_scores
+    self.raw_dists = new_raw_dist
+    self.fpr_dists = new_fpr_dist
+
+## Helper functions for converting the IDs around
 def convert_2_uniprotIDs(df, id_conv, conv_col = 'Gene stable ID', data_id_cols = 'gene_id', dbl_check = False):
     '''
     This takes a dataframe of interest and converts the specified column to UniProt IDs given a second dataframe consisting of UniProt IDs, ENSEMBL ids, and gene names/synonyms retrieved using biopython. If desired there will be a double check to ensure all IDs are retrieved if an archived version of ENSEMBL has been used and gene names are requested instead.
