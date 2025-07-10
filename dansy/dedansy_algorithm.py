@@ -58,7 +58,7 @@ def print_timed_message(m):
     y = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     print(f"{y}:.....{m}")
 
-def calculate_scores(dedansy, conds,   alpha = 0.05, fc_thres = 1, fpr_trials=50, min_pval = -10, num_ss_trials = 100, processes = 1, seed=None, verbose=True):
+def calculate_scores(dedansy, conds, fpr_trials=50, min_pval = -10, num_ss_trials = 100, processes = 1, seed=None, verbose=True):
     '''
     This calculates the separation and the distinct functional neighborhood scores for deDANSy given a list of conditions. The scores, Mann-Whitney U-test p-value, and FPR value are returned for each condition.
 
@@ -115,7 +115,7 @@ def calculate_scores(dedansy, conds,   alpha = 0.05, fc_thres = 1, fpr_trials=50
     # Now go through and get the raw scores for each condition and place results into a temporary dataframe
     full_raw_scores = []
     for i,cond in enumerate(conds):
-        dedansy.calc_DEG_ngrams(data_cols=['log2FoldChange_'+cond,'padj_'+cond],alpha=alpha,fc_thres=fc_thres,batch_mode=True)
+        dedansy.calc_DEG_ngrams(cond,batch_mode=True)
         cond_res = calc_raw_score(dedansy, 
                                   cond, 
                                   seed=seedlist[i],
@@ -157,8 +157,8 @@ def calculate_scores(dedansy, conds,   alpha = 0.05, fc_thres = 1, fpr_trials=50
         fpr_res = []
         for i,cond in enumerate(conds):
             # Reset then generate a distribution of p-values to use for the FPR calculation
-            dedansy.calc_DEG_ngrams(data_cols=['log2FoldChange_'+cond,'padj_'+cond],alpha=alpha,fc_thres=fc_thres,batch_mode=True)
-            numDEGs = len(dedansy.up_DEGs) + len(dedansy.down_DEGs)
+            dedansy.calc_DEG_ngrams(cond,batch_mode=True)
+            numDEGs = len(set(dedansy.up_DEGs).union(dedansy.down_DEGs)) # Need to use a set for instances when a gene (aka in phosphoproteomics) is shared in both conditions
             frac_up = len(dedansy.up_DEGs)/numDEGs
             internal_fpr = retrieve_fpr_checks(dedansy,
                                             numDEGs, 
