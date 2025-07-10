@@ -41,7 +41,7 @@ class DEdansy(dansy):
                 self.protsOI = convert_2_uniprotIDs(dataset,id_conv, conv_cols,data_ids, check_IDs_flag)
         else:
             self.protsOI = dataset[data_ids].tolist()
-            self.id_conversion_dict = {k:k for k in self.protsOI}
+            self.id_conversion_dict = {k:[k] for k in self.protsOI}
         # Saving the data_id column for instances when the DEGs have to be calculated.
         if isinstance(data_ids, list):
             self.data_id_col = data_ids[0]
@@ -83,7 +83,7 @@ class DEdansy(dansy):
                 ns = np.nan
         return ns
     
-    def calc_DEG_ngrams(self, data_cols, alpha = 0.05, fc_thres=1, batch_mode = False):
+    def calc_DEG_ngrams(self, comp, batch_mode = False):
         '''
         Defines the DEG UniProt IDs and the associated n-grams for the datasset of interest
         '''
@@ -99,9 +99,11 @@ class DEdansy(dansy):
         if batch_mode:
             verbose_flag = False
 
-        # Recording the thresholds for DEG values
-        self.alpha = alpha
-        self.fcthres = fc_thres
+        # Now extracting the data columns which for the comparison of interest to define the differentially expressed genes/proteins
+        compOI_info = self.comp_metadata.loc[comp]
+        data_cols = [compOI_info['fc_col'], compOI_info['pval_col']]
+        fc_thres = compOI_info['fc_thres']
+        alpha = compOI_info['alpha']
 
         # Reducing large dataframe to what is the info needed for generating the DEG networks
         cols = [self.data_id_col]+data_cols
@@ -114,7 +116,9 @@ class DEdansy(dansy):
         # Keeping record of the data columns for a summary
         self.pval_data_col = data_cols[1]
         self.fc_data_col = data_cols[0]
-
+        # Recording the thresholds for DEG values
+        self.alpha = alpha
+        self.fcthres = fc_thres
         # And converting to the UniProt IDs to highlight n-grams within the network that were retained for each
         up_DEGs = [v for k, v in self.id_conversion_dict.items() if k in deg_up]
         up_DEGs = set(list(itertools.chain.from_iterable(up_DEGs)))
@@ -238,9 +242,9 @@ class DEdansy(dansy):
         This provides a summary of the DEG information that has been used within this dataset.
         '''
 
-        summary_df = pd.DataFrame(index=['Contrast Name', 'p-value threshold', 'Fold change threshold', 'Up Regulated DEGs','Down Regulated DEGs'],columns=[''])
+        summary_df = pd.DataFrame(index=['p-value threshold', 'Fold change threshold', 'Up Regulated DEGs','Down Regulated DEGs'],columns=[''])
 
-        vals = [self.DEG_comparison, self.alpha, self.fcthres, len(self.up_DEGs), len(self.down_DEGs)]
+        vals = [self.alpha, self.fcthres, len(self.up_DEGs), len(self.down_DEGs)]
 
         for i,v in zip(summary_df.index, vals):
             summary_df.loc[i] = v
@@ -289,22 +293,24 @@ class DEdansy(dansy):
 
         return p
 
-    def create_contrast_metadata(comparisons, cols,  fcs = 1,alphas = 0.05, delim='_'):
+    def create_contrast_metadata(self,comparisons, fc_cols, pval_cols,  fcs = 1,alphas = 0.05, delim=None):
         '''
-        This create the metadata for the deDANSy object that contains information for each comparison of interest and the cutoffs to define differentially expressed genes/proteins (DEGs).
+        This create the metadata for the deDANSy object that contains information for each comparison of interest and the cutoffs to define differentially expressed genes/proteins (DEGs). Must provide the same number of columns for both the fold change and p-value columns
 
         Parameters:
         -----------
             - comparisons: list
                 All comparisons that will be used that match what is provided in the deDANSy dataset
-            - cols: list
-                The stems of both columns used to define DEGs (foldchange first)
+            - fc_cols: str or list
+                Either a stem or list of columns used for the foldchanges to define DEGs (Use the delim parameter and a stem if reoccurring patterns are used where the comparison is at the end.)
+            - pval_cols: str or list
+                Either a stem or list of columns used for the p-values to define DEGs. (Use the delim parameter and a stem if reoccurring patterns are used where the comparison is at the end.)
             - fcs: float or list
                 The fold-change cutoff. Can either be a single value or a list of values of the same size as comparisons
             - alphas: float or list
                 The p-value cutoff. Can either be a single value or a list of values of the same size as comparisons
-            - delim: str
-                Delimiter used in column names separating the stem of the column from the comparison
+            - delim: str (Optional)
+                Delimiter used in column names separating the stem of the column from the comparison. If none then will take the 
         Returns:
         --------
             - comp_meta: pandas DataFrame
@@ -330,11 +336,38 @@ class DEdansy(dansy):
             if len(alphas) != len(comparisons):
                 raise ValueError('Provide either a single value or list of values for each comparison of p-value cutoffs')
         
-        comp_meta = pd.DataFrame(columns=['fc_col', 'fc_thres','pval_col','alpha'], index=comparisons)
+        col_lists = isinstance(fc_cols, list) and isinstance(pval_cols, list)
 
+        if col_lists and len(fc_cols) != len(pval_cols):
+            raise ValueError('The number of fold change columns and p-value columns does not match.')
+        elif col_lists and len(fc_cols) != comparisons:
+            if len(fc_cols) > 1:
+                raise ValueError('The number of data columns does not match the number of comparisons.')
+        
+        col_strs = isinstance(fc_cols, str) and isinstance(pval_cols, str)
+        if delim is None and col_strs:
+            if len(comparisons) > 1:
+                raise ValueError('Cannot create feasible data columns without a delimiter')
+
+        if (not col_lists) and (not col_strs):
+            raise ValueError('The data columns have to be either lists or strings not a mixture of the two.')
+
+        comp_meta = pd.DataFrame(columns=['fc_col', 'fc_thres','pval_col','alpha'], index=comparisons)
+        
         for i,c in enumerate(comparisons):
-            comp_meta.loc[c,'fc_col'] = delim.join([cols[0],c])
-            comp_meta.loc[c,'pval_col'] = delim.join([cols[1],c])
+            if col_strs:
+                if delim is None:
+                    fcol = fc_cols
+                    pcol = pval_cols
+                else:
+                    fcol = delim.join([fc_cols,c])
+                    pcol = delim.join([pval_cols,c])
+            else:
+                fcol = fc_cols[i]
+                pcol = pval_cols[i]
+
+            comp_meta.loc[c,'fc_col'] = fcol
+            comp_meta.loc[c,'pval_col'] = pcol
             
             # Get the corresponding values for the cutoffs
             if fc_list_flag:
@@ -349,69 +382,69 @@ class DEdansy(dansy):
             comp_meta.loc[c,'fc_thres'] = f
             comp_meta.loc[c,'alpha'] = a
             
-        return comp_meta
+        self.comp_metadata = comp_meta
 
-def calculate_scores(self, conds, alpha = 0.05, fc_thres = 1, fpr_trials=50, min_pval = -10, num_ss_trials = 100, processes = 1, seed=None, verbose=True, overwrite=False):
-    '''This calculates the separation and distinct functional neighborhood scores for a deDANSy instance. It creates new attributes for the deDANSy instance containing all the information of interest. If scores for a condition have been generated, this will raise a warning and overwrite existing scores.
-    
-    Parameters:
-    -----------
-        - dedansy: deDANSy object
-            The base deDANSy object containing all n-grams and expression data
-        - conds: list or str
-            The conditions that will be compared
-        - alpha: float (Optional)
-            p-value cutoff to designate DEGs
-        - fc_thres: float (Optional)
-            Fold change cutoff to designate DEGs
-        - fpr_trials: int (Optional)
-            Number of FPR trials to perform.
-        - min_pval: int (Optional)
-            The log10 transform of the minimum p-value to use for the p-value pruning sweep step.
-        - num_ss_trials: int (Optional)
-            The number of subsampled (and random) networks used to build distributions for comparing the network separation and IQR
-        - processes: int (Optional)
-            Number of processes to use if multiprocessing is desired. (Recommended having 4-8 when feasible)
-        - seed: int
-            Seed for random numbers. If not provided will use system time
+    def calculate_scores(self, conds, fpr_trials=50, min_pval = -10, num_ss_trials = 100, processes = 1, seed=None, verbose=True, overwrite=False):
+        '''This calculates the separation and distinct functional neighborhood scores for a deDANSy instance. It creates new attributes for the deDANSy instance containing all the information of interest. If scores for a condition have been generated, this will raise a warning and overwrite existing scores.
+        
+        Parameters:
+        -----------
+            - dedansy: deDANSy object
+                The base deDANSy object containing all n-grams and expression data
+            - conds: list or str
+                The conditions that will be compared
+            - alpha: float (Optional)
+                p-value cutoff to designate DEGs
+            - fc_thres: float (Optional)
+                Fold change cutoff to designate DEGs
+            - fpr_trials: int (Optional)
+                Number of FPR trials to perform.
+            - min_pval: int (Optional)
+                The log10 transform of the minimum p-value to use for the p-value pruning sweep step.
+            - num_ss_trials: int (Optional)
+                The number of subsampled (and random) networks used to build distributions for comparing the network separation and IQR
+            - processes: int (Optional)
+                Number of processes to use if multiprocessing is desired. (Recommended having 4-8 when feasible)
+            - seed: int
+                Seed for random numbers. If not provided will use system time
 
-    Returns:
-    --------
-        - dedansy_scores: pandas DataFrame
-            All scores, p-values, and FPR values for each condition
-        - dedansy_raw_dists: pandas DataFrame
-            For each condition the raw values that made up the distributions for each score
-        - dedansy_fpr_dists: pandas DataFrame
-            For each condition the p-values from the random FPR trials for calculating the FPR'''
-    
-    # Check for existing scores for all conditions provided
-    if hasattr(self, 'scores'):
-        a = set(conds).intersection(self.scores.index)
-        if len(a) >= 1:
+        Returns:
+        --------
+            - dedansy_scores: pandas DataFrame
+                All scores, p-values, and FPR values for each condition
+            - dedansy_raw_dists: pandas DataFrame
+                For each condition the raw values that made up the distributions for each score
+            - dedansy_fpr_dists: pandas DataFrame
+                For each condition the p-values from the random FPR trials for calculating the FPR'''
+        
+        # Check for existing scores for all conditions provided
+        if hasattr(self, 'scores'):
+            a = set(conds).intersection(self.scores.index)
+            if len(a) >= 1:
+                if overwrite:
+                    raise warnings.warn('At least one condition has existing scores that will be overwritten.')
+                else:
+                    raise warnings.warn('At least one condition has existing scores that will be kept.')
+        else:
+            a = set()
+
+        temp_scores, temp_raw_dists, temp_fpr_dists = algorithm.calculate_scores(self, conds, fpr_trials,min_pval, num_ss_trials,processes,seed, verbose)
+
+        if hasattr(self, 'scores'):
+            cur_scores = self.scores
             if overwrite:
-                raise warnings.warn('At least one condition has existing scores that will be overwritten.')
-            else:
-                raise warnings.warn('At least one condition has existing scores that will be kept.')
-    else:
-        a = set()
-
-    temp_scores, temp_raw_dists, temp_fpr_dists = algorithm.calculate_scores(self, conds, alpha, fc_thres,fpr_trials,min_pval, num_ss_trials,processes,seed, verbose)
-
-    if hasattr(self, 'scores'):
-        cur_scores = self.scores
-        if overwrite:
-            cur_scores.update(temp_scores)
-        new_scores = cur_scores.combine_first(temp_scores)
-        new_raw_dist = self.raw_dists.combine_first(temp_raw_dists)
-        new_fpr_dist = self.fpr_dists.combine_first(temp_fpr_dists)
-    else:
-        new_scores = temp_scores
-        new_raw_dist = temp_raw_dists
-        new_fpr_dist = temp_fpr_dists
-    
-    self.scores = new_scores
-    self.raw_dists = new_raw_dist
-    self.fpr_dists = new_fpr_dist
+                cur_scores.update(temp_scores)
+            new_scores = cur_scores.combine_first(temp_scores)
+            new_raw_dist = self.raw_dists.combine_first(temp_raw_dists)
+            new_fpr_dist = self.fpr_dists.combine_first(temp_fpr_dists)
+        else:
+            new_scores = temp_scores
+            new_raw_dist = temp_raw_dists
+            new_fpr_dist = temp_fpr_dists
+        
+        self.scores = new_scores
+        self.raw_dists = new_raw_dist
+        self.fpr_dists = new_fpr_dist
 
 ## Helper functions for converting the IDs around
 def convert_2_uniprotIDs(df, id_conv, conv_col = 'Gene stable ID', data_id_cols = 'gene_id', dbl_check = False):
