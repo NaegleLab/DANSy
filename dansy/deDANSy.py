@@ -340,7 +340,7 @@ class DEdansy(dansy):
 
         if col_lists and len(fc_cols) != len(pval_cols):
             raise ValueError('The number of fold change columns and p-value columns does not match.')
-        elif col_lists and len(fc_cols) != comparisons:
+        elif col_lists and len(fc_cols) != len(comparisons):
             if len(fc_cols) > 1:
                 raise ValueError('The number of data columns does not match the number of comparisons.')
         
