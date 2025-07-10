@@ -220,7 +220,7 @@ def calculate_separation_stability(degnn, num_trials = 50, pval_sweep = np.logsp
     # Now normalizing the list 70% of the total number of DEGs available (depends on relative fractions. Don't want to bother making this completely correct)
     weight_list_n = np.round(weight_list/sum(weight_list)*(sum(weight_list)*0.7))
     up_frac = len(degnn.up_DEGs)/len(deg_info)
-
+    
     # For reproducibility (mostly only for when multiprocessing is enacted) creating a seed list that will be passed to the individual trials function
     seedlist = random.sample(range(50*num_trials), num_trials)
     if processes == 1:
@@ -263,8 +263,8 @@ def calculate_separation_stability(degnn, num_trials = 50, pval_sweep = np.logsp
 
         # Setting up the arguments to be passed to multiple processes
         args = [(degnn, weight_list_n,complete_arch_dist,up_frac,pval_sweep,[orig_up,orig_dn],return_distributions, seedlist[i]) for i in range(num_trials)]
-       
-        if __name__ == 'hypergeom_helpers':
+        
+        if __name__ == 'dansy.enrichment_helpers':
             pool = mp.Pool(processes=processes)
             with pool as p:
                 a = p.starmap(individual_trial_calc, args,chunksize=5)
