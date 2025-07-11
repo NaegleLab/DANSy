@@ -8,10 +8,10 @@ import matplotlib.lines as lines
 
 from pybiomart import Dataset
 from tqdm import tqdm
-from enrichment_helpers import *
+from dansy.enrichment_helpers import *
 
 
-def get_max_info_enriched_ngrams(res_df, condition_labels = None, q = 0.05,):
+def get_max_info_enriched_ngrams(res_df, condition_labels = None, q = None,p = None):
     '''
     This plots the top X percent (default 5) n-grams enriched between two different conditions. For clarity n-grams that contain similar information will be collapsed into the shorter n-gram (i.e. if EGF-like domain and EGF-like domain|EGF-like domain both have similar enrichment values they will only be represented by EGF-like domain).
     
@@ -22,15 +22,24 @@ def get_max_info_enriched_ngrams(res_df, condition_labels = None, q = 0.05,):
         condition_labels: list (Optional)
             The labels for both conditions this should be provided in the order of up-regulated and down-regulated. (Note this will be removed once this is integrated into the actual module.)
         q: float (Optional)
-            The quantile cutoff of values to plot
+            The quantile cutoff of values to plot. Default (0.05)
     
     Returns:
     --------
         seaborn/matplotlib plot
 
     '''
+    if p is None and q is None:
+        q = 0.05
+        p_thres = np.quantile(res_df['p'],q)
+    elif p is not None and q is not None:
+        x = np.quantile(res_df['p'],q)
+        p_thres = np.min([p, x])
+    elif p is not None:
+        p_thres = p
+    else:
+        p_thres = np.quantile(res_df['p'],q)
 
-    p_thres = np.quantile(res_df['p'],q)
     filt_res_cands = res_df[res_df['p'] <= p_thres]['ngram']
     filt_res = res_df[res_df['ngram'].isin(filt_res_cands)].copy()
     if condition_labels != None:
@@ -45,8 +54,8 @@ def get_max_info_enriched_ngrams(res_df, condition_labels = None, q = 0.05,):
 
     return maxinfo_filt_res
 
-def plot_enriched_ngrams(res, dansyOI, condition_labels = None, q = 0.05,show_FPR=True ,**kwargs):
-    max_res = get_max_info_enriched_ngrams(res, condition_labels, q)
+def plot_enriched_ngrams(res, dansyOI, condition_labels = None, q = 0.05,p = None, show_FPR=True ,**kwargs):
+    max_res = get_max_info_enriched_ngrams(res, condition_labels, q,p)
     ngram_plot_names = {node:dansyOI.return_legible_ngram(node) for node in max_res['ngram'].tolist()}
     max_res['ngram'] = max_res['ngram'].map(ngram_plot_names)
     
