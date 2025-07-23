@@ -13,6 +13,7 @@ import dansy.ngramUtilities as ngramUtilities
 import dansy.generateCompleteProteome as generateCompleteProteome
 import dansy.dedansy_algorithm as algorithm
 from dansy.network_separation_helpers import *
+from dansy.enrichment_plotting_helpers import plot_functional_scores
 
 
 class DEdansy(dansy):
@@ -446,6 +447,31 @@ class DEdansy(dansy):
         self.raw_dists = new_raw_dist
         self.fpr_dists = new_fpr_dist
 
+    def plot_scores(self, show_FPR = True, aspect = 0.9, order = None):
+        '''
+        This creates the bubble plots for the separation and distinction scores. This is a wrapper function for the base plotting function found in the enrichment_plotting_helpers.
+
+        Parameters
+        ----------
+            - show_FPR: bool (Optional)
+                Whether the FPR legend handles should be displayed.
+            - aspect: float (Optional)
+                The aspect ratio for each score plot.
+            - order: dict (Optional)
+                Key-value pairs for each comparison and what order they should be displayed on the axis.
+        
+        Return:
+        -------
+            - ax: matplotlib Axes
+                The axes of the resulting plot 
+        '''
+        x = self.scores.copy()
+        x['Separation_Significance'] = x['Separation_FPR'] <= 0.05
+        x['Distinction_Significance'] = x['Distinction_FPR'] <= 0.05
+        ax = plot_functional_scores(x, show_FPR,aspect=aspect, order=order)
+        
+        return ax
+
 ## Helper functions for converting the IDs around
 def convert_2_uniprotIDs(df, id_conv, conv_col = 'Gene stable ID', data_id_cols = 'gene_id', dbl_check = False):
     '''
@@ -593,4 +619,3 @@ def ngram_subset_enrichment(protsOI, full_prots,dansy_bkg, collapse = True, **kw
         p_vals[node] = p
 
     return p_vals
-    

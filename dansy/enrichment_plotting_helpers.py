@@ -114,7 +114,7 @@ def plot_enriched_ngrams_presorted(res, dansyOI = None,x_order = 'geneset_order'
                     hue_order=[True, False],
                     **sns_opts,**kwargs)
     
-    # Setting up the ticks assocaited with the ngrams if a dansy object and an n-gram order dict were provided.
+    # Setting up the ticks associated with the ngrams if a dansy object and an n-gram order dict were provided.
     if ngram_ticks == None and dansyOI == None:
         pass
     elif ngram_ticks != None and dansyOI != None:
@@ -266,124 +266,127 @@ def calc_ngram_fpr_vals(hyper_vals, rand_ngram_pvals):
     return fpr_dict
 
 
-# Defining helper functions to gather the results and plot them.
-def get_plotting_data(res,metric):
+def plot_functional_scores(res, show_FPR_handle=True, aspect = 0.9, order = None):
     '''
-    Gets the data that will be plotted in the bubble plot. Acceptable metrics are NS or IQR only.
+    This creates the bubble plots for both the separation and distinction scores calculated by deDANSy.
 
     Parameters:
     -----------
-        res: pandas DataFrame
-            The imported data from running the enrichment analysis using the enrichment script.
-        metric: str
-            Which metric to retrieve.
+        - res: pandas DataFrame
+            The dataframe containing all scores and FPR values of the deDANSy analysis
+        - show_FPR_handle: bool
+            Whether the FPR portion of the legend should be displayed
+        - aspect: float
+            The aspect ratio of both plots
+        - order: dict
+            Key-value pairs of comparisons and their order
 
     Returns:
     --------
-        plot_data: pandas DataFrame
-            The data that will be used for the plot
+        - ax: list of matplotlib Axes
+            The axes of each subplot generated
+
     '''
-    if metric in['NS', 'IQR']:
-        cat_map = {True:0, False:1}
-    else:
-        raise ValueError('Improper metric requested.')
 
-    # Putting the data into the proper format
-    plot_data = res[res['Metric'] == metric].drop("Metric", axis = 1)
-    plot_data = plot_data.pivot(index = 'Comparison',columns = ['variable'])
-    plot_data = plot_data['value'].reset_index()
-    plot_data.columns.name = None
-
-    # Adding in a few new variables related to the plot
-    plot_data['FPR_Binary'] = plot_data[metric+'_FPR'] <= 0.05
-    plot_data['Sign'] = plot_data[metric+' Cohen'] > 0
-    plot_data['Score'] = np.abs(plot_data[metric+' Cohen'])
-    plot_data['Category'] = plot_data['Sign'].map(cat_map)
+    # Starting with the Separation Scores subplot
+    data_plot, comp_order = create_score_plot_data(res, 'Separation', order)
     
-    # Adding in some dummy variables to force some consistent sizes
-    if metric == 'NS':
-        for i in range(6):
-            plot_data.loc[i+len(plot_data)] = None
-            plot_data.loc[i+len(plot_data), 'Score'] = i
-    else:
-        # The IQR scores tend to be between 0-2 so getting the closest integer and then taking 5 steps to force the size
-        max_vals = np.ceil(plot_data['Score'].max()) 
-        for i,v in enumerate(np.linspace(0,max_vals,5)):
-            plot_data.loc[i+len(plot_data)] = None
-            plot_data.loc[i+len(plot_data), 'Score'] = v
-
-    return plot_data
-
-
-def plot_functional_scores(res, show_FPR_handle=True, aspect = 0.9):
-     
-    # Setting up the data and base plot
-    data_plot = get_plotting_data(res, 'NS')
-    _, axs = plt.subplots(1,2,figsize = (3,1.5))
+    _, axs = plt.subplots(1,2)
     plt.subplot(1,2,1)
-    sns.scatterplot(data_plot, y = 'Comparison', size='Score', x = 'Category',
-    hue='FPR_Binary',sizes = (1,50), size_norm = (0,5),
-                    palette=['mediumorchid', 'silver'],hue_order=[True, False],
+    sns.scatterplot(data_plot, x='Separation_Category', y = 'Order',
+                    size='Separation_Score',
+                    hue='Separation_Significance',
+                    sizes = (1,50), size_norm = (0,5),
+                    palette=['mediumorchid', 'silver'],
+                    hue_order=[True, False],
                     linewidth = 0.5,edgecolor='k')
-    plt.gca().set_aspect(aspect)
 
     # Adding in labels
-    plt.title('Separation Relative\nto Random Genes',fontdict={'size':5})
+    plt.title('Separation Score',fontdict={'size':6})
     plt.xlabel(None)
-
-    # Ensuring both ticks are present even if one of the categories is missing.
+    plt.ylabel(None)
+    
+    # Cleaning up the ticks
     plt.xticks([0,1],['More', 'Less'], rotation=45, ha='right')
+    plt.yticks([v for v in comp_order.values()], [k for k in comp_order.keys()])
     plt.xlim(-0.5,1.5)
     
-    # Cleaning up the legend slightly
+    # Cleaning up the legend
     handles, labels = plt.gca().get_legend_handles_labels()
     new_handles, new_labels = clean_up_legend(handles, labels, show_FPR_handle)
     l = plt.legend(new_handles,new_labels,bbox_to_anchor=(1,1), edgecolor='k', handletextpad=0.1)
     l.get_frame().set_linewidth(0.5)
+
+    # Setting some aesthetics for the handles
     for h in l.legend_handles:
         if not isinstance(h, lines.Line2D):
             h.set_edgecolor('k')
             h.set_linewidth(.5)
         
-    # When there are several comparisons it is a little easier to digest when there are grid lines
+    # Grid if there are more than 3 comparisons to provide a slight visual guidance
     if len(set(data_plot['Comparison'].tolist())) >= 3:
         plt.grid(visible=True,axis='y', linewidth =0.25, linestyle= ':')
+    plt.gca().set_aspect(aspect)
 
-    # Now the IQR version
-    data_plot = get_plotting_data(res, 'IQR')
+    # Now the Distinction Score
+    data_plot,comp_order = create_score_plot_data(res, 'Distinction', order)
     plt.subplot(1,2,2)
-    sns.scatterplot(data_plot, y = 'Comparison', size='Score', x = 'Category',
-    hue='FPR_Binary',sizes = (1,50),
-                    palette=['seagreen', 'silver'],hue_order=[True, False],
-                    linewidth = 0.5,edgecolor='k', legend='brief')
+    sns.scatterplot(data_plot,x = 'Distinction_Category',
+                    y = 'Order', size='Distinction_Score',hue='Distinction_Significance',sizes = (1,50),size_norm=(0,5),
+                    palette=['seagreen', 'silver'], hue_order=[True, False],
+                    linewidth = 0.5,edgecolor='k')
     
+    # Tick clean up
     plt.xticks([0,1],['Stably Distinct', 'Unstable/Overlap'], rotation=45, ha='right')
+    plt.yticks([v for v in comp_order.values()], [k for k in comp_order.keys()])
     plt.xlabel(None)
-    plt.title('Enriched \nn-gram neighborhoods',fontdict={'size':5})
+    plt.ylabel(None)
+    plt.title('Distinction Scores',fontdict={'size':6})
     plt.xlim([-0.5,1.5])
     plt.gca().set_aspect(aspect)
+    plt.ylabel(None)
+    plt.tick_params('y',labelleft=None)
+
+    # Legend clean up and formatting
     handles, labels = plt.gca().get_legend_handles_labels()
     new_handles, new_labels = clean_up_legend(handles, labels, show_FPR_handle)
     l = plt.legend(new_handles,new_labels,bbox_to_anchor=(1,1), edgecolor='k', handletextpad=0.1)
     l.get_frame().set_linewidth(0.5)
-    # Removing specific handles since they add more than necessary
+    
+    # Aesthetics of specific legend handles
     for h in l.legend_handles:
         if not isinstance(h, lines.Line2D):
             h.set_edgecolor('k')
             h.set_linewidth(.5)
-            
-    plt.ylabel(None)
-    plt.tick_params('y',labelleft=None)
     
+    # Grid if there are more than 3 comparisons to provide a slight visual guidance
     if len(set(data_plot['Comparison'].tolist())) >=3:
         plt.grid(visible=True,axis='y', linewidth =0.25, linestyle= ':')
         
     return axs
 
 def clean_up_legend(handles, labels, show_FPR = True):
+    '''
+    An internal function that cleans up the legend of the bubble plot to ensure clear communication of results and scores. If desired the FPR portion of the legend will be omitted if it does not provide useful information.
+
+    Parameters:
+    -----------
+        - handles: list
+            List of handles for the unmodified legend of the matplotlib/seaborn plot
+        - labels: list
+            List of labels for the unmodified legend of the matplotlib/seaborn plot
+        - show_FPR: bool
+            Flag of whether the FPR portion of the legend should be displayed.
     
+    Returns:
+    --------
+        - new_h: list
+            List of handles for the new legend of the matplotlib/seaborn plot
+        - new_l: list
+            List of labels for the new legend of the matplotlib/seaborn plot
+    '''
     if show_FPR:
-            handles_2_rm = [5,7,9]
+            handles_2_rm = [0,5,7,9]
     else:
         handles_2_rm = [0,1,2,5,7,9] #Will not always need the FPR legend details so will remove them as well
     
@@ -392,17 +395,52 @@ def clean_up_legend(handles, labels, show_FPR = True):
     
     if show_FPR:
         new_l[0] = 'FPR$\leq$0.05'
-        new_h.insert(3,new_h[3])
-        new_l.insert(3,'')
-    
+        new_l[1] = 'FPR > 0.05'
+        new_l[2] = 'Score'
+    else:
+        new_l[0] = 'Score'
+
     return new_h, new_l
 
-def format_results(dataset_results):
-    
-    variables_2_keep = ['NS Cohen', 'IQR Cohen', 'NS p_log', 'IQR p_log', 'NS_FPR', 'IQR_FPR']
-    res = dataset_results[dataset_results['variable'].isin(variables_2_keep)].copy()
-    res['Metric'] = res['variable'].str.split(' ').str[0]
-    res['Metric'] = res['Metric'].str.split('_').str[0]
+def create_score_plot_data(data, metric, order = None):
+    '''
+    This creates the plot data for generating the final bubble plot for a multicomparison result. This ensures a consistent easy to read bubble size is present and creates the order the plot will be generated in. 
 
-    return res
+    Parameters:
+    -----------
+        - data: pandas DataFrame
+            The scores dataframe generated by the deDANSy object
+        - metric: str
+            Either the Separation or Distinction score that will be used for plotting
+        - order: dict (Optional)
+            Key-value pairs that determine which order the multiple comparisons will be displayed in with the keys being the comparison and the values the order.
     
+    Returns:
+    --------
+        - plot_data: pandas DataFrame
+            A modified dataframe which contains a new Order column and additional values to create consistent sizing
+        - comp_map: dict
+            The order dictionary that will be used for displaying the comparisons
+    '''
+    plot_data = data.copy()
+
+    if order is None:
+        comps = sorted(plot_data['Comparison'].dropna().tolist())
+        comp_map = {v:i for i,v in enumerate(comps)}
+    else:
+        comp_map = order
+    plot_data['Order'] = plot_data['Comparison'].map(comp_map)
+
+    if metric == 'Separation':
+        max_vals = np.ceil(plot_data['Separation_Score'].max())
+        for i,v in enumerate(np.linspace(0,max_vals,5)):
+            plot_data.loc[i+len(plot_data)] = None
+            plot_data.loc[i+len(plot_data), 'Separation_Score'] = v
+    else:
+        # The IQR scores tend to be between 0-2 so getting the closest integer and then taking 5 steps to force the size
+        max_vals = np.ceil(plot_data['Distinction_Score'].max()) 
+        for i,v in enumerate(np.linspace(0,max_vals,5)):
+            plot_data.loc[i+len(plot_data)] = None
+            plot_data.loc[i+len(plot_data), 'Distinction_Score'] = v
+
+    return plot_data,comp_map
