@@ -13,22 +13,27 @@ from dansy.enrichment_helpers import *
 
 def get_max_info_enriched_ngrams(res_df, condition_labels = None, q = None,p = None):
     '''
-    This plots the top X percent (default 5) n-grams enriched between two different conditions. For clarity n-grams that contain similar information will be collapsed into the shorter n-gram (i.e. if EGF-like domain and EGF-like domain|EGF-like domain both have similar enrichment values they will only be represented by EGF-like domain).
-    
+    Returns the top X values of enriched n-grams that passes a quantile and/or p-value cutoff. This will collapse n-grams that provide similar p-value trends into a single representative n-gram if a shorter n-gram is in the longer n-gram. Longer n-grams that have more signficant p-values than their shorter counterparts will be retained.
+
     Parameters:
     -----------
-        res_df: pandas DataFrame
-            A dataframe containing all the results including both the individual statistical enrichment and the False positive rate for all n-grams. (Note this will likely be removed once this is integrated into the actual module.)
-        condition_labels: list (Optional)
-            The labels for both conditions this should be provided in the order of up-regulated and down-regulated. (Note this will be removed once this is integrated into the actual module.)
-        q: float (Optional)
-            The quantile cutoff of values to plot. Default (0.05)
-    
+        - res_df: pandas DataFrame
+            Dataframe of all the n-gram enrichment p-values for each condition
+        - condition_labels: list (Optional)
+            list of strings that are labels for the different conditions. If not provided then defaults to Up and Down
+        - q: float (Optional)
+            quantile cutoff for p-values to return n-grams. Default value is 0.05.
+        - p: float (Optional)
+            p-value cutoff for n-grams to return. If provided with q this will set the upper bound of p-values.
+
     Returns:
     --------
-        seaborn/matplotlib plot
-
+        - maxinfo_filt_res: pandas DataFrame
+            A filtered version of the res_df provided to only n-grams that pass the cutoffs provided
+    
     '''
+
+    # Checking the p-value and quantile cutoffs to determine a threshold.
     if p is None and q is None:
         q = 0.05
         p_thres = np.quantile(res_df['p'],q)
@@ -40,32 +45,72 @@ def get_max_info_enriched_ngrams(res_df, condition_labels = None, q = None,p = N
     else:
         p_thres = np.quantile(res_df['p'],q)
 
+    # Initial filtering based on only the p-value threshold
     filt_res_cands = res_df[res_df['p'] <= p_thres]['ngram']
     filt_res = res_df[res_df['ngram'].isin(filt_res_cands)].copy()
+
+    # Creating the condition labels
     if condition_labels != None:
         filt_res['variable'] = filt_res['variable'].map({'Up':condition_labels[0],'Down':condition_labels[1]})
 
+    # Now sorting the n-grams based on their length to start the collapsing step
     ngram_list = sorted(set(filt_res['ngram'].tolist()),key=lambda x:len(x.split('|')),reverse=True)
+
+    # Collapsing the n-grams based on their p-values and if they have similar trends or not.
     ngrams_2_collapse = collapse_to_max_info(ngram_list,filt_res)    
-    
     ngrams_kept = set(filt_res['ngram'].tolist()).difference(ngrams_2_collapse)
+
+    # Filtering the results dataframe to only the collapsed n-grams
     maxinfo_filt_res = filt_res[filt_res['ngram'].isin(ngrams_kept)].copy()
-    
 
     return maxinfo_filt_res
 
 def plot_enriched_ngrams(res, dansyOI, condition_labels = None, q = 0.05,p = None, show_FPR=True ,**kwargs):
+    '''
+    This plots the top X percent (default 5) n-grams enriched between two different conditions. For clarity n-grams that contain similar information will be collapsed into the shorter n-gram (i.e. if EGF-like domain and EGF-like domain|EGF-like domain both have similar enrichment values they will only be represented by EGF-like domain).
+    
+    Parameters:
+    -----------
+        res_df: pandas DataFrame
+            A dataframe containing all the results including both the individual statistical enrichment and the False positive rate for all n-grams. (Note this will likely be removed once this is integrated into the actual module.)
+        dansyOI: deDANSy object
+            The deDANSy object that contains the n-grams of interest
+        condition_labels: list (Optional)
+            The labels for both conditions this should be provided in the order of up-regulated and down-regulated. (Note this will be removed once this is integrated into the actual module.)
+        q: float (Optional)
+            The quantile cutoff of values to plot. Default (0.05)
+        p: float (Optional)
+            The p-value threshold to limit n-grams to plot. Default is 0.05 but if combined with the quantile (q) can be lower.
+        show_FPR: bool
+            Flag whether to show the FPR legend portion.
+        kwargs: optional keywords
+            - 'palette','edgecolor', 'linewidth', 'sizes' that adjust the seaborn scatterplot aesthetics.
+            - 'loc', 'bbox_to_anchor', 'handletextpad' to adjust matplotlib legend information.
+            - 'ax' to specify a matplotlib Axes to plot onto
+    
+    Returns:
+    --------
+        seaborn/matplotlib plot
+
+    '''
     max_res = get_max_info_enriched_ngrams(res, condition_labels, q,p)
     ngram_plot_names = {node:dansyOI.return_legible_ngram(node) for node in max_res['ngram'].tolist()}
     max_res['ngram'] = max_res['ngram'].map(ngram_plot_names)
     
-    # Going through some of the default values that I have set up for the seaborn scatterplot and checking for them in the kwargs to overwrite my default values.
+    # Going through some of the default values set up for the seaborn scatterplot and checking for them in the kwargs to overwrite default values.
     sns_opts = {'palette':['deepskyblue','silver'],'edgecolor':'k','linewidth':0.5,'sizes':(1,40)}
     for opt in sns_opts:
         if opt in kwargs:
             sns_opts[opt] = kwargs[opt]
             del kwargs[opt] # Removing to ensure that seaborn does not error out.
-        
+
+    # Now getting some of the keyword arguments that are associated with the legend
+    legend_opts = {'loc':'lower left', 'bbox_to_anchor':(1,1), 'handletextpad':0.1}
+    for opt in legend_opts:
+        if opt in kwargs:
+            legend_opts[opt] = kwargs[opt]
+            del kwargs[opt]
+
     sns.scatterplot(max_res, x='variable',y='ngram',
                     size='-log10(p)', hue = 'FPR <= 0.05',
                     hue_order=[True, False],
@@ -74,12 +119,12 @@ def plot_enriched_ngrams(res, dansyOI, condition_labels = None, q = 0.05,p = Non
     # If an axes is provided plot and adjust the legend to that specific axis
     if 'ax' in kwargs:
         handles, labels = kwargs['ax'].get_legend_handles_labels()  
-        new_handles, new_labels = clean_legend(handles, labels,show_FPR)
+        new_handles, new_labels = clean_ngram_legend(handles, labels,show_FPR)
         l = kwargs['ax'].legend(handles, labels, edgecolor='k', handletextpad=0.1, )
         
     else: 
         handles, labels = plt.gca().get_legend_handles_labels()
-        new_handles, new_labels = clean_legend(handles, labels,show_FPR)
+        new_handles, new_labels = clean_ngram_legend(handles, labels,show_FPR)
         l = plt.legend(new_handles, new_labels,bbox_to_anchor=(1,1), edgecolor='k', handletextpad=0.1, )
     
     # Small aesthetic changes
@@ -91,7 +136,33 @@ def plot_enriched_ngrams(res, dansyOI, condition_labels = None, q = 0.05,p = Non
     plt.xlabel(None)
     plt.ylabel(None)
 
-def plot_enriched_ngrams_presorted(res, dansyOI = None,x_order = 'geneset_order',ngram_ticks = None,show_FPR=True, **kwargs):
+def plot_enriched_ngrams_presorted(res,x_order = 'variable', dansyOI = None,ngram_ticks = None,show_FPR=True, **kwargs):
+    '''
+    This plots a presorted n-gram enrichment dataframe based on a provided n-gram order and provided order for conditions (i.e. x-axis).
+    
+    Parameters:
+    -----------
+        res: pandas DataFrame
+            A dataframe containing all the results including both the individual statistical enrichment and the False positive rate for all n-grams that has been presorted.
+        x_order: str
+            The column name to use for plotting on the x-axis. Default is variable assuming it was from a prior n-gram enrichment that was sorted in a different method.
+        dansyOI: deDANSy object
+            The deDANSy object that contains the n-grams of interest
+        ngram_ticks: dict
+            Key-value pairs of the n-grams and their order
+        show_FPR: bool
+            Flag whether to show the FPR legend portion.
+        kwargs: optional keywords
+            - 'palette','edgecolor', 'linewidth', 'sizes' that adjust the seaborn scatterplot aesthetics.
+            - 'loc', 'bbox_to_anchor', 'handletextpad' to adjust matplotlib legend information.
+            - 'ax' to specify a matplotlib Axes to plot onto
+    
+    Returns:
+    --------
+        seaborn/matplotlib plot
+
+    '''
+    
     max_res = res.copy()
    
     
@@ -125,12 +196,12 @@ def plot_enriched_ngrams_presorted(res, dansyOI = None,x_order = 'geneset_order'
     # If an axes is provided plot and adjust the legend to that specific axis
     if 'ax' in kwargs:
         handles, labels = kwargs['ax'].get_legend_handles_labels()  
-        new_handles, new_labels = clean_legend(handles, labels,show_FPR)
+        new_handles, new_labels = clean_ngram_legend(handles, labels,show_FPR)
         l = kwargs['ax'].legend(new_handles, new_labels, edgecolor='k', **legend_opts)
         
     else: 
         handles, labels = plt.gca().get_legend_handles_labels()
-        new_handles, new_labels = clean_legend(handles, labels,show_FPR)
+        new_handles, new_labels = clean_ngram_legend(handles, labels,show_FPR)
         l = plt.legend(new_handles, new_labels, edgecolor='k',**legend_opts)
     
     # Small aesthetic changes
@@ -144,12 +215,33 @@ def plot_enriched_ngrams_presorted(res, dansyOI = None,x_order = 'geneset_order'
     plt.xlabel(None)
     plt.ylabel(None)
 
-def clean_legend(handles, labels,show_FPR = True):
+def clean_ngram_legend(handles, labels,show_FPR = True):
+    '''
+    Cleans up the n-gram enrichment legend to show only relevant information if the FPR is to be displayed or not.
 
+    Parameters:
+    -----------
+        - handles: list
+            List of matplotlib legend handles to adjust
+        - labels: list
+            List of maptlotlib legend labels to adjust
+        - show_FPR: bool
+            Whether the FPR portion of the legend should be displayed
+    
+    Returns:
+    --------
+        - new_handles: list
+            The new handles to input into the legend
+        - new_labels: list
+            The new labels to input into the legend
+    '''
+
+    labels[1]= 'FPR$\leq$0.05'
+    labels[2] = 'FPR > 0.05'
     if show_FPR:
-        labels[0]= 'FPR$\leq$0.05'
-        new_handles = handles
-        new_labels = labels
+        # Dropping the FPR legend title since it is provided in the actual labels
+        new_handles = handles[1:len(handles)]
+        new_labels = labels[1:len(labels)]
         
     else:
         new_handles = [h for i,h in enumerate(handles) if i not in [0,1,2]]
@@ -158,11 +250,31 @@ def clean_legend(handles, labels,show_FPR = True):
     return new_handles, new_labels
 
 def collapse_to_max_info(ngram_list, res_df):
+    '''
+    This collapses the n-grams to those that represent the most discriminating information of interest. This will take longer n-grams and collapse them into shorter ones if the trends of p-values are similar, but the longer n-grams are slightly less signficant. If a longer n-gram is more significant it will not be collapsed.
 
+    Parameters:
+    -----------
+        - ngram_list: list
+            List of n-grams to consider for collapsing
+        - res_df: pandas DataFrame
+            Dataframe containing the enrichment p-value results that will be collapsed to maximize information being presented
+
+    Returns:
+    --------
+        - ngrams_2_collapse: list
+            The n-grams that will be collapsed from the inputted list.
+    
+    '''
+    
+    # Defining potential collapsing n-gram families
     potential_collapse = {}
     for ngram in ngram_list:
         for inner_ngram in ngram_list:
+            # Check for parent-child relationship
             if inner_ngram != ngram and ngram in inner_ngram:
+
+                # Add to the dictionary an empty list if the n-gram is not present
                 if ngram not in potential_collapse:
                     potential_collapse[ngram] = []
                 potential_collapse[ngram].append(inner_ngram)
@@ -171,16 +283,23 @@ def collapse_to_max_info(ngram_list, res_df):
     # Now for each of these checking the FPR and p-values to see if they should be collapsed
     ngrams_2_collapse = set()
     for ngram, children in potential_collapse.items():
+
+        # Get the parent n-grams values
         parent_p = res_df[res_df['ngram'] == ngram]['p'].tolist()
         parent_fpr = res_df[res_df['ngram'] == ngram]['FPR <= 0.05'].tolist()
         parent_cond = res_df[res_df['ngram'] == ngram]['variable'].tolist()
+        
+        # Check if it is only within 1 condition
         if len(parent_p) == 1:
             for child in children:
                 child_p = res_df[res_df['ngram'] == child]['p'].tolist()
                 child_fpr = res_df[res_df['ngram'] == child]['FPR <= 0.05'].tolist()
                 child_cond = res_df[res_df['ngram'] == child]['variable'].tolist()
+                
+                # Only collapse if they have the same number of conditions and match
                 if len(child_p) == 1:
                     if child_cond == parent_cond:
+                        # If the child one is more signficant and FPR values are not the same then keep it otherwise collapse it
                         if child_p < parent_p and parent_fpr != child_fpr:
                             pass 
                         elif parent_fpr != child_fpr:
@@ -189,15 +308,13 @@ def collapse_to_max_info(ngram_list, res_df):
                             ngrams_2_collapse.add(child)
         else:
             for child in children:
-            
                 child_p = res_df[res_df['ngram'] == child]['p'].tolist()
                 child_fpr = res_df[res_df['ngram'] == child]['FPR <= 0.05'].tolist()
                 child_cond = res_df[res_df['ngram'] == child]['variable'].tolist()
                 if len(child_cond) == 2:
-                    # Checking both the p-vals
+                    # Checking both the p-vals as showing similar trends and child n-grams are not more signficant then keep
                     if any(c < p for c,p in zip(child_p,parent_p)) and any(p != c for c,p in zip(child_fpr,parent_fpr)):
                         pass
-                        
                     elif any(p != c for c,p in zip(child_fpr,parent_fpr)):
                         pass
                     else:
