@@ -3,7 +3,6 @@ import scipy.stats as stats
 import multiprocessing as mp
 import random
 import dansy.network_separation_helpers as ns_helpers
-from tqdm import tqdm
 
 # Defining a function to calculate cohen's D since I do not want to make the assumption that there is equal variance between the random and subsampled distributions. 
 def cohen_d(a,b):
