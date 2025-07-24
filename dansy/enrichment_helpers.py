@@ -186,35 +186,6 @@ def designate_rand_DEGs(rand_indices, ref_df, up_fraction):
     rand_DEGs = {'Up':rand_up_chosen,'Down':rand_down_chosen}
     return rand_DEGs
 
-# Defining a helper function for grabbing the n-grams of interest for a hypergeometric p-value of interest.
-def get_hyper_ngrams(degnn, cutoff):
-    up_hyper = degnn.ngram_DEG_hypergeom('Up')
-    dn_hyper = degnn.ngram_DEG_hypergeom('Down')
-
-    ngrams_2_check = []
-    for i in [up_hyper, dn_hyper]:
-        k = []
-        for node in i:
-            if i[node] < cutoff:
-                k.append(node)
-        ngrams_2_check.append(k)
-    
-    return ngrams_2_check
-
-def get_hyper_prots(degnn, ngram_lists):
-
-    hyper_prots = []
-    for i,cond_degs in zip(ngram_lists,[degnn.up_DEGs, degnn.down_DEGs]):
-        k = set()
-        for ngram in i:
-            j = degnn.interpro2uniprot[ngram]
-            inter = set(j).intersection(cond_degs)
-            k.update(inter)
-        hyper_prots.append(list(k))
-
-    return hyper_prots
-
-
 def get_random_net_sep_metrics(normalized_arch_weights, complete_arch_dist, degnn,deg_ratio,pvals= np.logspace(0,-10, num=21),return_dist = False):
 
     rcd = get_random_count_dist(normalized_arch_weights)
