@@ -9,10 +9,21 @@ from tqdm import tqdm
 def cohen_d(a,b):
     '''
     Calculates the Cohen's d effect size of 2 lists of values, where the second is considered the "control" group.
-    '''
 
+    Parameters:
+    -----------
+        a,b: list or numpy array
+            Distribution of values to compare the effect size of
     
-    if all(np.isnan(a)) and all(np.isnan(b)): # For certain cases there might be all nans so just check that first
+    Returns:
+    --------
+        d: numpy float
+            Cohen's d effect size (Returns nan if all values are nan)
+
+    '''
+    
+    # For certain cases there might be all nans so just check that first
+    if all(np.isnan(a)) and all(np.isnan(b)): 
         d = np.nan
     else:
         # Means
@@ -29,27 +40,45 @@ def cohen_d(a,b):
             d = (x1-x2)/s
         elif np.isnan(s):
             d = np.nan
-        else:
+        else: #Shouldn't ever get to this
             d = 0
         
 
     return d
 
-def hypergeom_prune_ns(degnn, sweep):
+def hypergeom_prune_ns(dedansy, sweep):
+    '''
+    Builds a distribution of network separation values between two conditions on the deDANSy network based on the enrichment pruning over more restrictive p-value thresholds.
+
+    Parameters:
+    ----------- 
+        - dedansy: deDANSy object
+            The object containing all the enriched n-grams for both conditions of interest
+        - sweep: list
+            List of thresholds to use for pruning of differential expression status
+
+    Returns:
+    --------
+        - ns_sweep: list
+            Network separation values for each of the thresholds provided
+    '''
+
+    # Get the enrichment p-values for each n-gram of both conditions
+    up_hyper_vals = dedansy.ngram_DEG_hypergeom('Up')
+    dn_hyper_vals = dedansy.ngram_DEG_hypergeom('Down')
     
-    up_hyper_vals = degnn.ngram_DEG_hypergeom('Up')
-    dn_hyper_vals = degnn.ngram_DEG_hypergeom('Down')
     ns_sweep = []
-    
     for i in sweep:
+        
+        # Get only n-grams that pass the threshold
         up_check = [k for k,v in up_hyper_vals.items() if v <= i]
         dn_check = [k for k,v in dn_hyper_vals.items() if v <= i]
 
         # Setting up the networks for determining the network separation
-        up_net = degnn.G.subgraph(up_check)
-        dn_net = degnn.G.subgraph(dn_check)
+        up_net = dedansy.G.subgraph(up_check)
+        dn_net = dedansy.G.subgraph(dn_check)
         if len(up_net.nodes()) > 0 and len(dn_net.nodes())> 0:
-            ns = ns_helpers.network_separation(up_net, dn_net, degnn.ref_data)
+            ns = ns_helpers.network_separation(up_net, dn_net, dedansy.ref_data)
         else:
             ns = np.nan    
         ns_sweep.append(ns)
@@ -58,8 +87,23 @@ def hypergeom_prune_ns(degnn, sweep):
 
 # Below is a handful of helper functions to try and do network separation on a number of iterations to create a null distribution of DEG network separation values
 def get_random_count_dist(count_weights):
+    '''
+    Creates list of counts for different domain architecture lengths to use in subsampling and random gene selection to calculate robust enrichment of different n-grams. This creates a small bit of randomness to ensure some leeway of genes chosen to not bias n-grams of specific lengths being consistently over-represented. The total distribution of domain architectures from 0 to 10 are individual elements, while those >10 will be accumulated as these represent <5% of the human proteome.
+
+    Parameters:
+    -----------
+        - count_weights: list
+            List of counts of the total distribution of domain architecture lengths of the measured universe in the deDANSy object
+    
+    Returns:
+    --------
+        - rand_counts: list
+            List of random integers for each domain architecture length
+    '''
     rand_counts = []
-    for i in count_weights[1:11]:
+    for i in count_weights[1:11]: #Skip the 0 length architectures as they do not contribute to the network
+        
+        # Give leeway of about +/-15% for randomly choosen an integer of similar size to the original count
         i_min = np.floor(i*.85)
         i_max = np.ceil(i*1.15)
         if i_min == 0 and i_max == 0:
@@ -67,17 +111,36 @@ def get_random_count_dist(count_weights):
         else:
             r = random.randrange(i_min, i_max)
         rand_counts.append(r)
+    
+    # For the 10+ architectures choose between 0 and the actual value since going above will really skew n-grams
     if count_weights[11] > 0:
         rand_counts.append(random.randrange(0,count_weights[11]))
     else:
         rand_counts.append(0)
+
     return rand_counts
 
 def get_random_id_indices(arch_len_array, rand_count_list):
+    '''
+    Get the indices of randomly chosen genes to use as a null distribution.
+
+    Parameters:
+    -----------
+        - arch_len_array: list
+            The list of protein architecture lengths to choose randomly from
+        - rand_count_list: list
+            The number of genes to choose with each architecture length
+    
+            
+    Returns:
+    --------
+        - rand_4_analysis: list
+            List of indices from the original dataframe containing all protein information.
+    '''
     rand_4_analysis = []
     for i in range(1,11):
         cands = arch_len_array[arch_len_array == i]
-        rand_ids = random.sample(list(cands.index), k=rand_count_list[i-1])
+        rand_ids = random.sample(list(cands.index), k=rand_count_list[i-1]) # Using indices as these are conserved across all the analysis and have smallish memory footprint
         rand_4_analysis += rand_ids
 
     # For the >10 n-grams now getting candidates
@@ -88,6 +151,24 @@ def get_random_id_indices(arch_len_array, rand_count_list):
     return rand_4_analysis
 
 def designate_rand_DEGs(rand_indices, ref_df, up_fraction):
+    '''
+    Designates randomly chosen genes as either up or down regulated while preserving the relative fraction of each condition.
+
+    Parameters:
+    -----------
+        - rand_indices: list
+            List of protein indices from the reference data frame that were randomly chosen
+        - ref_df: pandas DataFrame 
+            The reference dataframe that contains all protein info
+        - up_fraction: float
+            The relative fraction of up to down regulated genes/proteins being expressed
+    
+    Returns:
+    --------
+        - rand_DEGs: dict
+            Up and down lists of UniProt IDs from the randomly chosen genes
+    '''
+
     # Now double-checking the distribution
     random_prots = ref_df.loc[rand_indices]
 
@@ -293,7 +374,7 @@ def calculate_separation_stability(degnn, num_trials = 50, pval_sweep = np.logsp
 
     return o
 
-def retrieve_fpr_checks(degnn,num_DEGs,fpr_trials = 50, num_internal_trials = 50, deg_ratios = 0.6, processes = 1, progress_bar = False, seed =123):
+def retrieve_fpr_checks(degnn,num_DEGs,fpr_trials = 50, num_internal_trials = 50, deg_ratios = 0.7, processes = 1, progress_bar = False, seed =123):
     
     # Setting up the random DEGs
     # Here setting up a random seed list that ensures reproducibility across experimental runs
