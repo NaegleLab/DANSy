@@ -186,49 +186,82 @@ def designate_rand_DEGs(rand_indices, ref_df, up_fraction):
     rand_DEGs = {'Up':rand_up_chosen,'Down':rand_down_chosen}
     return rand_DEGs
 
-def get_random_net_sep_metrics(normalized_arch_weights, complete_arch_dist, degnn,deg_ratio,pvals= np.logspace(0,-10, num=21),return_dist = False):
+def get_random_net_sep_metrics(normalized_arch_weights, complete_arch_dist, dedansy,deg_ratio,pvals= np.logspace(0,-10, num=21),return_dist = False):
+    '''
+    Performs the network separation and pruning analysis on randomly chosen genes from the dedansy object.
 
+    Parameters:
+    -----------
+        - normalized_arch_weights: list
+            The relative fraction of the domain architecture lengths from 0-10 and 10+ from the deDANSy object of differentially expressed genes/proteins
+        - complete_arch_dist: list
+            The proteins that are found for each domain architecture length to choose gene randomly from
+        - dedansy: deDANSy object
+            The object that contains all the protein information being analyzed
+        - deg_ratio: float
+            The relative fraction of up to down regulated genes/proteins
+        - pvals: numpy array (Optional)
+            The threshold p-values to use for pruning analysis
+        - return_dist: bool (Optional)
+            Whether the distribution of p-values during the p-value sweep is return. Default is False as this is a niche request
+
+    Returns:
+    --------
+        - o: tuple
+            Tuple containing both the network separation prior to pruning and the interquartile range of network separation values during the pruning analysis
+        
+    '''
+    
+    # Setting the randomly chosen genes
     rcd = get_random_count_dist(normalized_arch_weights)
     rii = get_random_id_indices(complete_arch_dist,rcd)
-    r_prots = designate_rand_DEGs(rii, degnn.ref,deg_ratio)
-    
-    # This is for debugging as necessary
-    #print('Up Random:')
-    #print(r_prots['Up'][0:10])
-    #print('Down Random:')
-    #print(r_prots['Down'][0:10])
+    r_prots = designate_rand_DEGs(rii, dedansy.ref,deg_ratio)
+    dedansy.set_DEG_ngrams(r_prots['Up'],r_prots['Down'], verbose=False)
 
-    degnn.set_DEG_ngrams(r_prots['Up'],r_prots['Down'], verbose=False)
-    ns = degnn.DEG_network_sep()
-    ns_vals = hypergeom_prune_ns(degnn, pvals)
+    # Getting the two (or three) metrics
+    ns = dedansy.DEG_network_sep()
+    ns_vals = hypergeom_prune_ns(dedansy, pvals)
     ns_iqr = stats.iqr(ns_vals, nan_policy='omit')
     if return_dist:
-            o = (ns,ns_iqr,ns_vals)
+        o = (ns,ns_iqr,ns_vals)
     else:
         o = (ns,ns_iqr)
 
     return o
 
-def get_subsample_net_sep_metrics(degnn,orig_DEGs, rand_prot_nums,pvals= np.logspace(0,-10, num=21),return_dist = False):
+def get_subsample_net_sep_metrics(dedansy,orig_DEGs, rand_prot_nums,pvals= np.logspace(0,-10, num=21),return_dist = False):
+    '''
+    Performing the network separation and pruning analysis on a subsampled set of proteins from the differentially expressed genes/proteins.
+
+    Parameters:
+        - dedansy: deDANSy object
+            The dansy object containing all expression and protein information
+        - orig_DEGs: list
+            List of two elements which contain lists of all the UniProt IDs that are either up or down (in that order) regulated
+        - rand_prot_nums: list
+            Number of randomly chosen proteins for each condition to ensure we match the randomly chosen genes
+        - pvals: numpy array
+            The threshold p-values to use during the pruning step
+        - return_dist: bool
+            Whether the distribution of p-values during the p-value sweep is return. Default is False as this is a niche request
+
+    Returns:
+    --------
+        - o: tuple
+            Tuple containing both the network separation prior to pruning and the interquartile range of network separation values during the pruning analysis
+        
+    '''
     
-    # Getting a random sample of the up DEGs (not accounting for the n-gram length)
+    # Setting up the original differentially expressed genes/proteins and randomly sampling them
     orig_up = orig_DEGs[0]
     orig_dn = orig_DEGs[1]
-
     rand_up = random.sample(orig_up, k=rand_prot_nums[0])
     rand_dn = random.sample(orig_dn, k=rand_prot_nums[1])
 
-    # This is for debugging as necessary
-    #with open('debug.log', 'a') as f:
-    #    f.write('\nUp Subsample:')
-    #    for p in rand_up[0:10]:
-    #        f.write(f"{p}\t")
-    #print('Down Subsample:')
-    #print(rand_dn[0:10])
-
-    degnn.set_DEG_ngrams(rand_up,rand_dn, verbose=False)
-    ns = degnn.DEG_network_sep()
-    ns_vals = hypergeom_prune_ns(degnn,pvals)
+    # Setting the subsampled genes and getting the metrics of interest
+    dedansy.set_DEG_ngrams(rand_up,rand_dn, verbose=False)
+    ns = dedansy.DEG_network_sep()
+    ns_vals = hypergeom_prune_ns(dedansy,pvals)
     ns_iqr = stats.iqr(ns_vals, nan_policy='omit')
 
     if return_dist:
@@ -238,17 +271,45 @@ def get_subsample_net_sep_metrics(degnn,orig_DEGs, rand_prot_nums,pvals= np.logs
 
     return o
 
-def individual_trial_calc(degnn, arch_weights, comp_arch_dist, ratio, sweep, originals,dist_flag = False, seed =123):
+def individual_trial_calc(dedansy, arch_weights, comp_arch_dist, ratio, sweep, originals,dist_flag = False, seed =123):
+    '''
+    Calculates the subsampled and randomly chosen genes network separtion and pruning analysis.
+
+    Parameters:
+    -----------
+        - dedansy: deDANSy object
+            The dansy object containing all expression and protein information
+        - arch_weights: list
+            The relative fraction of the domain architecture lengths from 0-10 and 10+ from the deDANSy object of differentially expressed genes/proteins
+        - comp_arch_dist: list
+            The proteins that are found for each domain architecture length to choose gene randomly from
+        - ratio: float
+            The relative fraction of up to down regulated genes/proteins
+        - sweep: numpy array
+            The threshold p-values to use for pruning analysis
+        - originals: list
+            List of two elements which contain lists of all the UniProt IDs that are either up or down (in that order) regulated
+        - dist_flag: bool (Optional)
+            Whether the distribution of p-values during the p-value sweep is return. Default is False as this is a niche request
+        - seed: int (Optional)
+            Random number generator seed to ensure reproducibility. Default is 123
+    
+    Returns:
+    --------
+        - list of tuples
+            The random and then subsampled data of the unpruned network separation, the interquartile range of network separation during pruning, and if requested the distribution of values
+    '''
+
     random.seed(seed)
     rand_data = get_random_net_sep_metrics(normalized_arch_weights=arch_weights,
                                           complete_arch_dist=comp_arch_dist,
-                                          degnn=degnn,
+                                          dedansy=dedansy,
                                           deg_ratio=ratio,
                                           pvals=sweep,
                                           return_dist=dist_flag)
     # Since the random function above generates the sizes will pass this on.
-    rand_szs = (len(degnn.up_DEGs), len(degnn.down_DEGs))
-    subsample_data = get_subsample_net_sep_metrics(degnn=degnn,
+    rand_szs = (len(dedansy.up_DEGs), len(dedansy.down_DEGs))
+    subsample_data = get_subsample_net_sep_metrics(dedansy=dedansy,
                                 orig_DEGs=originals,
                                 rand_prot_nums=rand_szs,
                                 pvals=sweep,
@@ -256,28 +317,50 @@ def individual_trial_calc(degnn, arch_weights, comp_arch_dist, ratio, sweep, ori
     
     return list(rand_data + subsample_data)
     
-def calculate_separation_stability(degnn, num_trials = 50, pval_sweep = np.logspace(0,-10,21), return_distributions = False,processes = 1, verbose=True, progress_bar = False):
+def calculate_separation_stability(dedansy, num_trials = 50, pval_sweep = np.logspace(0,-10,21), return_distributions = False,processes = 1, verbose=True):
+    '''
+    Generates the distribution of network separation and interquartile range of network separation values during pruning for generating the different scores for deDANSy analysis. This is the key function of the algorithm that gathers all the results.
+
+    Parameters:
+    -----------
+        - dedansy: deDANSy object
+            The dansy object containing all expression and protein information
+        - num_trials: int (Optional, Default 50)
+            The number of trials for subsampling and random gene selection
+        - pval_sweep: numpy array
+            The threshold p-values to use for pruning analysis
+        - return_distribution: bool
+            Whether the distribution of p-values during the p-value sweep is return. Default is False as this is a niche request
+        - processes: int
+            Number of multiprocessing workers to use for analysis
+        - verbose: bool
+            Whether progress statements should be displayed
     
-    orig_up = degnn.up_DEGs
-    orig_dn = degnn.down_DEGs
+    Returns:
+    --------
+        - o: list of tuples
+            The full distribution of values for each individual trial of the subsampled and randomly chosen genes
+    '''
+   
+   # Setting up the inputs as necessary for the dependent functions by getting the information about the measured universe proteins
+    orig_up = dedansy.up_DEGs
+    orig_dn = dedansy.down_DEGs
     original_DEGs = list(orig_up) + list(orig_dn)
-    deg_info = degnn.retrieve_protein_info(original_DEGs)
+    deg_info = dedansy.retrieve_protein_info(original_DEGs)
     arch_lens = deg_info['Interpro Domain Architecture IDs'].apply(lambda x: len(x.split('|')))
     max_length = max([max(arch_lens),11])
     deg_arch_dist = np.histogram(arch_lens, bins=range(max_length+1))
-    complete_arch_dist = degnn.ref['Interpro Domain Architecture IDs'].apply(lambda x: len(x.split('|')))
+    complete_arch_dist = dedansy.ref['Interpro Domain Architecture IDs'].apply(lambda x: len(x.split('|')))
     weight_list = deg_arch_dist[0][0:11]
     weight_list = np.append(weight_list,np.sum(deg_arch_dist[0][11:]))
 
-    # Now normalizing the list 70% of the total number of DEGs available (depends on relative fractions. Don't want to bother making this completely correct)
+    # Now normalizing the list 70% of the total number of DEGs available
     weight_list_n = np.round(weight_list/sum(weight_list)*(sum(weight_list)*0.7))
-    up_frac = len(degnn.up_DEGs)/len(deg_info)
+    up_frac = len(dedansy.up_DEGs)/len(deg_info)
     
     # For reproducibility (mostly only for when multiprocessing is enacted) creating a seed list that will be passed to the individual trials function
     seedlist = random.sample(range(50*num_trials), num_trials)
     if processes == 1:
-        if progress_bar:
-            pbar = tqdm(total=num_trials)
 
         # Intializing some of the variables of the for loop
         rand_ns = np.zeros(num_trials)
@@ -289,8 +372,12 @@ def calculate_separation_stability(degnn, num_trials = 50, pval_sweep = np.logsp
             rand_ns_dists = []
             subsample_ns_dists = []
 
+        # Progress statement
+        if verbose:
+            print('Starting calculations')
+
         for i in range(num_trials):
-            a = individual_trial_calc(degnn, weight_list_n,complete_arch_dist,up_frac,pval_sweep,[orig_up,orig_dn],dist_flag=return_distributions, seed=seedlist[i])
+            a = individual_trial_calc(dedansy, weight_list_n,complete_arch_dist,up_frac,pval_sweep,[orig_up,orig_dn],dist_flag=return_distributions, seed=seedlist[i])
             # Unpacking the values into the datastructures above
             rand_ns[i] = a[0]
             rand_iqr[i] = a[1]
@@ -303,24 +390,18 @@ def calculate_separation_stability(degnn, num_trials = 50, pval_sweep = np.logsp
                 subsample_ns[i] = a[2]
                 subsample_iqr[i] = a[3]
 
-            if progress_bar:
-                pbar.update(1)
-
-
-        if progress_bar:
-            pbar.close()
     else:
         if verbose:
             print('Will do multiprocessing')
 
         # Setting up the arguments to be passed to multiple processes
-        args = [(degnn, weight_list_n,complete_arch_dist,up_frac,pval_sweep,[orig_up,orig_dn],return_distributions, seedlist[i]) for i in range(num_trials)]
+        args = [(dedansy, weight_list_n,complete_arch_dist,up_frac,pval_sweep,[orig_up,orig_dn],return_distributions, seedlist[i]) for i in range(num_trials)]
         
         if __name__ == 'dansy.enrichment_helpers':
             pool = mp.Pool(processes=processes)
             with pool as p:
                 a = p.starmap(individual_trial_calc, args,chunksize=5)
-            pool.close() # In case
+            pool.close() # In case but not necessary
 
         # Unpacking the values into the datastructures above
         rand_ns = [x[0] for x in a]
@@ -333,11 +414,8 @@ def calculate_separation_stability(degnn, num_trials = 50, pval_sweep = np.logsp
         else:
             subsample_ns = [x[2] for x in a]
             subsample_iqr = [x[3] for x in a]
-
     
-
-    # Now returning the desired outputs
-
+    # Prepping the export
     if return_distributions:
         o = [rand_ns,rand_iqr,rand_ns_dists,subsample_ns,subsample_iqr,subsample_ns_dists]
     else:
@@ -345,23 +423,45 @@ def calculate_separation_stability(degnn, num_trials = 50, pval_sweep = np.logsp
 
     return o
 
-def retrieve_fpr_checks(degnn,num_DEGs,fpr_trials = 50, num_internal_trials = 50, deg_ratios = 0.7, processes = 1, progress_bar = False, seed =123):
+def retrieve_fpr_checks(dedansy,num_DEGs,fpr_trials = 50, num_internal_trials = 50, deg_ratios = 0.7, processes = 1, seed =123):
+    '''
+    Performs a false positive rate check on the values for the differentially expressed genes by performing the same subsampling and random gene selection analysis with random genes that were measured to determine if findings are true positives. This process can be highly time consuming based on the number of FPR trials that are to conducted.
+
+    Parameters:
+    -----------
+        - dedansy: deDANSy object
+            The dansy object containing all expression and protein information
+        - num_DEGs: int
+            The number of differentially expressed genes in the deDANSy object
+        - fpr_trials: int (Optional, Default 50)
+            The number of False Positive Rate trials to conduct
+        - num_internal_trials: int (Optional, Default 50)
+            The number of trials for subsampling and random gene selection that will be used for all the FPR trials. (Should match what was done on the analysis of interest)
+        - deg_ratios: float
+            Relative ratio of differentially expressed genes to designate as up or down
+        - processes: int
+            Number of multiprocessing workers to use for analysis
+        - seed
+            Random number generator seed
+
+    Returns:
+    --------
+        - internal_fpr: list
+            List of p-values for the network separation and interquartile range during pruning 
+    '''
     
-    # Setting up the random DEGs
-    # Here setting up a random seed list that ensures reproducibility across experimental runs
-    rand_DEGs = degnn.retrieve_random_ids(num=num_DEGs, iters=fpr_trials,seed = seed)
+    #  Setting up the random DEGs generator
+    rand_DEGs = dedansy.retrieve_random_ids(num=num_DEGs, iters=fpr_trials,seed = seed)
 
     internal_fpr = []
-    if progress_bar:
-        pbar = tqdm(total=fpr_trials)
-
+    
     for i in range(fpr_trials):
         cur_DEGs = next(rand_DEGs)
-        cur_DEGs = sorted(cur_DEGs) # In case
+        cur_DEGs = sorted(cur_DEGs) # In case of weird issues with random sampling using sorted
         orig_up = random.sample(cur_DEGs, k=round(len(cur_DEGs)*deg_ratios))
         orig_dn = sorted(set(cur_DEGs).difference(orig_up))
-        degnn.set_DEG_ngrams(up_DEGs=orig_up, down_DEGs=orig_dn, verbose=False)
-        temp = calculate_separation_stability(degnn,num_trials=num_internal_trials,processes=processes,verbose = False)
+        dedansy.set_DEG_ngrams(up_DEGs=orig_up, down_DEGs=orig_dn, verbose=False)
+        temp = calculate_separation_stability(dedansy,num_trials=num_internal_trials,processes=processes,verbose = False)
         rand_iqr = [x for x in temp[1]]
         subsample_iqr = [x for x in temp[3]]
         rand_full_ns = [x for x in temp[0]]
@@ -373,17 +473,24 @@ def retrieve_fpr_checks(degnn,num_DEGs,fpr_trials = 50, num_internal_trials = 50
 
         internal_fpr.append((temp_ns_res[1], temp_iqr_res[1]))
 
-        if progress_bar:
-            pbar.update()
-
-    if progress_bar:
-        pbar.close()
-
-
     return internal_fpr
 
 def calculate_fpr(actual_res, random_res):
+    '''
+    For each result of interest calculates the False positive rate
 
+    Parameters:
+    -----------
+        - actual_res: list
+            The results from conducting the analysis
+        - random_res: list
+            The p-values from the random FPR trials
+    
+    Returns:
+    --------
+        - tuple of FPR values
+    
+    '''
     ns_res = actual_res[0]
     iqr_res = actual_res[1]
     ns_rand_res = [x[0] for x in random_res]
