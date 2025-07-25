@@ -385,19 +385,15 @@ class DEdansy(dansy):
             
         self.comp_metadata = comp_meta
 
-    def calculate_scores(self, conds, fpr_trials=50, min_pval = -10, num_ss_trials = 100, processes = 1, seed=None, verbose=True, overwrite=False):
+    def calculate_scores(self, comps, fpr_trials=50, min_pval = -10, num_ss_trials = 100, processes = 1, seed=None, verbose=True, overwrite=False):
         '''This calculates the separation and distinct functional neighborhood scores for a deDANSy instance. It creates new attributes for the deDANSy instance containing all the information of interest. If scores for a condition have been generated, this will raise a warning and overwrite existing scores.
         
         Parameters:
         -----------
             - dedansy: deDANSy object
                 The base deDANSy object containing all n-grams and expression data
-            - conds: list or str
+            - comps: list or str
                 The conditions that will be compared
-            - alpha: float (Optional)
-                p-value cutoff to designate DEGs
-            - fc_thres: float (Optional)
-                Fold change cutoff to designate DEGs
             - fpr_trials: int (Optional)
                 Number of FPR trials to perform.
             - min_pval: int (Optional)
@@ -411,16 +407,17 @@ class DEdansy(dansy):
 
         Returns:
         --------
-            - dedansy_scores: pandas DataFrame
+        The following attributes are added or adjusted:
+            - scores: pandas DataFrame
                 All scores, p-values, and FPR values for each condition
-            - dedansy_raw_dists: pandas DataFrame
+            - raw_dists: pandas DataFrame
                 For each condition the raw values that made up the distributions for each score
-            - dedansy_fpr_dists: pandas DataFrame
+            - fpr_dists: pandas DataFrame
                 For each condition the p-values from the random FPR trials for calculating the FPR'''
         
         # Check for existing scores for all conditions provided
         if hasattr(self, 'scores'):
-            a = set(conds).intersection(self.scores.index)
+            a = set(comps).intersection(self.scores.index)
             if len(a) >= 1:
                 if overwrite:
                     raise warnings.warn('At least one condition has existing scores that will be overwritten.')
@@ -429,7 +426,7 @@ class DEdansy(dansy):
         else:
             a = set()
 
-        temp_scores, temp_raw_dists, temp_fpr_dists = algorithm.calculate_scores(self, conds, fpr_trials,min_pval, num_ss_trials,processes,seed, verbose)
+        temp_scores, temp_raw_dists, temp_fpr_dists = algorithm.calculate_scores(self, comps, fpr_trials,min_pval, num_ss_trials,processes,seed, verbose)
 
         if hasattr(self, 'scores'):
             cur_scores = self.scores
@@ -537,10 +534,9 @@ def ngram_enrichment(dansy, prots, collapse = True, **kwargs):
             List containing the proteins of interest for enrichment analysis.
         - collapse: bool
             Whether the n-grams should be collapsed to their most informative and non-redundant n-grams.
-        - kwargs: key, value mappings (Not recommended)
-            Additional keyword arguments:
-                - ngrams: list
-                    List of n-grams that are to be analyzed specifically.
+        - kwargs: optional keyword arguments (Not recommended to use)
+            - ngrams: list
+                List of n-grams that are to be analyzed specifically.
     '''
 
     p_vals = ngram_subset_enrichment(prots, dansy.protsOI, dansy, collapse=collapse, kwargs=kwargs)
