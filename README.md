@@ -103,43 +103,66 @@ If your dataset already has a column containing UniProt IDs, then you can build 
 
 ### Step 2: Defining DEGs
 
-Currently, deDANSy assumes you will use a log2 fold change and a p-value cutoff to define differentially expressed genes (DEGs) or proteins. This can then be achieved with set fold change and a p-value cutoffs by:
+Currently, deDANSy assumes you will use a log2 fold change and a p-value cutoff to define differentially expressed genes (DEGs) or proteins. As part of this, you first create a metadata dataframe within the deDANSy object to associate different comparisons with their data columns and cutoffs. To create this metadata, use the create_contrast_metadata method as shown below:
 
-    my_dedansy.calc_DEG_ngrams(data_cols = ['fold_change_column','p-value_column'],
-                               alpha = pval_cutoff,
-                               fc_thres = fold_change_cutoff)
+    my_dedansy.create_contrast_metadata(comparisons = list_of_comparisons,
+                                        fc_cols = fold_change_data_columns,
+                                        pval_cols = pvalue_data_columns,
+                                        fcs = fold_change_cutoff,
+                                        alphas = pvalue_threshold)
 
-By default, the calc_DEG_ngrams function sets alpha to 0.05 and fc_thres to 1 so if you want to use those cutoffs you do not have to provide cutoffs. If you do not want to use either cutoff, you can set either of the cutoffs to 0 (Note: this assumes you have both positive and negative values for your fold-change values.)
+Where the comparisons, data columns, and cutoffs are lists containing the information for each comparison of interest. 
 
-**Not Recommended alternative method:** If you have predefined DEGs, we have a second method available to set DEGs, but only recommend this for users who need more control over DEG definition that uses other data values. This method does not create attributes in the deDANSy object to trace back how DEGs were calculated.
+We have also made it possible to use the same cutoffs across comparisons by allowing a single value for the fcs and alphas parameters, which will apply those cutoffs across all comparisons. Further, if the data columns include the comparison names separated a common string name stem separated by a delimiter (e.g. fold_change_comparison1, fold_change_comparison2), then a single string can be input to fc_cols but the delim parameter has to be defined. These cases can be done as shown below:
+
+    # Our fold-change data and p-value data looks like fold_change_comparison1, pval_comparison1, fold_change_comparison2, pval_comparison2 and we want to apply a fold-change cutoff of 1 and a p-value cutoff of 0.05
+    
+    my_dedansy.create_contrast_metadata(comparisons = ['comparison1','comparison2'],
+                                        fc_cols = 'fold_change',
+                                        pval_cols = 'pval',
+                                        fcs = 1,
+                                        alphas = 0.05,
+                                        delim = '_')
+
+To set these as the DEGs of interest for analysis, we call the command calc_DEG_ngrams:
+
+    my_dedansy.calc_DEG_ngrams(comp = 'comparison1')
+
+This will be the comparison for the rest of the analysis until it is changed. A summary of the DEGs and n-grams for the comparison of interest can be shown with `my_dedansy.deg_summary()`.
+
+**Not Recommended alternative method:** If you have predefined DEGs, we have a second method available to set DEGs, but only recommend this for users who need more control over DEG definition that uses other data values. We do not recommend this method as it does not create attributes in the deDANSy object to trace back how DEGs were calculated.
 
     my_dedansy.set_DEG_ngrams(up_DEGs = your_up_DEGs,
                               down_DEGs = your_down_DEGs)
 
-### Step 3: Generating deDANSy Separation and Enriched n-gram Neighborhood Distribution Statistics
+### Step 3: Generating deDANSy Separation and Distinction (enriched n-gram neighborhood) Scores
 
-Currently, this is done by running the deDANSy_calculate.py file in the command line. We are in the process of making this a built-in method of the deDANSy class. An example call of performing this is:
+To calculate the two deDANSy scores, run the built-in calculate_scores method, which can calculate the scores for multiple comparisons:
 
-    conda activate dansy
-    python deDANSy_calculate.py path_to_datasetOI/datasetOI.csv output_path comparison_1 comparison_2 -mp 8 -sN 100 -fN 50
-    conda deactivate
+    my_dedansy.calculate_scores(comps = ['comparison1','comparison2'],
+                                num_ss_trials = 100,
+                                fpr_trials = 50,
+                                processes = 4)
+    
+This will run the algorithm for the indicated comparisons with the following key parameters:
+    - 100 iterations where DEGs are subsampled and compared to random networks to generate raw scores
+    - 50 trial runs with randomly chosen genes to calculate the false positive rate
+    - Multiprocessing with 4 threads to decrease processing time.
 
-This would perform the steps 1a and 2 from above with multiprocessing enabled and using 8 processes, 100 subsampled/random networks, and 50 false positive rate trials. This would calculate scores for both comparison 1 and comparison 2 using default values for fold change and p-value cutoffs. **Note:** This process can take 30+ minutes or multiple hours depending on the number of FPR trials, networks used, and if multiprocessing is enabled.
+These parameters can be adjusted as desired. Additionally, minor customizations like setting a minimum p-value threshold during pruning can be provided. If a prior analysis was performed and needs to be replaced and/or updated, the overwrite parameter provides a method to designate if the analysis should be replaced or if it should be appended to the scores attribute.
+
+To view the results from the algorithm call `my_dedansy.scores`, which is a pandas DataFrame and can be output to desired outputs using standard pandas methods.
+ 
+**Note:** This process can take 30+ minutes or multiple hours depending on the number of FPR trials, networks used, and if multiprocessing is enabled.
 
 ### Step 4: Plotting and Generating Final deDANSy Scores
 
-Once the statistics are generated from Step 3, we can then plot the data by running the follow:
+Once the scores are generated from Step 3, we can then plot the data:
 
-    import pandas as pd
-    from dansy.enrichment_plotting_helpers import *
+    my_dedansy.plot_scores()
 
-    # Importing the results
-    raw_results = pd.read_csv(deDANSy_results_file)
-    res = format_results(raw_results)
-    plot_functional_score(res)
-
-This will produce a bubble plot, where the size of each bubble is the score (related to Cohen's d effect size) and color indicates whether it was significant (including FPR correction). Like Step 3, we are actively creating this as built-in method of the deDANSy class.
+This will produce a bubble plot, where the size of each bubble is the score (related to Cohen's d effect size) and color indicates whether it was significant (including FPR correction). If all results are significant (FPR $\leq$ 0.05), the FPR legend can be omitted with the show_FPR parameter. Further, the order of results can be specified by passing a mapping dictionary (keys being comparisons and values the order) to the order parameter.
 
 ## Example applications
 
-For applications of DANSy or deDANSy, please see our [DANSy_Applications repo](https://github.com/NaegleLab/DANSy_Applications). There, you will find Jupyter notebooks on applications on the whole proteome, the convergence of grammar during the evolution of reversible post-translational modification systems, cancer fusions genes, and differential gene expression from RNA-sequencing results (for deDANSy specifically).
+For broad applications of DANSy or deDANSy, please see our [DANSy_Applications repo](https://github.com/NaegleLab/DANSy_Applications). There, you will find Jupyter notebooks on applications on the whole proteome, the convergence of grammar during the evolution of reversible post-translational modification systems, cancer fusions genes, and differential gene expression from RNA-sequencing results (for deDANSy specifically).
