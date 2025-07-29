@@ -1,18 +1,16 @@
-import pandas as pd
-import networkx as nx
 import warnings
 import random
-import numpy as np
 import itertools
+import pandas as pd
+import networkx as nx
+import numpy as np
 import matplotlib.pyplot as plt
-from tqdm import tqdm
 import scipy.stats as stats
-from dansy.dansy import dansy
-
 import dansy.ngramUtilities as ngramUtilities
 import dansy.generateCompleteProteome as generateCompleteProteome
 import dansy.dedansy_algorithm as algorithm
-from dansy.network_separation_helpers import *
+from dansy.dansy import dansy
+from dansy.network_separation_helpers import network_separation,build_network_reference_dict
 from dansy.enrichment_plotting_helpers import plot_functional_scores
 
 

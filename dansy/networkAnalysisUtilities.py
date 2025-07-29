@@ -1,8 +1,8 @@
-import networkx as nx
-import numpy as np
 import itertools
 import random
-import networkAnalysisUtilities
+import networkx as nx
+import numpy as np
+
 
 def bridging_centrality(G):
     '''
@@ -387,7 +387,7 @@ def generate_community_reference(G, seed_list):
     # Ensuring each iteration has it's own entry
     cnt = 0
     for seed in seed_list:
-        _, rand_comms = networkAnalysisUtilities.contract_network_via_louvian_communities(G, seed = seed)
+        _, rand_comms = contract_network_via_louvian_communities(G, seed = seed)
         comm_checks[cnt] = {'Seed':seed,
                             'Communities': rand_comms,
                             'Number Communities':len(rand_comms)}

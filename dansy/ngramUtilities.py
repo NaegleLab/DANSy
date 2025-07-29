@@ -1,9 +1,7 @@
-
-from collections import Counter
 import pandas as pd
 import numpy as np
 import networkx as nx
-
+from collections import Counter
 
 def reduce_ngram_dict(ngram_dict, num_arch =1):
     """

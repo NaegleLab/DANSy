@@ -1,9 +1,9 @@
-from os import listdir
-import os.path as path
-import dansy.ngramUtilities as ngramUtilities
+import json
 import pandas as pd
 import numpy as np
-import json
+import os.path as path
+import dansy.ngramUtilities as ngramUtilities
+from os import listdir
 
 def generate_complete_adjacency(generate_files = False, readable_flag = False, filenames = None, ref_version = None, ref_dir = None):
     '''

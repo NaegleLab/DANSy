@@ -5,9 +5,6 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import scipy.stats as stats
 import matplotlib.lines as lines
-
-from pybiomart import Dataset
-from tqdm import tqdm
 from dansy.enrichment_helpers import *
 
 

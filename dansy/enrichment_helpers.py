@@ -1,7 +1,7 @@
+import random
 import numpy as np
 import scipy.stats as stats
 import multiprocessing as mp
-import random
 import dansy.network_separation_helpers as ns_helpers
 
 # Defining a function to calculate cohen's D since I do not want to make the assumption that there is equal variance between the random and subsampled distributions. 

@@ -1,9 +1,7 @@
 import warnings
 import random
-
 import networkx as nx
 import pandas as pd
-
 import dansy.generateCompleteProteome as generateCompleteProteome
 import dansy.ngramUtilities as ngramUtilities
 

@@ -1,6 +1,6 @@
+import warnings
 import networkx as nx
 import numpy as np
-import warnings
 from dansy.dansy import dansy
 
 def mean_minimum_dist(G_nodes, ref_net_params_dict):
