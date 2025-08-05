@@ -407,7 +407,7 @@ def plot_functional_scores(res, show_FPR_handle=True, aspect = 0.9, order = None
     
     _, axs = plt.subplots(1,2)
     plt.subplot(1,2,1)
-    sns.scatterplot(data_plot, x='Separation_Category', y = 'Order',
+    sns.scatterplot(data_plot, x='Separation_Category_Order', y = 'Order',
                     size='Separation_Score',
                     hue='Separation_Significance',
                     sizes = (1,50), size_norm = (0,5),
@@ -416,7 +416,7 @@ def plot_functional_scores(res, show_FPR_handle=True, aspect = 0.9, order = None
                     linewidth = 0.5,edgecolor='k')
 
     # Adding in labels
-    plt.title('Separation Score',fontdict={'size':6})
+    plt.title('Separation Score')
     plt.xlabel(None)
     plt.ylabel(None)
     
@@ -445,7 +445,7 @@ def plot_functional_scores(res, show_FPR_handle=True, aspect = 0.9, order = None
     # Now the Distinction Score
     data_plot,comp_order = create_score_plot_data(res, 'Distinction', order)
     plt.subplot(1,2,2)
-    sns.scatterplot(data_plot,x = 'Distinction_Category',
+    sns.scatterplot(data_plot,x = 'Distinction_Category_Order',
                     y = 'Order', size='Distinction_Score',hue='Distinction_Significance',sizes = (1,50),size_norm=(0,5),
                     palette=['seagreen', 'silver'], hue_order=[True, False],
                     linewidth = 0.5,edgecolor='k')
@@ -547,12 +547,16 @@ def create_score_plot_data(data, metric, order = None):
 
     if metric == 'Separation':
         max_vals = np.ceil(plot_data['Separation_Score'].max())
+        cat_order = {'More':0,'Less':1}
+        plot_data['Separation_Category_Order'] = plot_data['Separation_Category'].map(cat_order)
         for i,v in enumerate(np.linspace(0,max_vals,5)):
             plot_data.loc[i+len(plot_data)] = None
             plot_data.loc[i+len(plot_data), 'Separation_Score'] = v
     else:
         # The IQR scores tend to be between 0-2 so getting the closest integer and then taking 5 steps to force the size
-        max_vals = np.ceil(plot_data['Distinction_Score'].max()) 
+        max_vals = np.ceil(plot_data['Distinction_Score'].max())
+        cat_order = {'Stably Distinct':0,'Unstable/Overlapping':1}
+        plot_data['Distinction_Category_Order'] = plot_data['Distinction_Category'].map(cat_order)
         for i,v in enumerate(np.linspace(0,max_vals,5)):
             plot_data.loc[i+len(plot_data)] = None
             plot_data.loc[i+len(plot_data), 'Distinction_Score'] = v
