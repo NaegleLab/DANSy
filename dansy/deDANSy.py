@@ -1,6 +1,7 @@
 import warnings
 import random
 import itertools
+import time
 import pandas as pd
 import networkx as nx
 import numpy as np
@@ -11,7 +12,7 @@ import dansy.generateCompleteProteome as generateCompleteProteome
 import dansy.dedansy_algorithm as algorithm
 from dansy.dansy import dansy
 from dansy.network_separation_helpers import network_separation,build_network_reference_dict
-from dansy.enrichment_plotting_helpers import plot_functional_scores
+from dansy.enrichment_plotting_helpers import plot_functional_scores, gather_enrichment_results, calc_ngram_fpr_vals, plot_enriched_ngrams
 
 
 class DEdansy(dansy):
@@ -466,6 +467,99 @@ class DEdansy(dansy):
         ax = plot_functional_scores(x, show_FPR,aspect=aspect, order=order)
         
         return ax
+    
+    def calculate_ngram_enrichment(self,comparison,alpha = 0.05, fpr_trials = 100, seed = None):
+        '''
+        Calculates the n-gram enrichment for the comparison of interest to find the most significant n-grams.
+
+        Parameters:
+        -----------
+            - comparison: str
+                The comparison of interest that contains the up- and down-regulated genes/proteins
+            - alpha: float (Optional, Default: 0.05)
+                Threshold of values to return
+            - fpr_trials: int (Optional, Default: 100)
+                The number of trials used to calculate the false positive rate
+            - seed: int (Optional)
+                Seed for the random state
+        
+        Return:
+        -------
+            Creates the new attribute
+            - ngram_results: dict of pandas DataFrame
+                All the n-gram enrichment values that pass the significance threshold for the comparison of interest
+        '''
+        # Setting the random state
+        if seed is None:
+            random.seed(int(time.time()))
+        else:
+            random.seed(seed)
+
+        # First determine and store the enriched n-grams for the comparison of interest
+        self.calc_DEG_ngrams(comparison)        
+        enriched_ngrams = {}
+        for i in ['Up', 'Down']:
+            enriched_ngrams[i] = self.ngram_DEG_hypergeom(i)
+        
+        # Get the original DEGs for defining number of proteins to randomly choose
+        true_up = self.up_DEGs
+        true_dn = self.down_DEGs
+        total_degs = len(set(true_up).union(true_dn))
+        frac_up = len(true_up)/total_degs
+
+        # Getting the random protein generator
+        rand_genes = self.retrieve_random_ids(num=total_degs, iters=fpr_trials)
+        rand_ngram_pvals = {'Up':{}, 'Down':{}}
+        for i in range(fpr_trials):
+            cur_DEGs = next(rand_genes)
+            orig_up = random.sample(cur_DEGs, k=round(len(cur_DEGs)*frac_up))
+            orig_dn = list(set(cur_DEGs).difference(orig_up))
+            self.set_DEG_ngrams(up_DEGs=orig_up, down_DEGs=orig_dn, verbose=False)
+            rand_up_hyper = self.ngram_DEG_hypergeom('Up')
+            rand_dn_hyper = self.ngram_DEG_hypergeom('Down')
+            for j,c_dir in zip([rand_up_hyper,rand_dn_hyper],['Up','Down']):
+                for node in j:
+                    if node not in rand_ngram_pvals[c_dir]:
+                        rand_ngram_pvals[c_dir][node] = []
+                    rand_ngram_pvals[c_dir][node].append(j[node])
+        
+        # Now getting the FPR values and putting the results in the correct order
+        fpr_dict = calc_ngram_fpr_vals(enriched_ngrams, rand_ngram_pvals)
+        res = gather_enrichment_results({'Up':enriched_ngrams['Up'],'Down':enriched_ngrams['Down']}, fpr_dict, alpha=alpha)
+    
+        if hasattr(self,'ngram_results'):
+            self.ngram_results[comparison] = res
+        else:
+            self.ngram_results = {}
+            self.ngram_results[comparison] = res
+
+    def plot_ngram_enrichment(self, comparison, p = 0.05, q=0.05, show_FPR = True, **kwargs):
+        '''
+        Creates a bubble plot of the enriched n-grams for up and down-regulated n-grams for the comparison of interest. The resulting plot can be paritally customized based on additional keyword parameters. This function is a wrapper for the plot_enriched_ngrams function from the enrichment_plotting_helpers module, but specific to the deDANSy object instance.
+
+        Parameters:
+        -----------
+            - comparison: str
+                The comparison to plot the enriched n-grams of
+            - q: float (Optional)
+                The quantile cutoff of values to plot. Default (0.05)
+            - p: float (Optional)
+                The p-value threshold to limit n-grams to plot. Default is 0.05 but if combined with the quantile (q) can be lower.
+            show_FPR: bool
+                Flag whether to show the FPR legend portion.
+            kwargs: optional keywords
+                - 'palette','edgecolor', 'linewidth', 'sizes' that adjust the seaborn scatterplot aesthetics.
+                - 'loc', 'bbox_to_anchor', 'handletextpad' to adjust matplotlib legend information.
+                - 'ax' to specify a matplotlib Axes to plot onto
+        
+        Returns:
+        --------
+            seaborn/matplotlib plot
+        '''
+
+        resOI = self.ngram_results[comparison]
+        plot_enriched_ngrams(resOI, dansyOI=self, p = p, q=q, show_FPR=show_FPR, **kwargs)
+
 
 ## Helper functions for converting the IDs around
 def convert_2_uniprotIDs(df, id_conv, conv_col = 'Gene stable ID', data_id_cols = 'gene_id', dbl_check = False):
