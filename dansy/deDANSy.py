@@ -352,6 +352,7 @@ class DEdansy(dansy):
         if (not col_lists) and (not col_strs):
             raise ValueError('The data columns have to be either lists or strings not a mixture of the two.')
 
+        # Now creating the DataFrame to populate with values
         comp_meta = pd.DataFrame(columns=['fc_col', 'fc_thres','pval_col','alpha'], index=comparisons)
         
         for i,c in enumerate(comparisons):
@@ -381,8 +382,12 @@ class DEdansy(dansy):
                 a = alphas
             comp_meta.loc[c,'fc_thres'] = f
             comp_meta.loc[c,'alpha'] = a
-            
-        self.comp_metadata = comp_meta
+
+        if hasattr(self, 'comp_metadata'):
+            temp = pd.concat([self.comp_metadata, comp_meta], axis = 0)
+            self.comp_metadata = temp
+        else:
+            self.comp_metadata = comp_meta
 
     def calculate_scores(self, comps, fpr_trials=50, min_pval = -10, num_ss_trials = 100, processes = 1, seed=None, verbose=True, overwrite=False):
         '''This calculates the separation and distinct functional neighborhood scores for a deDANSy instance. It creates new attributes for the deDANSy instance containing all the information of interest. If scores for a condition have been generated, this will raise a warning and overwrite existing scores.
@@ -468,7 +473,7 @@ class DEdansy(dansy):
         
         return ax
     
-    def calculate_ngram_enrichment(self,comparison,alpha = 0.05, fpr_trials = 100, seed = None):
+    def calculate_ngram_enrichment(self,comparison, fpr_trials = 100, seed = None):
         '''
         Calculates the n-gram enrichment for the comparison of interest to find the most significant n-grams.
 
@@ -525,7 +530,7 @@ class DEdansy(dansy):
         
         # Now getting the FPR values and putting the results in the correct order
         fpr_dict = calc_ngram_fpr_vals(enriched_ngrams, rand_ngram_pvals)
-        res = gather_enrichment_results({'Up':enriched_ngrams['Up'],'Down':enriched_ngrams['Down']}, fpr_dict, alpha=alpha)
+        res = gather_enrichment_results({'Up':enriched_ngrams['Up'],'Down':enriched_ngrams['Down']}, fpr_dict)
     
         if hasattr(self,'ngram_results'):
             self.ngram_results[comparison] = res
@@ -559,7 +564,33 @@ class DEdansy(dansy):
 
         resOI = self.ngram_results[comparison]
         plot_enriched_ngrams(resOI, dansyOI=self, p = p, q=q, show_FPR=show_FPR, **kwargs)
+        plt.xlim(-0.5,1.5)
+    
+    def get_ngram_results(self,comparison):
+        '''
+        Returns the n-gram enrichment results of the comparison of interest.
 
+        Parameters:
+        -----------
+            - comparison: str
+                The comparison of interest
+        
+        Returns:
+        --------
+            - res: pandas DataFrame
+                The n-gram enrichment dataframe
+        '''
+
+        temp = self.ngram_results[comparison]
+        
+        # Convert the n-gram IDs to legible names
+        temp['ngram_legible'] = temp['ngram'].apply(lambda x: self.return_legible_ngram(x))
+
+        # Now putting the columns into a more logical order
+        col_order = ['variable', 'ngram_legible', 'ngram', 'p', '-log10(p)', 'FPR', 'FPR <= 0.05']
+        temp = temp[col_order]
+
+        return temp
 
 ## Helper functions for converting the IDs around
 def convert_2_uniprotIDs(df, id_conv, conv_col = 'Gene stable ID', data_id_cols = 'gene_id', dbl_check = False):

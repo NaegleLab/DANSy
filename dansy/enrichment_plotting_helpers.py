@@ -319,7 +319,7 @@ def collapse_to_max_info(ngram_list, res_df):
     
     return ngrams_2_collapse
 
-def gather_enrichment_results(hyper_values, fpr_values, alpha = 0.05):
+def gather_enrichment_results(hyper_values, fpr_values):
     '''
     This gathers both the statistical results from the enrichment analysis and the FPR calculations to return a complete results dataframe.
 
@@ -344,7 +344,7 @@ def gather_enrichment_results(hyper_values, fpr_values, alpha = 0.05):
     res = hyper_df.merge(fpr_df)
     res.dropna(subset=['p'],inplace=True)
     res['-log10(p)'] = -np.log10(res['p'])
-    res['FPR <= 0.05'] = res['FPR'] <= alpha
+    res['FPR <= 0.05'] = res['FPR'] <= 0.05
     return res
 
 def calc_ngram_fpr_vals(hyper_vals, rand_ngram_pvals):
