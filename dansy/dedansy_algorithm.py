@@ -12,7 +12,29 @@ from dansy.enrichment_helpers import calculate_separation_stability, cohen_d, re
 
 
 def calc_raw_score(dedansy,cond, seed, min_pval = -10, num_ss_trials = 100, processes = 1):
+    '''
+    Calculates the raw scores of the condition of interest. The raw scores are the actual network separation values, the interquartile range, and Cohen's d effect size of both of those values.
+
+    Parameters:
+    -----------
+        - dedansy: deDANSy object
+            The dedansy object of interest that contains all the data
+        - cond: str
+            The condition of interest
+        - seed: int
+            Seed for the random state
+        - min_pval: float (Optional)
+            The negative log10 value that is the smallest p-value of interest for the penalty sweep.
+        - num_ss_trials: int (Optional)
+            The number of subsampling and random networks to use for calculating the scores
+        - process: int (Optional)
+            Number of processes if multiprocessing is desired.
     
+    Returns:
+    --------
+        - full_res: tuple
+            A tuple that contains which condition, the network separation, IQR of the network separation, Cohen's d effect size, and the raw values.
+    '''
     # Making the sweeping p-values 
     min_pval = abs(min_pval)
     p_vals_steps = min_pval*2 + 1
@@ -53,6 +75,9 @@ def calc_raw_score(dedansy,cond, seed, min_pval = -10, num_ss_trials = 100, proc
     return full_res
 
 def print_timed_message(m):
+    '''
+    Prints a message with the current time and date.
+    '''
     y = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     print(f"{y}:.....{m}")
 
