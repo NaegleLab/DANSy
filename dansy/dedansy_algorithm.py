@@ -27,7 +27,7 @@ def calc_raw_score(dedansy,cond, seed, min_pval = -10, num_ss_trials = 100, proc
                                                     pval_sweep=p_vals_sweep,
                                                     processes=processes,
                                                     verbose=False,
-                                                    progress_bar=False)
+                                                    )
 
     # Unpacking the results from the hypergeometric sweep + subsampling
     rand_ns_i = [x for x in hyper_sweep_res[0]]
