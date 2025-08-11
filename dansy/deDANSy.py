@@ -297,24 +297,26 @@ class DEdansy(dansy):
         '''
         This create the metadata for the deDANSy object that contains information for each comparison of interest and the cutoffs to define differentially expressed genes/proteins (DEGs). Must provide the same number of columns for both the fold change and p-value columns
 
-        Parameters:
+        Parameters
         -----------
-            - comparisons: list
-                All comparisons that will be used that match what is provided in the deDANSy dataset
-            - fc_cols: str or list
-                Either a stem or list of columns used for the foldchanges to define DEGs (Use the delim parameter and a stem if reoccurring patterns are used where the comparison is at the end.)
-            - pval_cols: str or list
-                Either a stem or list of columns used for the p-values to define DEGs. (Use the delim parameter and a stem if reoccurring patterns are used where the comparison is at the end.)
-            - fcs: float or list
-                The fold-change cutoff. Can either be a single value or a list of values of the same size as comparisons
-            - alphas: float or list
-                The p-value cutoff. Can either be a single value or a list of values of the same size as comparisons
-            - delim: str (Optional)
-                Delimiter used in column names separating the stem of the column from the comparison. If none then will take the 
-        Returns:
+        comparisons : list
+            All comparisons that will be used that match what is provided in the deDANSy dataset
+        fc_cols : str or list
+            Either a stem or list of columns used for the foldchanges to define DEGs (Use the delim parameter and a stem if reoccurring patterns are used where the comparison is at the end.)
+        pval_cols : str or list
+            Either a stem or list of columns used for the p-values to define DEGs. (Use the delim parameter and a stem if reoccurring patterns are used where the comparison is at the end.)
+        fcs : float or list
+            The fold-change cutoff. Can either be a single value or a list of values of the same size as comparisons
+        alphas : float or list
+            The p-value cutoff. Can either be a single value or a list of values of the same size as comparisons
+        delim : str (Optional)
+            Delimiter used in column names separating the stem of the column from the comparison. If none then will take the 
+    
+        Returns
         --------
-            - comp_meta: pandas DataFrame
-                - DataFrame where each row is a single comparison
+        comp_meta : pandas DataFrame
+            DataFrame where each row is a single comparison
+        
         '''
 
         # Checking parameter inputs
@@ -390,33 +392,34 @@ class DEdansy(dansy):
             self.comp_metadata = comp_meta
 
     def calculate_scores(self, comps, fpr_trials=50, min_pval = -10, num_ss_trials = 100, processes = 1, seed=None, verbose=True, overwrite=False):
-        '''This calculates the separation and distinct functional neighborhood scores for a deDANSy instance. It creates new attributes for the deDANSy instance containing all the information of interest. If scores for a condition have been generated, this will raise a warning and overwrite existing scores.
+        '''
+        This calculates the separation and distinct functional neighborhood scores for a deDANSy instance. It creates new attributes for the deDANSy instance containing all the information of interest. If scores for a condition have been generated, this will raise a warning and overwrite existing scores.
         
-        Parameters:
+        Parameters
         -----------
-            - dedansy: deDANSy object
-                The base deDANSy object containing all n-grams and expression data
-            - comps: list or str
-                The conditions that will be compared
-            - fpr_trials: int (Optional)
-                Number of FPR trials to perform.
-            - min_pval: int (Optional)
-                The log10 transform of the minimum p-value to use for the p-value pruning sweep step.
-            - num_ss_trials: int (Optional)
-                The number of subsampled (and random) networks used to build distributions for comparing the network separation and IQR
-            - processes: int (Optional)
-                Number of processes to use if multiprocessing is desired. (Recommended having 4-8 when feasible)
-            - seed: int
-                Seed for random numbers. If not provided will use system time
+        dedansy : deDANSy object
+            The base deDANSy object containing all n-grams and expression data
+        comps : list or str
+            The conditions that will be compared
+        fpr_trials : int (Optional)
+            Number of FPR trials to perform.
+        min_pval : int (Optional)
+            The log10 transform of the minimum p-value to use for the p-value pruning sweep step.
+        num_ss_trials : int (Optional)
+            The number of subsampled (and random) networks used to build distributions for comparing the network separation and IQR
+        processes : int (Optional)
+            Number of processes to use if multiprocessing is desired. (Recommended having 4-8 when feasible)
+        seed : int
+            Seed for random numbers. If not provided will use system time
 
-        Returns:
+        Returns
         --------
         The following attributes are added or adjusted:
-            - scores: pandas DataFrame
-                All scores, p-values, and FPR values for each condition
-            - raw_dists: pandas DataFrame
-                For each condition the raw values that made up the distributions for each score
-            - fpr_dists: pandas DataFrame
+        scores : pandas DataFrame
+            All scores, p-values, and FPR values for each condition
+        raw_dists : pandas DataFrame
+            For each condition the raw values that made up the distributions for each score
+        fpr_dists : pandas DataFrame
                 For each condition the p-values from the random FPR trials for calculating the FPR'''
         
         # Check for existing scores for all conditions provided
@@ -424,9 +427,9 @@ class DEdansy(dansy):
             a = set(comps).intersection(self.scores.index)
             if len(a) >= 1:
                 if overwrite:
-                    raise warnings.warn('At least one condition has existing scores that will be overwritten.')
+                    warnings.warn('At least one condition has existing scores that will be overwritten.')
                 else:
-                    raise warnings.warn('At least one condition has existing scores that will be kept.')
+                    warnings.warn('At least one condition has existing scores that will be kept.')
         else:
             a = set()
 
@@ -454,17 +457,18 @@ class DEdansy(dansy):
 
         Parameters
         ----------
-            - show_FPR: bool (Optional)
-                Whether the FPR legend handles should be displayed.
-            - aspect: float (Optional)
-                The aspect ratio for each score plot.
-            - order: dict (Optional)
-                Key-value pairs for each comparison and what order they should be displayed on the axis.
+        show_FPR : bool (Optional)
+            Whether the FPR legend handles should be displayed.
+        aspect : float (Optional)
+            The aspect ratio for each score plot.
+        order : dict (Optional)
+            Key-value pairs for each comparison and what order they should be displayed on the axis.
         
-        Return:
-        -------
-            - ax: matplotlib Axes
-                The axes of the resulting plot 
+        Returns
+        --------
+        ax : matplotlib Axes
+            The axes of the resulting plot 
+
         '''
         x = self.scores.copy()
         x['Separation_Significance'] = x['Separation_FPR'] <= 0.05
