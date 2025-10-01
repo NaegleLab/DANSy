@@ -2,19 +2,13 @@
 
 This is our analysis that applies the linguistic technique n-gram analysis with network theory to protein domain architectures, to represent the proteome as an abstracts the functional connections between proteins to describe either proteome-wide (base DANSy) or phenotype-specific changes from differential expression results (deDANSy). 
 
-### DANSy Overview
-![Overview of the general workflow](Figures/N%20gram%20network%20workflow.png)
-
-### deDANSy Overview
-![Overview of the deDANSy workflow](Figures/deDANSy%20Overview.png)
-
 How to cite: Please cite our [bioRxiv paper](https://doi.org/10.1101/2024.12.04.626803), which contains further details and specific applications of the code provided here.
 
-Documentation: Coming soon
+Documentation: https://naeglelab.github.io/DANSy/
 
 ## Getting started
 
-Create a virtual environment containing all the dependencies for the analysis using the following code in a terminal.
+First clone the repo and then create a virtual environment containing all the dependencies for the analysis using the following code in a terminal.
 
     conda create env -f dansy.yml
 
@@ -31,138 +25,14 @@ If you wish to generate the most up to date reference file to use for analysis, 
     python scripts/whole_proteome_reference.py
     conda deactivate
 
-## The DANSy class
+### DANSy Overview
+![Overview of the general workflow](Figures/N%20gram%20network%20workflow.png)
 
-To run DANSy on a set of proteins of interest:
-    
-    import dansy
-
-    # Generate the reference proteome dataframe to save time.
-    ref_df, _ = dansy.import_proteome_files(reference_file_suffix = your_reference_file_suffix)
-    
-    # Generating the DANSy object
-    my_dansy = dansy.dansy(ref=ref_df, protsOI = my_proteins, n = 10)
-
-The DANSy object can then be used for downstream analysis and has several built-in methods to help. These include:
-
-    # To show the network
-    my_dansy.draw_network()
-
-    # To get a summary of the network and n-grams
-    my_dansy.summary()
-
-    # To get specific information on protein(s) of interest
-    my_dansy.retrieve_protein_info(prot = uniprot_ids_of_interest)
-
-    # To get information on the proteins containing a specific n-gram
-    my_dansy.retrieve_protein_info(ngram = ngram_of_interst)
-
-Further, any analysis that can be done on a networkx Graph can be performed on the DANSy object by calling the G attribute as shown below
-
-    import networkx as nx
-
-    nx.number_of_nodes(my_dansy.G)
-    nx.spring_layout(my_dansy.G)
-
-## The deDANSy class
-
-A deDANSy object is a subclass of a DANSy so requires many of the same inputs. However, you will have to provide a dataset that contains expression data to designate individual n-grams as either up- or down-regulated. We provide a quick start version of methods below, but recommend checking the Tutorial (Coming Soon, in the meantime visit [DANSy_Applications](https://github.com/NaegleLab/DANSy_Applications)) for more in-depth walkthrough of methods.
-
-### Step 1a. Generating a deDANSY: RNA-sequencing dataset containing only ENSEMBL/Entrez Gene IDs for each gene.
-Both the DANSy and deDANSy classes use UniProt IDs for their analysis, but for deDANSy we have built-in methods to convert ENSEMBL or Entrez gene ids to UniProt IDs. This method relies on a pybiomart Dataset class being provided that contains all the database IDs as needed. An example of generating the deDANSy object based for these datasets: 
-
-    from pybiomart import Dataset
-
-    # For ENSEMBL IDs
-    bm_dataset = Dataset(host = 'http://useast.ensembl.org', name='hsapiens_gene_ensembl',)
-    gene_ID_conv = bm_dataset.query(attributes=['ensembl_gene_id','external_gene_name','uniprotswissprot'])
-
-    # Assuming the ENSEMBL gene ids in your RNA-seq results are under a column labeled ensembl_gene_id
-
-    # Generating the deDANSy
-    my_dedansy = dansy.DEdansy(dataset=your_RNA_seq_results,
-                                   id_conv=gene_ID_conv,
-                                   conv_col = 'Gene stable ID',
-                                   data_ids = 'ensembl_gene_id',
-                                   uniprot_ref = ref_df)
-
-The deDANSy object will then convert the IDs and use those for building the n-gram networks and use them for analysis. To get the ID conversions use the id_conversion_dict attribute.
-
-    # To find out which UniProt IDs correspond to which inputted gene IDs
-    my_dedansy.id_conversion_dict
-
-### Step 1b. Generating a deDANSY: RNA-sequencing/proteomics dataset containing a column with UniProt IDs
-
-If your dataset already has a column containing UniProt IDs, then you can build the deDANSy object as follows:
-
-    # Generating the deDANSy
-    my_dedansy = dansy.DEdansy(dataset=your_dataset_OI,
-                                   data_ids = 'uniprot_id_column_name',
-                                   uniprot_ref = ref_df,
-                                   run_conversion = False)
-
-### Step 2: Defining DEGs
-
-Currently, deDANSy assumes you will use a log2 fold change and a p-value cutoff to define differentially expressed genes (DEGs) or proteins. As part of this, you first create a metadata dataframe within the deDANSy object to associate different comparisons with their data columns and cutoffs. To create this metadata, use the create_contrast_metadata method as shown below:
-
-    my_dedansy.create_contrast_metadata(comparisons = list_of_comparisons,
-                                        fc_cols = fold_change_data_columns,
-                                        pval_cols = pvalue_data_columns,
-                                        fcs = fold_change_cutoff,
-                                        alphas = pvalue_threshold)
-
-Where the comparisons, data columns, and cutoffs are lists containing the information for each comparison of interest. 
-
-We have also made it possible to use the same cutoffs across comparisons by allowing a single value for the fcs and alphas parameters, which will apply those cutoffs across all comparisons. Further, if the data columns include the comparison names separated a common string name stem separated by a delimiter (e.g. fold_change_comparison1, fold_change_comparison2), then a single string can be input to fc_cols but the delim parameter has to be defined. These cases can be done as shown below:
-
-    # Our fold-change data and p-value data looks like fold_change_comparison1, pval_comparison1, fold_change_comparison2, pval_comparison2 and we want to apply a fold-change cutoff of 1 and a p-value cutoff of 0.05
-    
-    my_dedansy.create_contrast_metadata(comparisons = ['comparison1','comparison2'],
-                                        fc_cols = 'fold_change',
-                                        pval_cols = 'pval',
-                                        fcs = 1,
-                                        alphas = 0.05,
-                                        delim = '_')
-
-To set these as the DEGs of interest for analysis, we call the command calc_DEG_ngrams:
-
-    my_dedansy.calc_DEG_ngrams(comp = 'comparison1')
-
-This will be the comparison for the rest of the analysis until it is changed. A summary of the DEGs and n-grams for the comparison of interest can be shown with `my_dedansy.deg_summary()`.
-
-**Not Recommended alternative method:** If you have predefined DEGs, we have a second method available to set DEGs, but only recommend this for users who need more control over DEG definition that uses other data values. We do not recommend this method as it does not create attributes in the deDANSy object to trace back how DEGs were calculated.
-
-    my_dedansy.set_DEG_ngrams(up_DEGs = your_up_DEGs,
-                              down_DEGs = your_down_DEGs)
-
-### Step 3: Generating deDANSy Separation and Distinction (enriched n-gram neighborhood) Scores
-
-To calculate the two deDANSy scores, run the built-in calculate_scores method, which can calculate the scores for multiple comparisons:
-
-    my_dedansy.calculate_scores(comps = ['comparison1','comparison2'],
-                                num_ss_trials = 100,
-                                fpr_trials = 50,
-                                processes = 4)
-    
-This will run the algorithm for the indicated comparisons with the following key parameters:
-    - 100 iterations where DEGs are subsampled and compared to random networks to generate raw scores
-    - 50 trial runs with randomly chosen genes to calculate the false positive rate
-    - Multiprocessing with 4 threads to decrease processing time.
-
-These parameters can be adjusted as desired. Additionally, minor customizations like setting a minimum p-value threshold during pruning can be provided. If a prior analysis was performed and needs to be replaced and/or updated, the overwrite parameter provides a method to designate if the analysis should be replaced or if it should be appended to the scores attribute.
-
-To view the results from the algorithm call `my_dedansy.scores`, which is a pandas DataFrame and can be output to desired outputs using standard pandas methods.
- 
-**Note:** This process can take 30+ minutes or multiple hours depending on the number of FPR trials, networks used, and if multiprocessing is enabled.
-
-### Step 4: Plotting and Generating Final deDANSy Scores
-
-Once the scores are generated from Step 3, we can then plot the data:
-
-    my_dedansy.plot_scores()
-
-This will produce a bubble plot, where the size of each bubble is the score (related to Cohen's d effect size) and color indicates whether it was significant (including FPR correction). If all results are significant (FPR $\leq$ 0.05), the FPR legend can be omitted with the show_FPR parameter. Further, the order of results can be specified by passing a mapping dictionary (keys being comparisons and values the order) to the order parameter.
+### deDANSy Overview
+![Overview of the deDANSy workflow](Figures/deDANSy%20Overview.png)
 
 ## Example applications
 
-For broad applications of DANSy or deDANSy, please see our [DANSy_Applications repo](https://github.com/NaegleLab/DANSy_Applications). There, you will find Jupyter notebooks on applications on the whole proteome, the convergence of grammar during the evolution of reversible post-translational modification systems, cancer fusions genes, and differential gene expression from RNA-sequencing results (for deDANSy specifically).
+For examples on how to get started please visit the [Examples](https://naeglelab.github.io/DANSy/Examples/Examples.html) in our documentation.
+
+For specific applications of DANSy or deDANSy, please see our [DANSy_Applications repo](https://github.com/NaegleLab/DANSy_Applications). There, you will find Jupyter notebooks on applications on the whole proteome, the convergence of grammar during the evolution of reversible post-translational modification systems, cancer fusions genes, and differential gene expression from RNA-sequencing results (for deDANSy specifically).
