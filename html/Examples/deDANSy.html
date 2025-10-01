@@ -1,0 +1,775 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Performing deDANSy on an RNA-sequencing dataset (Shimpi &amp; Tan et al. 2021) &mdash; DANSy 1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=29a6c3e3"></script>
+      <script src="../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Dependencies" href="../Dependencies.html" />
+    <link rel="prev" title="Base DANSy Analysis" href="base_dansy.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            DANSy
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../Overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Examples.html#base-dansy-analysis">Base DANSy Analysis</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="Examples.html#differential-expression-dansy-dedansy-analysis">Differential Expression DANSy (deDANSy) Analysis</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Performing deDANSy on an RNA-sequencing dataset (Shimpi &amp; Tan et al. 2021)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#Running-additional-comparisons-after-scores-have-been-generated">Running additional comparisons after scores have been generated</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#Determining-the-enriched-n-grams-of-individual-conditions.">Determining the enriched n-grams of individual conditions.</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Performing-deDANSy-analysis-with-(phospho-)proteomic-data">Performing deDANSy analysis with (phospho-)proteomic data</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../Dependencies.html">Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Installation.html">Installation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../dansy.html">DANSy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dansy.html#dansy-supporting-functions">DANSy Supporting Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dedansy.html">deDANSy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dedansy.html#dedansy-supporting-functions">deDANSy Supporting Functions</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">DANSy</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="Examples.html">Examples</a></li>
+      <li class="breadcrumb-item active">Performing deDANSy on an RNA-sequencing dataset (Shimpi &amp; Tan et al. 2021)</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/Examples/deDANSy.ipynb.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="Performing-deDANSy-on-an-RNA-sequencing-dataset-(Shimpi-&amp;-Tan-et-al.-2021)">
+<h1>Performing deDANSy on an RNA-sequencing dataset (Shimpi &amp; Tan et al. 2021)<a class="headerlink" href="#Performing-deDANSy-on-an-RNA-sequencing-dataset-(Shimpi-&-Tan-et-al.-2021)" title="Link to this heading"></a></h1>
+<p>Note: This come directly from the supplementary file provided with the publication. This is based on a RNA-sequencing dataset which requires converting between ENSEMBL gene IDs to UniProt IDs.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">networkx</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nx</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pybiomart</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dataset</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">dansy</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># First need to import and create an ID conversion dataframe</span>
+<span class="n">bm_dataset</span> <span class="o">=</span> <span class="n">Dataset</span><span class="p">(</span><span class="n">host</span> <span class="o">=</span> <span class="s1">&#39;http://useast.ensembl.org&#39;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;hsapiens_gene_ensembl&#39;</span><span class="p">,)</span>
+<span class="n">gene_ID_conv</span> <span class="o">=</span> <span class="n">bm_dataset</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">attributes</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;ensembl_gene_id&#39;</span><span class="p">,</span><span class="s1">&#39;external_gene_name&#39;</span><span class="p">,</span><span class="s1">&#39;uniprotswissprot&#39;</span><span class="p">])</span>
+
+<span class="c1"># Importing the proteome reference file</span>
+<span class="n">ref</span><span class="p">,</span><span class="n">_</span> <span class="o">=</span> <span class="n">dansy</span><span class="o">.</span><span class="n">import_proteome_files</span><span class="p">(</span><span class="n">ref_file_dir</span><span class="o">=</span><span class="s1">&#39;../&#39;</span><span class="p">,</span> <span class="n">reference_file_suffix</span><span class="o">=</span><span class="s1">&#39;Jan7_2025.csv&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Now importing the data of interest</span>
+<span class="n">input_dir</span> <span class="o">=</span> <span class="s1">&#39;./&#39;</span>
+<span class="n">filename</span> <span class="o">=</span> <span class="s1">&#39;Shimpi_Tan_RNA_seq_Results.csv&#39;</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">input_dir</span><span class="o">+</span><span class="n">filename</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Now building the deDANSy object</span>
+<span class="n">my_dedansy</span> <span class="o">=</span> <span class="n">dansy</span><span class="o">.</span><span class="n">DEdansy</span><span class="p">(</span><span class="n">uniprot_ref</span> <span class="o">=</span> <span class="n">ref</span><span class="p">,</span>
+                           <span class="n">dataset</span><span class="o">=</span><span class="n">data</span><span class="p">,</span>
+                            <span class="n">id_conv</span><span class="o">=</span><span class="n">gene_ID_conv</span><span class="p">,</span>
+                            <span class="n">conv_cols</span> <span class="o">=</span> <span class="s1">&#39;Gene stable ID&#39;</span><span class="p">,</span>
+                            <span class="n">data_ids</span> <span class="o">=</span> <span class="s1">&#39;ensembl_gene_id&#39;</span><span class="p">)</span>
+
+<span class="c1"># And now creating the metadata for designating differentially expressed genes</span>
+<span class="n">my_dedansy</span><span class="o">.</span><span class="n">create_contrast_metadata</span><span class="p">(</span><span class="n">comparisons</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;HAS2_v_Control&#39;</span><span class="p">,</span><span class="s1">&#39;HAS3_v_Control&#39;</span><span class="p">],</span>
+                                    <span class="n">fc_cols</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;log2FoldChange_HAS2&#39;</span><span class="p">,</span><span class="s1">&#39;log2FoldChange_HAS3&#39;</span><span class="p">],</span>
+                                    <span class="n">pval_cols</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;padj_HAS2&#39;</span><span class="p">,</span><span class="s1">&#39;padj_HAS3&#39;</span><span class="p">],</span>
+                                    <span class="n">fcs</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+                                    <span class="n">alphas</span> <span class="o">=</span> <span class="mf">0.05</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Starting to fetch n-grams.
+Finished getting all n-grams
+Starting to generate adjacency
+Finished building adjacency.
+Building the reference network information.
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># The deDANSy object now has several built-in functions that allow for quick visualization of the n-gram network colored by whether n-grams are associated with up- or down-regulated genes.</span>
+
+<span class="c1"># Setting up the DEG condition</span>
+<span class="n">my_dedansy</span><span class="o">.</span><span class="n">calc_DEG_ngrams</span><span class="p">(</span><span class="s1">&#39;HAS2_v_Control&#39;</span><span class="p">)</span>
+
+<span class="c1"># Now establishing the layout of the network and then visualizing</span>
+<span class="n">pos</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">spring_layout</span><span class="p">(</span><span class="n">my_dedansy</span><span class="o">.</span><span class="n">G</span><span class="p">,</span> <span class="n">k</span> <span class="o">=</span> <span class="mf">0.04</span><span class="p">,</span> <span class="n">seed</span> <span class="o">=</span> <span class="mi">123</span><span class="p">)</span>
+<span class="n">my_dedansy</span><span class="o">.</span><span class="n">plot_DEG_ns</span><span class="p">(</span><span class="n">pos</span><span class="o">=</span><span class="n">pos</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">gcf</span><span class="p">()</span><span class="o">.</span><span class="n">set_size_inches</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">gcf</span><span class="p">()</span><span class="o">.</span><span class="n">set_dpi</span><span class="p">(</span><span class="mi">300</span><span class="p">)</span>
+<br/></pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/Examples_deDANSy_5_0.png" src="../_images/Examples_deDANSy_5_0.png" />
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># If you only want to focus on the largest connected component:</span>
+<span class="n">my_dedansy</span><span class="o">.</span><span class="n">plot_DEG_ns</span><span class="p">(</span><span class="n">pos</span><span class="o">=</span><span class="n">pos</span><span class="p">,</span> <span class="n">large_cc_mode</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">gcf</span><span class="p">()</span><span class="o">.</span><span class="n">set_size_inches</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">gcf</span><span class="p">()</span><span class="o">.</span><span class="n">set_dpi</span><span class="p">(</span><span class="mi">300</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/Examples_deDANSy_6_0.png" src="../_images/Examples_deDANSy_6_0.png" />
+</div>
+</div>
+<p>While visualizing the network provides an initial assessment of how distinct n-grams from each condition are, to get a more quantitative value we can calculate the separation and distinction scores from the actual deDANSy algorithm.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># The algorithm can be run on multiple conditions in one round</span>
+<span class="n">my_dedansy</span><span class="o">.</span><span class="n">calculate_scores</span><span class="p">(</span><span class="n">comps</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;HAS2_v_Control&#39;</span><span class="p">,</span> <span class="s1">&#39;HAS3_v_Control&#39;</span><span class="p">],</span>
+                            <span class="n">num_ss_trials</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="c1"># Lower than recommended to save time (Default value of 100 is recommended)</span>
+                            <span class="n">fpr_trials</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="c1"># Lower than recommended to save time (Default value of 50 is recommended)</span>
+                            <span class="n">min_pval</span><span class="o">=-</span><span class="mi">10</span><span class="p">,</span>
+                            <span class="n">processes</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+                            <span class="n">seed</span><span class="o">=</span><span class="mi">123</span><span class="p">,</span> <span class="c1"># For reproducibility but can be omitted</span>
+                            <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+2025-08-05 15:35:37:.....Starting deDANSy scoring analysis with random seed: 123
+2025-08-05 15:35:51:.....Done with enrichment-based pruning for HAS2_v_Control
+2025-08-05 15:36:11:.....Done with enrichment-based pruning for HAS3_v_Control
+2025-08-05 15:36:11:.....Starting the false positive rate procedure.
+2025-08-05 15:37:08:.....Finished FPR procedure for HAS2_v_Control.
+2025-08-05 15:38:25:.....Finished FPR procedure for HAS3_v_Control.
+2025-08-05 15:38:25:.....Preparing the FPR results for export
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># We can then display each of the scores as a bubble plot</span>
+<span class="n">axs</span> <span class="o">=</span> <span class="n">my_dedansy</span><span class="o">.</span><span class="n">plot_scores</span><span class="p">(</span><span class="n">aspect</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span> <span class="c1"># The aspect parameter changes the aspect ratio which can make the graph a bit more aesthetically pleasing.</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">gcf</span><span class="p">()</span><span class="o">.</span><span class="n">set_dpi</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">gcf</span><span class="p">()</span><span class="o">.</span><span class="n">set_size_inches</span><span class="p">(</span><span class="mf">4.5</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/Examples_deDANSy_9_0.png" src="../_images/Examples_deDANSy_9_0.png" />
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># A more in-depth table of the results can be displayed or saved using the scores parameter, which includes both the Mann-Whitney U significance test and the FPR results.</span>
+<span class="n">my_dedansy</span><span class="o">.</span><span class="n">scores</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Comparison</th>
+      <th>Separation_Score</th>
+      <th>Separation_Category</th>
+      <th>Separation_p</th>
+      <th>Separation_FPR</th>
+      <th>Distinction_Score</th>
+      <th>Distinction_Category</th>
+      <th>Distinction_p</th>
+      <th>Distinction_FPR</th>
+    </tr>
+    <tr>
+      <th>Comparison</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>HAS2_v_Control</th>
+      <td>HAS2_v_Control</td>
+      <td>0.298928</td>
+      <td>Less</td>
+      <td>3.507022e-01</td>
+      <td>0.6</td>
+      <td>0.274300</td>
+      <td>Stably Distinct</td>
+      <td>0.989209</td>
+      <td>1.0</td>
+    </tr>
+    <tr>
+      <th>HAS3_v_Control</th>
+      <td>HAS3_v_Control</td>
+      <td>3.530063</td>
+      <td>Less</td>
+      <td>9.172773e-08</td>
+      <td>0.0</td>
+      <td>0.231399</td>
+      <td>Unstable/Overlapping</td>
+      <td>0.714980</td>
+      <td>1.0</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<section id="Running-additional-comparisons-after-scores-have-been-generated">
+<h2>Running additional comparisons after scores have been generated<a class="headerlink" href="#Running-additional-comparisons-after-scores-have-been-generated" title="Link to this heading"></a></h2>
+<p>Sometimes, you may want to add in additional comparisons, which are either additional biological comparisons not explored, or to be more restrictive in what is designated as a differentially expressed gene/protein. You can add in additional comparisons after scores have been calculated and then run a second time with new comparisons to allow additional analysis to be conducted.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">my_dedansy</span><span class="o">.</span><span class="n">create_contrast_metadata</span><span class="p">(</span><span class="n">comparisons</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;HAS2_restrictive&#39;</span><span class="p">,</span> <span class="s1">&#39;HAS3_restrictive&#39;</span><span class="p">],</span>
+                                    <span class="n">fc_cols</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;log2FoldChange_HAS2&#39;</span><span class="p">,</span><span class="s1">&#39;log2FoldChange_HAS3&#39;</span><span class="p">],</span>
+                                    <span class="n">pval_cols</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;padj_HAS2&#39;</span><span class="p">,</span><span class="s1">&#39;padj_HAS3&#39;</span><span class="p">],</span>
+                                    <span class="n">fcs</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+                                    <span class="n">alphas</span> <span class="o">=</span> <span class="mf">0.001</span><span class="p">)</span>
+<span class="n">my_dedansy</span><span class="o">.</span><span class="n">calculate_scores</span><span class="p">(</span><span class="n">comps</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;HAS2_restrictive&#39;</span><span class="p">,</span> <span class="s1">&#39;HAS3_restrictive&#39;</span><span class="p">],</span>
+                            <span class="n">num_ss_trials</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="c1"># Lower than recommended to save time (Default value of 100 is recommended)</span>
+                            <span class="n">fpr_trials</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="c1"># Lower than recommended to save time (Default value of 50 is recommended)</span>
+                            <span class="n">min_pval</span><span class="o">=-</span><span class="mi">10</span><span class="p">,</span>
+                            <span class="n">processes</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+                            <span class="n">seed</span><span class="o">=</span><span class="mi">123</span><span class="p">,</span> <span class="c1"># For reproducibility but can be omitted</span>
+                            <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<br/></pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+2025-08-05 15:38:42:.....Starting deDANSy scoring analysis with random seed: 123
+2025-08-05 15:38:54:.....Done with enrichment-based pruning for HAS2_restrictive
+2025-08-05 15:39:10:.....Done with enrichment-based pruning for HAS3_restrictive
+2025-08-05 15:39:10:.....Starting the false positive rate procedure.
+2025-08-05 15:40:04:.....Finished FPR procedure for HAS2_restrictive.
+2025-08-05 15:41:14:.....Finished FPR procedure for HAS3_restrictive.
+2025-08-05 15:41:14:.....Preparing the FPR results for export
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">axs</span> <span class="o">=</span> <span class="n">my_dedansy</span><span class="o">.</span><span class="n">plot_scores</span><span class="p">(</span><span class="n">aspect</span><span class="o">=</span><span class="mf">1.5</span><span class="p">)</span> <span class="c1"># The aspect parameter changes the aspect ratio which can make the graph a bit more aesthetically pleasing.</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">gcf</span><span class="p">()</span><span class="o">.</span><span class="n">set_dpi</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">gcf</span><span class="p">()</span><span class="o">.</span><span class="n">set_size_inches</span><span class="p">(</span><span class="mf">4.5</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/Examples_deDANSy_13_0.png" src="../_images/Examples_deDANSy_13_0.png" />
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">my_dedansy</span><span class="o">.</span><span class="n">comp_metadata</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>fc_col</th>
+      <th>fc_thres</th>
+      <th>pval_col</th>
+      <th>alpha</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>HAS2_v_Control</th>
+      <td>log2FoldChange_HAS2</td>
+      <td>1</td>
+      <td>padj_HAS2</td>
+      <td>0.05</td>
+    </tr>
+    <tr>
+      <th>HAS3_v_Control</th>
+      <td>log2FoldChange_HAS3</td>
+      <td>1</td>
+      <td>padj_HAS3</td>
+      <td>0.05</td>
+    </tr>
+    <tr>
+      <th>HAS2_restrictive</th>
+      <td>log2FoldChange_HAS2</td>
+      <td>1</td>
+      <td>padj_HAS2</td>
+      <td>0.001</td>
+    </tr>
+    <tr>
+      <th>HAS3_restrictive</th>
+      <td>log2FoldChange_HAS3</td>
+      <td>1</td>
+      <td>padj_HAS3</td>
+      <td>0.001</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+</section>
+</section>
+<section id="Determining-the-enriched-n-grams-of-individual-conditions.">
+<h1>Determining the enriched n-grams of individual conditions.<a class="headerlink" href="#Determining-the-enriched-n-grams-of-individual-conditions." title="Link to this heading"></a></h1>
+<p>In addition to generating scores for network wide behavior, deDANSy can get the significantly enriched n-grams for both up- and down-regulated proteins/genes. Like how DANSy collapses n-grams representing similar data, the n-gram enrichment calculation collapses n-grams that have similar significance values that have a parent-children relationship (i.e. shorter n-gram in a longer n-gram).</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">my_dedansy</span><span class="o">.</span><span class="n">calculate_ngram_enrichment</span><span class="p">(</span><span class="s1">&#39;HAS2_v_Control&#39;</span><span class="p">)</span>
+<span class="n">my_dedansy</span><span class="o">.</span><span class="n">plot_ngram_enrichment</span><span class="p">(</span><span class="s1">&#39;HAS2_v_Control&#39;</span><span class="p">)</span>
+
+<span class="c1"># And just like before can adjust the aspect ratio to make it a little more aesthetically pleasing.</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">set_aspect</span><span class="p">(</span><span class="mf">.5</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;HAS2_v_Control&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/Examples_deDANSy_16_0.png" src="../_images/Examples_deDANSy_16_0.png" />
+</div>
+</div>
+<p>Each comparison can have its own plot to show the unique/shared n-grams for each comparison.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">my_dedansy</span><span class="o">.</span><span class="n">calculate_ngram_enrichment</span><span class="p">(</span><span class="s1">&#39;HAS3_v_Control&#39;</span><span class="p">)</span>
+<span class="n">my_dedansy</span><span class="o">.</span><span class="n">plot_ngram_enrichment</span><span class="p">(</span><span class="s1">&#39;HAS3_v_Control&#39;</span><span class="p">)</span>
+
+<span class="c1"># And just like before can adjust the aspect ratio to make it a little more aesthetically pleasing.</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">set_aspect</span><span class="p">(</span><span class="mf">.5</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;HAS3_v_Control&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Will be overwriting existing DEG data.
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/Examples_deDANSy_18_1.png" src="../_images/Examples_deDANSy_18_1.png" />
+</div>
+</div>
+<p>The displayed n-grams can be adjusted to pass a more lenient/restrictive cutoff for being displayed. We can use either a p-value cutoff (p parameter) or a quantile cutoff (q parameter) to change the plot behavior.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">my_dedansy</span><span class="o">.</span><span class="n">plot_ngram_enrichment</span><span class="p">(</span><span class="s1">&#39;HAS3_v_Control&#39;</span><span class="p">,</span><span class="n">q</span><span class="o">=</span><span class="mf">0.01</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">set_aspect</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;HAS3_v_Control</span><span class="se">\n</span><span class="s1">Only Top 1%&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/Examples_deDANSy_20_0.png" src="../_images/Examples_deDANSy_20_0.png" />
+</div>
+</div>
+<p>If you want to check the full n-gram enrichment data used for plotting, you can use the get_ngram_results method for the comparison of interest</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">my_dedansy</span><span class="o">.</span><span class="n">get_ngram_results</span><span class="p">(</span><span class="s1">&#39;HAS2_v_Control&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>variable</th>
+      <th>ngram_legible</th>
+      <th>ngram</th>
+      <th>p</th>
+      <th>-log10(p)</th>
+      <th>FPR</th>
+      <th>FPR &lt;= 0.05</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>Up</td>
+      <td>EGF-like_dom</td>
+      <td>IPR000742</td>
+      <td>0.000227</td>
+      <td>3.643281</td>
+      <td>0.000000</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>Up</td>
+      <td>Peptidase_M12A|CUB_dom|CUB_dom|EGF-like_dom|CU...</td>
+      <td>IPR001506|IPR000859|IPR000859|IPR000742|IPR000...</td>
+      <td>0.042384</td>
+      <td>1.372802</td>
+      <td>0.250000</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>Up</td>
+      <td>CUB_dom</td>
+      <td>IPR000859</td>
+      <td>0.080774</td>
+      <td>1.092727</td>
+      <td>0.000000</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>Up</td>
+      <td>SH3_domain</td>
+      <td>IPR001452</td>
+      <td>0.754723</td>
+      <td>0.122212</td>
+      <td>0.694444</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>Up</td>
+      <td>SH3_domain|SH3_domain</td>
+      <td>IPR001452|IPR001452</td>
+      <td>0.342335</td>
+      <td>0.465548</td>
+      <td>0.857143</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>563</th>
+      <td>Down</td>
+      <td>MyBP-C_THB|Ig_sub|Ig_sub2|Ig_sub|Ig_sub2|FN3_d...</td>
+      <td>IPR040849|IPR003599|IPR003598|IPR003599|IPR003...</td>
+      <td>0.007810</td>
+      <td>2.107342</td>
+      <td>0.000000</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>564</th>
+      <td>Down</td>
+      <td>SYCP2_ARLD|SYCP2_SLD</td>
+      <td>IPR041322|IPR040560</td>
+      <td>0.007810</td>
+      <td>2.107342</td>
+      <td>0.000000</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>565</th>
+      <td>Down</td>
+      <td>WW_dom|PDZ|FERM_domain</td>
+      <td>IPR001202|IPR001478|IPR000299</td>
+      <td>0.007810</td>
+      <td>2.107342</td>
+      <td>0.000000</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>566</th>
+      <td>Down</td>
+      <td>PDEase_N|PDEase_catalytic_dom</td>
+      <td>IPR013706|IPR002073</td>
+      <td>0.007810</td>
+      <td>2.107342</td>
+      <td>0.000000</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>567</th>
+      <td>Down</td>
+      <td>PDGF_N|PDGF/VEGF_dom</td>
+      <td>IPR006782|IPR000072</td>
+      <td>0.015560</td>
+      <td>1.807995</td>
+      <td>0.000000</td>
+      <td>True</td>
+    </tr>
+  </tbody>
+</table>
+<p>298 rows × 7 columns</p>
+</div></div>
+</div>
+</section>
+<section id="Performing-deDANSy-analysis-with-(phospho-)proteomic-data">
+<h1>Performing deDANSy analysis with (phospho-)proteomic data<a class="headerlink" href="#Performing-deDANSy-analysis-with-(phospho-)proteomic-data" title="Link to this heading"></a></h1>
+<p>If you are working with a proteomic dataset and do not require converting IDs because you are using UniProt IDs, you can build a deDANSy object without the conversion and perform analysis as outlined below with a phosphoproteomic dataset from <a class="reference external" href="https://doi.org/10.1158/1535-7163.MCT-23-0218">Chen et al, 2024</a>. We are using Supplementary Table S5 specifically.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Importing the data</span>
+<span class="n">filename</span> <span class="o">=</span> <span class="s1">&#39;CUTO28_pY_Results.xlsx&#39;</span>
+<span class="n">raw_phos</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_excel</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span><span class="n">header</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="c1"># First filtering out the raw data to ensure we only have the human data and those found within our reference file.</span>
+<span class="n">proc_phos</span> <span class="o">=</span> <span class="n">raw_phos</span><span class="p">[</span><span class="n">raw_phos</span><span class="p">[</span><span class="s1">&#39;IsHuman&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">]</span>
+<span class="n">proc_phos</span> <span class="o">=</span> <span class="n">proc_phos</span><span class="p">[</span><span class="n">proc_phos</span><span class="p">[</span><span class="s1">&#39;Protein&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">ref</span><span class="p">[</span><span class="s1">&#39;UniProt ID&#39;</span><span class="p">])]</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Now building the deDANSy object, which can ignore any ID conversion by setting the run_conversion parameter to False.</span>
+<span class="n">prot_dedansy</span> <span class="o">=</span> <span class="n">dansy</span><span class="o">.</span><span class="n">DEdansy</span><span class="p">(</span><span class="n">dataset</span> <span class="o">=</span> <span class="n">proc_phos</span><span class="p">,</span>
+                             <span class="n">uniprot_ref</span> <span class="o">=</span> <span class="n">ref</span><span class="p">,</span>
+                             <span class="n">data_ids</span> <span class="o">=</span> <span class="s1">&#39;Protein&#39;</span><span class="p">,</span>
+                             <span class="n">run_conversion</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Starting to fetch n-grams.
+Finished getting all n-grams
+Starting to generate adjacency
+Finished building adjacency.
+Building the reference network information.
+</pre></div></div>
+</div>
+<p>After this the process of calculating scores and plotting them is identical.</p>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="base_dansy.html" class="btn btn-neutral float-left" title="Base DANSy Analysis" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../Dependencies.html" class="btn btn-neutral float-right" title="Dependencies" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Naegle Lab.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

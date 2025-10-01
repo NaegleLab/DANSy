@@ -1,0 +1,15 @@
+DANSy
+-----
+
+This is the base DANSy class that contains all the methods necessary to analyze a collection of proteins.
+
+.. autoclass:: dansy.dansy
+    :members: draw_network, ngram_protein_count, summary, retrieve_protein_info, retrieve_random_ids, retrieve_longest_arch
+
+DANSy Supporting Functions
+---------------------------
+
+These are functions integrated into DANSy, which are not necessary to call, but can aid in initial setup of a DANSy object.
+
+.. automodule:: dansy.generateCompleteProteome
+    :members: import_proteome_files

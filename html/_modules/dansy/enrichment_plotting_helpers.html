@@ -1,0 +1,686 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>dansy.enrichment_plotting_helpers &mdash; DANSy 1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=29a6c3e3"></script>
+      <script src="../../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            DANSy
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Examples/Examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Dependencies.html">Dependencies</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../dansy.html">DANSy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../dansy.html#supporting-functions">Supporting Functions</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">DANSy</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">dansy.enrichment_plotting_helpers</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for dansy.enrichment_plotting_helpers</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w">  </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">networkx</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nx</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">seaborn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sns</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">scipy.stats</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">stats</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.lines</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">lines</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dansy.enrichment_helpers</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+
+
+<div class="viewcode-block" id="get_max_info_enriched_ngrams">
+<a class="viewcode-back" href="../../dedansy.html#dansy.enrichment_plotting_helpers.get_max_info_enriched_ngrams">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_max_info_enriched_ngrams</span><span class="p">(</span><span class="n">res_df</span><span class="p">,</span> <span class="n">condition_labels</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">q</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span><span class="n">p</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Returns the top X values of enriched n-grams that passes a quantile and/or p-value cutoff. This will collapse n-grams that provide similar p-value trends into a single representative n-gram if a shorter n-gram is in the longer n-gram. Longer n-grams that have more signficant p-values than their shorter counterparts will be retained.</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">    -----------</span>
+<span class="sd">        - res_df: pandas DataFrame</span>
+<span class="sd">            Dataframe of all the n-gram enrichment p-values for each condition</span>
+<span class="sd">        - condition_labels: list (Optional)</span>
+<span class="sd">            list of strings that are labels for the different conditions. If not provided then defaults to Up and Down</span>
+<span class="sd">        - q: float (Optional)</span>
+<span class="sd">            quantile cutoff for p-values to return n-grams. Default value is 0.05.</span>
+<span class="sd">        - p: float (Optional)</span>
+<span class="sd">            p-value cutoff for n-grams to return. If provided with q this will set the upper bound of p-values.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">    --------</span>
+<span class="sd">        - maxinfo_filt_res: pandas DataFrame</span>
+<span class="sd">            A filtered version of the res_df provided to only n-grams that pass the cutoffs provided</span>
+<span class="sd">    </span>
+<span class="sd">    &#39;&#39;&#39;</span>
+
+    <span class="c1"># Checking the p-value and quantile cutoffs to determine a threshold.</span>
+    <span class="k">if</span> <span class="n">p</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">q</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">q</span> <span class="o">=</span> <span class="mf">0.05</span>
+        <span class="n">p_thres</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="n">res_df</span><span class="p">[</span><span class="s1">&#39;p&#39;</span><span class="p">],</span><span class="n">q</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">p</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">q</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="n">res_df</span><span class="p">[</span><span class="s1">&#39;p&#39;</span><span class="p">],</span><span class="n">q</span><span class="p">)</span>
+        <span class="n">p_thres</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">([</span><span class="n">p</span><span class="p">,</span> <span class="n">x</span><span class="p">])</span>
+    <span class="k">elif</span> <span class="n">p</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">p_thres</span> <span class="o">=</span> <span class="n">p</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">p_thres</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="n">res_df</span><span class="p">[</span><span class="s1">&#39;p&#39;</span><span class="p">],</span><span class="n">q</span><span class="p">)</span>
+
+    <span class="c1"># Initial filtering based on only the p-value threshold</span>
+    <span class="n">filt_res_cands</span> <span class="o">=</span> <span class="n">res_df</span><span class="p">[</span><span class="n">res_df</span><span class="p">[</span><span class="s1">&#39;p&#39;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">p_thres</span><span class="p">][</span><span class="s1">&#39;ngram&#39;</span><span class="p">]</span>
+    <span class="n">filt_res</span> <span class="o">=</span> <span class="n">res_df</span><span class="p">[</span><span class="n">res_df</span><span class="p">[</span><span class="s1">&#39;ngram&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">filt_res_cands</span><span class="p">)]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+    <span class="c1"># Creating the condition labels</span>
+    <span class="k">if</span> <span class="n">condition_labels</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">filt_res</span><span class="p">[</span><span class="s1">&#39;variable&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">filt_res</span><span class="p">[</span><span class="s1">&#39;variable&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">({</span><span class="s1">&#39;Up&#39;</span><span class="p">:</span><span class="n">condition_labels</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="s1">&#39;Down&#39;</span><span class="p">:</span><span class="n">condition_labels</span><span class="p">[</span><span class="mi">1</span><span class="p">]})</span>
+
+    <span class="c1"># Now sorting the n-grams based on their length to start the collapsing step</span>
+    <span class="n">ngram_list</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">filt_res</span><span class="p">[</span><span class="s1">&#39;ngram&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()),</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;|&#39;</span><span class="p">)),</span><span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1"># Collapsing the n-grams based on their p-values and if they have similar trends or not.</span>
+    <span class="n">ngrams_2_collapse</span> <span class="o">=</span> <span class="n">collapse_to_max_info</span><span class="p">(</span><span class="n">ngram_list</span><span class="p">,</span><span class="n">filt_res</span><span class="p">)</span>    
+    <span class="n">ngrams_kept</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">filt_res</span><span class="p">[</span><span class="s1">&#39;ngram&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span><span class="o">.</span><span class="n">difference</span><span class="p">(</span><span class="n">ngrams_2_collapse</span><span class="p">)</span>
+
+    <span class="c1"># Filtering the results dataframe to only the collapsed n-grams</span>
+    <span class="n">maxinfo_filt_res</span> <span class="o">=</span> <span class="n">filt_res</span><span class="p">[</span><span class="n">filt_res</span><span class="p">[</span><span class="s1">&#39;ngram&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">ngrams_kept</span><span class="p">)]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">maxinfo_filt_res</span></div>
+
+
+<div class="viewcode-block" id="plot_enriched_ngrams">
+<a class="viewcode-back" href="../../dedansy.html#dansy.enrichment_plotting_helpers.plot_enriched_ngrams">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">plot_enriched_ngrams</span><span class="p">(</span><span class="n">res</span><span class="p">,</span> <span class="n">dansyOI</span><span class="p">,</span> <span class="n">condition_labels</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">q</span> <span class="o">=</span> <span class="mf">0.05</span><span class="p">,</span><span class="n">p</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">show_FPR</span><span class="o">=</span><span class="kc">True</span> <span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    This plots the top X percent (default 5) n-grams enriched between two different conditions. For clarity n-grams that contain similar information will be collapsed into the shorter n-gram (i.e. if EGF-like domain and EGF-like domain|EGF-like domain both have similar enrichment values they will only be represented by EGF-like domain).</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters:</span>
+<span class="sd">    -----------</span>
+<span class="sd">        res_df: pandas DataFrame</span>
+<span class="sd">            A dataframe containing all the results including both the individual statistical enrichment and the False positive rate for all n-grams. (Note this will likely be removed once this is integrated into the actual module.)</span>
+<span class="sd">        dansyOI: deDANSy object</span>
+<span class="sd">            The deDANSy object that contains the n-grams of interest</span>
+<span class="sd">        condition_labels: list (Optional)</span>
+<span class="sd">            The labels for both conditions this should be provided in the order of up-regulated and down-regulated. (Note this will be removed once this is integrated into the actual module.)</span>
+<span class="sd">        q: float (Optional)</span>
+<span class="sd">            The quantile cutoff of values to plot. Default (0.05)</span>
+<span class="sd">        p: float (Optional)</span>
+<span class="sd">            The p-value threshold to limit n-grams to plot. Default is 0.05 but if combined with the quantile (q) can be lower.</span>
+<span class="sd">        show_FPR: bool</span>
+<span class="sd">            Flag whether to show the FPR legend portion.</span>
+<span class="sd">        kwargs: optional keywords</span>
+<span class="sd">            - &#39;palette&#39;,&#39;edgecolor&#39;, &#39;linewidth&#39;, &#39;sizes&#39; that adjust the seaborn scatterplot aesthetics.</span>
+<span class="sd">            - &#39;loc&#39;, &#39;bbox_to_anchor&#39;, &#39;handletextpad&#39; to adjust matplotlib legend information.</span>
+<span class="sd">            - &#39;ax&#39; to specify a matplotlib Axes to plot onto</span>
+<span class="sd">    </span>
+<span class="sd">    Returns:</span>
+<span class="sd">    --------</span>
+<span class="sd">        seaborn/matplotlib plot</span>
+
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">max_res</span> <span class="o">=</span> <span class="n">get_max_info_enriched_ngrams</span><span class="p">(</span><span class="n">res</span><span class="p">,</span> <span class="n">condition_labels</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span><span class="n">p</span><span class="p">)</span>
+    <span class="n">ngram_plot_names</span> <span class="o">=</span> <span class="p">{</span><span class="n">node</span><span class="p">:</span><span class="n">dansyOI</span><span class="o">.</span><span class="n">return_legible_ngram</span><span class="p">(</span><span class="n">node</span><span class="p">)</span> <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">max_res</span><span class="p">[</span><span class="s1">&#39;ngram&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()}</span>
+    <span class="n">max_res</span><span class="p">[</span><span class="s1">&#39;ngram&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">max_res</span><span class="p">[</span><span class="s1">&#39;ngram&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">ngram_plot_names</span><span class="p">)</span>
+    
+    <span class="c1"># Going through some of the default values set up for the seaborn scatterplot and checking for them in the kwargs to overwrite default values.</span>
+    <span class="n">sns_opts</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;palette&#39;</span><span class="p">:[</span><span class="s1">&#39;deepskyblue&#39;</span><span class="p">,</span><span class="s1">&#39;silver&#39;</span><span class="p">],</span><span class="s1">&#39;edgecolor&#39;</span><span class="p">:</span><span class="s1">&#39;k&#39;</span><span class="p">,</span><span class="s1">&#39;linewidth&#39;</span><span class="p">:</span><span class="mf">0.5</span><span class="p">,</span><span class="s1">&#39;sizes&#39;</span><span class="p">:(</span><span class="mi">1</span><span class="p">,</span><span class="mi">40</span><span class="p">)}</span>
+    <span class="k">for</span> <span class="n">opt</span> <span class="ow">in</span> <span class="n">sns_opts</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">opt</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">sns_opts</span><span class="p">[</span><span class="n">opt</span><span class="p">]</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="n">opt</span><span class="p">]</span>
+            <span class="k">del</span> <span class="n">kwargs</span><span class="p">[</span><span class="n">opt</span><span class="p">]</span> <span class="c1"># Removing to ensure that seaborn does not error out.</span>
+
+    <span class="c1"># Now getting some of the keyword arguments that are associated with the legend</span>
+    <span class="n">legend_opts</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;loc&#39;</span><span class="p">:</span><span class="s1">&#39;lower left&#39;</span><span class="p">,</span> <span class="s1">&#39;bbox_to_anchor&#39;</span><span class="p">:(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="s1">&#39;handletextpad&#39;</span><span class="p">:</span><span class="mf">0.1</span><span class="p">}</span>
+    <span class="k">for</span> <span class="n">opt</span> <span class="ow">in</span> <span class="n">legend_opts</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">opt</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">legend_opts</span><span class="p">[</span><span class="n">opt</span><span class="p">]</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="n">opt</span><span class="p">]</span>
+            <span class="k">del</span> <span class="n">kwargs</span><span class="p">[</span><span class="n">opt</span><span class="p">]</span>
+
+    <span class="n">sns</span><span class="o">.</span><span class="n">scatterplot</span><span class="p">(</span><span class="n">max_res</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="s1">&#39;variable&#39;</span><span class="p">,</span><span class="n">y</span><span class="o">=</span><span class="s1">&#39;ngram&#39;</span><span class="p">,</span>
+                    <span class="n">size</span><span class="o">=</span><span class="s1">&#39;-log10(p)&#39;</span><span class="p">,</span> <span class="n">hue</span> <span class="o">=</span> <span class="s1">&#39;FPR &lt;= 0.05&#39;</span><span class="p">,</span>
+                    <span class="n">hue_order</span><span class="o">=</span><span class="p">[</span><span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">],</span>
+                    <span class="o">**</span><span class="n">sns_opts</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    
+    <span class="c1"># If an axes is provided plot and adjust the legend to that specific axis</span>
+    <span class="k">if</span> <span class="s1">&#39;ax&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+        <span class="n">handles</span><span class="p">,</span> <span class="n">labels</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;ax&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get_legend_handles_labels</span><span class="p">()</span>  
+        <span class="n">new_handles</span><span class="p">,</span> <span class="n">new_labels</span> <span class="o">=</span> <span class="n">clean_ngram_legend</span><span class="p">(</span><span class="n">handles</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span><span class="n">show_FPR</span><span class="p">)</span>
+        <span class="n">l</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;ax&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">handles</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">edgecolor</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">handletextpad</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="p">)</span>
+        
+    <span class="k">else</span><span class="p">:</span> 
+        <span class="n">handles</span><span class="p">,</span> <span class="n">labels</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">get_legend_handles_labels</span><span class="p">()</span>
+        <span class="n">new_handles</span><span class="p">,</span> <span class="n">new_labels</span> <span class="o">=</span> <span class="n">clean_ngram_legend</span><span class="p">(</span><span class="n">handles</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span><span class="n">show_FPR</span><span class="p">)</span>
+        <span class="n">l</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">new_handles</span><span class="p">,</span> <span class="n">new_labels</span><span class="p">,</span><span class="n">bbox_to_anchor</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="n">edgecolor</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">handletextpad</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="p">)</span>
+    
+    <span class="c1"># Small aesthetic changes</span>
+    <span class="n">l</span><span class="o">.</span><span class="n">get_frame</span><span class="p">()</span><span class="o">.</span><span class="n">set_linewidth</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="n">l</span><span class="o">.</span><span class="n">legend_handles</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">lines</span><span class="o">.</span><span class="n">Line2D</span><span class="p">):</span>
+            <span class="n">h</span><span class="o">.</span><span class="n">set_edgecolor</span><span class="p">(</span><span class="s1">&#39;k&#39;</span><span class="p">)</span>
+            <span class="n">h</span><span class="o">.</span><span class="n">set_linewidth</span><span class="p">(</span><span class="mf">.25</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span></div>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">plot_enriched_ngrams_presorted</span><span class="p">(</span><span class="n">res</span><span class="p">,</span><span class="n">x_order</span> <span class="o">=</span> <span class="s1">&#39;variable&#39;</span><span class="p">,</span> <span class="n">dansyOI</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span><span class="n">ngram_ticks</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span><span class="n">show_FPR</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    This plots a presorted n-gram enrichment dataframe based on a provided n-gram order and provided order for conditions (i.e. x-axis).</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters:</span>
+<span class="sd">    -----------</span>
+<span class="sd">        res: pandas DataFrame</span>
+<span class="sd">            A dataframe containing all the results including both the individual statistical enrichment and the False positive rate for all n-grams that has been presorted.</span>
+<span class="sd">        x_order: str</span>
+<span class="sd">            The column name to use for plotting on the x-axis. Default is variable assuming it was from a prior n-gram enrichment that was sorted in a different method.</span>
+<span class="sd">        dansyOI: deDANSy object</span>
+<span class="sd">            The deDANSy object that contains the n-grams of interest</span>
+<span class="sd">        ngram_ticks: dict</span>
+<span class="sd">            Key-value pairs of the n-grams and their order</span>
+<span class="sd">        show_FPR: bool</span>
+<span class="sd">            Flag whether to show the FPR legend portion.</span>
+<span class="sd">        kwargs: optional keywords</span>
+<span class="sd">            - &#39;palette&#39;,&#39;edgecolor&#39;, &#39;linewidth&#39;, &#39;sizes&#39; that adjust the seaborn scatterplot aesthetics.</span>
+<span class="sd">            - &#39;loc&#39;, &#39;bbox_to_anchor&#39;, &#39;handletextpad&#39; to adjust matplotlib legend information.</span>
+<span class="sd">            - &#39;ax&#39; to specify a matplotlib Axes to plot onto</span>
+<span class="sd">    </span>
+<span class="sd">    Returns:</span>
+<span class="sd">    --------</span>
+<span class="sd">        seaborn/matplotlib plot</span>
+
+<span class="sd">    &#39;&#39;&#39;</span>
+    
+    <span class="n">max_res</span> <span class="o">=</span> <span class="n">res</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+   
+    
+    <span class="c1"># Going through some of the default values that I have set up for the seaborn scatterplot and checking for them in the kwargs to overwrite my default values.</span>
+    <span class="n">sns_opts</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;palette&#39;</span><span class="p">:[</span><span class="s1">&#39;deepskyblue&#39;</span><span class="p">,</span><span class="s1">&#39;silver&#39;</span><span class="p">],</span><span class="s1">&#39;edgecolor&#39;</span><span class="p">:</span><span class="s1">&#39;k&#39;</span><span class="p">,</span><span class="s1">&#39;linewidth&#39;</span><span class="p">:</span><span class="mf">0.5</span><span class="p">,</span><span class="s1">&#39;sizes&#39;</span><span class="p">:(</span><span class="mi">1</span><span class="p">,</span><span class="mi">40</span><span class="p">)}</span>
+    <span class="k">for</span> <span class="n">opt</span> <span class="ow">in</span> <span class="n">sns_opts</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">opt</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">sns_opts</span><span class="p">[</span><span class="n">opt</span><span class="p">]</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="n">opt</span><span class="p">]</span>
+            <span class="k">del</span> <span class="n">kwargs</span><span class="p">[</span><span class="n">opt</span><span class="p">]</span> <span class="c1"># Removing to ensure that seaborn does not error out.</span>
+    
+    <span class="c1"># Now getting some of the keyword arguments that are associated with the legend</span>
+    <span class="n">legend_opts</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;loc&#39;</span><span class="p">:</span><span class="s1">&#39;lower left&#39;</span><span class="p">,</span> <span class="s1">&#39;bbox_to_anchor&#39;</span><span class="p">:(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="s1">&#39;handletextpad&#39;</span><span class="p">:</span><span class="mf">0.1</span><span class="p">}</span>
+    <span class="k">for</span> <span class="n">opt</span> <span class="ow">in</span> <span class="n">legend_opts</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">opt</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">legend_opts</span><span class="p">[</span><span class="n">opt</span><span class="p">]</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="n">opt</span><span class="p">]</span>
+            <span class="k">del</span> <span class="n">kwargs</span><span class="p">[</span><span class="n">opt</span><span class="p">]</span>
+    
+    <span class="n">sns</span><span class="o">.</span><span class="n">scatterplot</span><span class="p">(</span><span class="n">max_res</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="n">x_order</span><span class="p">,</span><span class="n">y</span><span class="o">=</span><span class="s1">&#39;ngram_order&#39;</span><span class="p">,</span>
+                    <span class="n">size</span><span class="o">=</span><span class="s1">&#39;-log10(p)&#39;</span><span class="p">,</span> <span class="n">hue</span> <span class="o">=</span> <span class="s1">&#39;FPR &lt;= 0.05&#39;</span><span class="p">,</span>
+                    <span class="n">hue_order</span><span class="o">=</span><span class="p">[</span><span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">],</span>
+                    <span class="o">**</span><span class="n">sns_opts</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    
+    <span class="c1"># Setting up the ticks associated with the ngrams if a dansy object and an n-gram order dict were provided.</span>
+    <span class="k">if</span> <span class="n">ngram_ticks</span> <span class="o">==</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">dansyOI</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">pass</span>
+    <span class="k">elif</span> <span class="n">ngram_ticks</span> <span class="o">!=</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">dansyOI</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">ngram_plot_names</span> <span class="o">=</span> <span class="p">[</span><span class="n">dansyOI</span><span class="o">.</span><span class="n">return_legible_ngram</span><span class="p">(</span><span class="n">node</span><span class="p">)</span> <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">ngram_ticks</span><span class="p">]</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">yticks</span><span class="p">(</span><span class="n">ticks</span><span class="o">=</span><span class="p">[</span><span class="n">v</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">ngram_ticks</span><span class="o">.</span><span class="n">values</span><span class="p">()],</span> <span class="n">labels</span><span class="o">=</span><span class="n">ngram_plot_names</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">ngram_ticks</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span><span class="o">+</span><span class="mf">0.5</span><span class="p">,</span><span class="o">-</span><span class="mf">0.5</span><span class="p">)</span>
+
+    <span class="c1"># If an axes is provided plot and adjust the legend to that specific axis</span>
+    <span class="k">if</span> <span class="s1">&#39;ax&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+        <span class="n">handles</span><span class="p">,</span> <span class="n">labels</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;ax&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get_legend_handles_labels</span><span class="p">()</span>  
+        <span class="n">new_handles</span><span class="p">,</span> <span class="n">new_labels</span> <span class="o">=</span> <span class="n">clean_ngram_legend</span><span class="p">(</span><span class="n">handles</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span><span class="n">show_FPR</span><span class="p">)</span>
+        <span class="n">l</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;ax&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">new_handles</span><span class="p">,</span> <span class="n">new_labels</span><span class="p">,</span> <span class="n">edgecolor</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">legend_opts</span><span class="p">)</span>
+        
+    <span class="k">else</span><span class="p">:</span> 
+        <span class="n">handles</span><span class="p">,</span> <span class="n">labels</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">get_legend_handles_labels</span><span class="p">()</span>
+        <span class="n">new_handles</span><span class="p">,</span> <span class="n">new_labels</span> <span class="o">=</span> <span class="n">clean_ngram_legend</span><span class="p">(</span><span class="n">handles</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span><span class="n">show_FPR</span><span class="p">)</span>
+        <span class="n">l</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">new_handles</span><span class="p">,</span> <span class="n">new_labels</span><span class="p">,</span> <span class="n">edgecolor</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span><span class="o">**</span><span class="n">legend_opts</span><span class="p">)</span>
+    
+    <span class="c1"># Small aesthetic changes</span>
+    <span class="n">l</span><span class="o">.</span><span class="n">get_frame</span><span class="p">()</span><span class="o">.</span><span class="n">set_linewidth</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="n">l</span><span class="o">.</span><span class="n">legend_handles</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">lines</span><span class="o">.</span><span class="n">Line2D</span><span class="p">):</span>
+            <span class="n">h</span><span class="o">.</span><span class="n">set_edgecolor</span><span class="p">(</span><span class="s1">&#39;k&#39;</span><span class="p">)</span>
+            <span class="n">h</span><span class="o">.</span><span class="n">set_linewidth</span><span class="p">(</span><span class="mf">.25</span><span class="p">)</span>
+        
+    <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">clean_ngram_legend</span><span class="p">(</span><span class="n">handles</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span><span class="n">show_FPR</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Cleans up the n-gram enrichment legend to show only relevant information if the FPR is to be displayed or not.</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">    -----------</span>
+<span class="sd">        - handles: list</span>
+<span class="sd">            List of matplotlib legend handles to adjust</span>
+<span class="sd">        - labels: list</span>
+<span class="sd">            List of maptlotlib legend labels to adjust</span>
+<span class="sd">        - show_FPR: bool</span>
+<span class="sd">            Whether the FPR portion of the legend should be displayed</span>
+<span class="sd">    </span>
+<span class="sd">    Returns:</span>
+<span class="sd">    --------</span>
+<span class="sd">        - new_handles: list</span>
+<span class="sd">            The new handles to input into the legend</span>
+<span class="sd">        - new_labels: list</span>
+<span class="sd">            The new labels to input into the legend</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+
+    <span class="n">labels</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">=</span> <span class="s1">&#39;FPR$\leq$0.05&#39;</span>
+    <span class="n">labels</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;FPR &gt; 0.05&#39;</span>
+    <span class="k">if</span> <span class="n">show_FPR</span><span class="p">:</span>
+        <span class="c1"># Dropping the FPR legend title since it is provided in the actual labels</span>
+        <span class="n">new_handles</span> <span class="o">=</span> <span class="n">handles</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="nb">len</span><span class="p">(</span><span class="n">handles</span><span class="p">)]</span>
+        <span class="n">new_labels</span> <span class="o">=</span> <span class="n">labels</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="nb">len</span><span class="p">(</span><span class="n">labels</span><span class="p">)]</span>
+        
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">new_handles</span> <span class="o">=</span> <span class="p">[</span><span class="n">h</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">h</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">handles</span><span class="p">)</span> <span class="k">if</span> <span class="n">i</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">]]</span>
+        <span class="n">new_labels</span> <span class="o">=</span> <span class="p">[</span><span class="n">h</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">h</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span> <span class="k">if</span> <span class="n">i</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">]]</span>
+    
+    <span class="k">return</span> <span class="n">new_handles</span><span class="p">,</span> <span class="n">new_labels</span>
+
+<div class="viewcode-block" id="collapse_to_max_info">
+<a class="viewcode-back" href="../../dedansy.html#dansy.enrichment_plotting_helpers.collapse_to_max_info">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">collapse_to_max_info</span><span class="p">(</span><span class="n">ngram_list</span><span class="p">,</span> <span class="n">res_df</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    This collapses the n-grams to those that represent the most discriminating information of interest. This will take longer n-grams and collapse them into shorter ones if the trends of p-values are similar, but the longer n-grams are slightly less signficant. If a longer n-gram is more significant it will not be collapsed.</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">    -----------</span>
+<span class="sd">        - ngram_list: list</span>
+<span class="sd">            List of n-grams to consider for collapsing</span>
+<span class="sd">        - res_df: pandas DataFrame</span>
+<span class="sd">            Dataframe containing the enrichment p-value results that will be collapsed to maximize information being presented</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">    --------</span>
+<span class="sd">        - ngrams_2_collapse: list</span>
+<span class="sd">            The n-grams that will be collapsed from the inputted list.</span>
+<span class="sd">    </span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    
+    <span class="c1"># Defining potential collapsing n-gram families</span>
+    <span class="n">potential_collapse</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">ngram</span> <span class="ow">in</span> <span class="n">ngram_list</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">inner_ngram</span> <span class="ow">in</span> <span class="n">ngram_list</span><span class="p">:</span>
+            <span class="c1"># Check for parent-child relationship</span>
+            <span class="k">if</span> <span class="n">inner_ngram</span> <span class="o">!=</span> <span class="n">ngram</span> <span class="ow">and</span> <span class="n">ngram</span> <span class="ow">in</span> <span class="n">inner_ngram</span><span class="p">:</span>
+
+                <span class="c1"># Add to the dictionary an empty list if the n-gram is not present</span>
+                <span class="k">if</span> <span class="n">ngram</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">potential_collapse</span><span class="p">:</span>
+                    <span class="n">potential_collapse</span><span class="p">[</span><span class="n">ngram</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="n">potential_collapse</span><span class="p">[</span><span class="n">ngram</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">inner_ngram</span><span class="p">)</span>
+
+
+    <span class="c1"># Now for each of these checking the FPR and p-values to see if they should be collapsed</span>
+    <span class="n">ngrams_2_collapse</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">ngram</span><span class="p">,</span> <span class="n">children</span> <span class="ow">in</span> <span class="n">potential_collapse</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+
+        <span class="c1"># Get the parent n-grams values</span>
+        <span class="n">parent_p</span> <span class="o">=</span> <span class="n">res_df</span><span class="p">[</span><span class="n">res_df</span><span class="p">[</span><span class="s1">&#39;ngram&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">ngram</span><span class="p">][</span><span class="s1">&#39;p&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="n">parent_fpr</span> <span class="o">=</span> <span class="n">res_df</span><span class="p">[</span><span class="n">res_df</span><span class="p">[</span><span class="s1">&#39;ngram&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">ngram</span><span class="p">][</span><span class="s1">&#39;FPR &lt;= 0.05&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="n">parent_cond</span> <span class="o">=</span> <span class="n">res_df</span><span class="p">[</span><span class="n">res_df</span><span class="p">[</span><span class="s1">&#39;ngram&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">ngram</span><span class="p">][</span><span class="s1">&#39;variable&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        
+        <span class="c1"># Check if it is only within 1 condition</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">parent_p</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">children</span><span class="p">:</span>
+                <span class="n">child_p</span> <span class="o">=</span> <span class="n">res_df</span><span class="p">[</span><span class="n">res_df</span><span class="p">[</span><span class="s1">&#39;ngram&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">child</span><span class="p">][</span><span class="s1">&#39;p&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+                <span class="n">child_fpr</span> <span class="o">=</span> <span class="n">res_df</span><span class="p">[</span><span class="n">res_df</span><span class="p">[</span><span class="s1">&#39;ngram&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">child</span><span class="p">][</span><span class="s1">&#39;FPR &lt;= 0.05&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+                <span class="n">child_cond</span> <span class="o">=</span> <span class="n">res_df</span><span class="p">[</span><span class="n">res_df</span><span class="p">[</span><span class="s1">&#39;ngram&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">child</span><span class="p">][</span><span class="s1">&#39;variable&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+                
+                <span class="c1"># Only collapse if they have the same number of conditions and match</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">child_p</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">child_cond</span> <span class="o">==</span> <span class="n">parent_cond</span><span class="p">:</span>
+                        <span class="c1"># If the child one is more signficant and FPR values are not the same then keep it otherwise collapse it</span>
+                        <span class="k">if</span> <span class="n">child_p</span> <span class="o">&lt;</span> <span class="n">parent_p</span> <span class="ow">and</span> <span class="n">parent_fpr</span> <span class="o">!=</span> <span class="n">child_fpr</span><span class="p">:</span>
+                            <span class="k">pass</span> 
+                        <span class="k">elif</span> <span class="n">parent_fpr</span> <span class="o">!=</span> <span class="n">child_fpr</span><span class="p">:</span>
+                            <span class="k">pass</span> 
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">ngrams_2_collapse</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">children</span><span class="p">:</span>
+                <span class="n">child_p</span> <span class="o">=</span> <span class="n">res_df</span><span class="p">[</span><span class="n">res_df</span><span class="p">[</span><span class="s1">&#39;ngram&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">child</span><span class="p">][</span><span class="s1">&#39;p&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+                <span class="n">child_fpr</span> <span class="o">=</span> <span class="n">res_df</span><span class="p">[</span><span class="n">res_df</span><span class="p">[</span><span class="s1">&#39;ngram&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">child</span><span class="p">][</span><span class="s1">&#39;FPR &lt;= 0.05&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+                <span class="n">child_cond</span> <span class="o">=</span> <span class="n">res_df</span><span class="p">[</span><span class="n">res_df</span><span class="p">[</span><span class="s1">&#39;ngram&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">child</span><span class="p">][</span><span class="s1">&#39;variable&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">child_cond</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                    <span class="c1"># Checking both the p-vals as showing similar trends and child n-grams are not more signficant then keep</span>
+                    <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">c</span> <span class="o">&lt;</span> <span class="n">p</span> <span class="k">for</span> <span class="n">c</span><span class="p">,</span><span class="n">p</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">child_p</span><span class="p">,</span><span class="n">parent_p</span><span class="p">))</span> <span class="ow">and</span> <span class="nb">any</span><span class="p">(</span><span class="n">p</span> <span class="o">!=</span> <span class="n">c</span> <span class="k">for</span> <span class="n">c</span><span class="p">,</span><span class="n">p</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">child_fpr</span><span class="p">,</span><span class="n">parent_fpr</span><span class="p">)):</span>
+                        <span class="k">pass</span>
+                    <span class="k">elif</span> <span class="nb">any</span><span class="p">(</span><span class="n">p</span> <span class="o">!=</span> <span class="n">c</span> <span class="k">for</span> <span class="n">c</span><span class="p">,</span><span class="n">p</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">child_fpr</span><span class="p">,</span><span class="n">parent_fpr</span><span class="p">)):</span>
+                        <span class="k">pass</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">ngrams_2_collapse</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">ngrams_2_collapse</span></div>
+
+
+<div class="viewcode-block" id="gather_enrichment_results">
+<a class="viewcode-back" href="../../dedansy.html#dansy.enrichment_plotting_helpers.gather_enrichment_results">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">gather_enrichment_results</span><span class="p">(</span><span class="n">hyper_values</span><span class="p">,</span> <span class="n">fpr_values</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    This gathers both the statistical results from the enrichment analysis and the FPR calculations to return a complete results dataframe.</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">    -----------</span>
+<span class="sd">        - hyper_values: dict</span>
+<span class="sd">            Key-value pairs of both conditions that contains dictionaries with key-value pairs of n-grams and their statistical enrichent in each condition.</span>
+<span class="sd">        - fpr_values: dict</span>
+<span class="sd">            Key-value pairs of each n-gram for the different conditions in a comparison</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">    --------</span>
+<span class="sd">        - res: pandas DataFrame</span>
+<span class="sd">            Results dataframe that has aggregated all the n-gram statistical results</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">fpr_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">fpr_values</span><span class="p">)</span>
+    <span class="n">hyper_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">hyper_values</span><span class="p">)</span>
+    <span class="n">hyper_df</span> <span class="o">=</span> <span class="n">hyper_df</span><span class="o">.</span><span class="n">melt</span><span class="p">(</span><span class="n">ignore_index</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">value_name</span><span class="o">=</span><span class="s1">&#39;p&#39;</span><span class="p">)</span>
+    <span class="n">hyper_df</span><span class="p">[</span><span class="s1">&#39;ngram&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">hyper_df</span><span class="o">.</span><span class="n">index</span>
+    <span class="n">fpr_df</span> <span class="o">=</span> <span class="n">fpr_df</span><span class="o">.</span><span class="n">melt</span><span class="p">(</span><span class="n">ignore_index</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">value_name</span><span class="o">=</span><span class="s1">&#39;FPR&#39;</span><span class="p">)</span>
+    <span class="n">fpr_df</span><span class="p">[</span><span class="s1">&#39;ngram&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">fpr_df</span><span class="o">.</span><span class="n">index</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="n">hyper_df</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">fpr_df</span><span class="p">)</span>
+    <span class="n">res</span><span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">subset</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;p&#39;</span><span class="p">],</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">res</span><span class="p">[</span><span class="s1">&#39;-log10(p)&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">res</span><span class="p">[</span><span class="s1">&#39;p&#39;</span><span class="p">])</span>
+    <span class="n">res</span><span class="p">[</span><span class="s1">&#39;FPR &lt;= 0.05&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">res</span><span class="p">[</span><span class="s1">&#39;FPR&#39;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mf">0.05</span>
+    <span class="k">return</span> <span class="n">res</span></div>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">calc_ngram_fpr_vals</span><span class="p">(</span><span class="n">hyper_vals</span><span class="p">,</span> <span class="n">rand_ngram_pvals</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Calculates the FPR for enriched n-grams in both conditions.</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">    -----------</span>
+<span class="sd">        hyper_vals: dict</span>
+<span class="sd">            Dict of dict that contain the enrichment results of each n-gram for both conditions.</span>
+<span class="sd">        rand_ngram_pvals: dict</span>
+<span class="sd">            Dict of dicts that contains the equivalent enrichment results for n-grams from randomly chosen genes.</span>
+<span class="sd">    </span>
+<span class="sd">    Returns:</span>
+<span class="sd">    --------</span>
+<span class="sd">        fpr_dict: dict</span>
+<span class="sd">            Dict of dict for each condition that contains the FPR values of each n-gram.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="c1"># Now calculating the fpr for each of the nodes found within the actual network</span>
+    
+    
+    <span class="n">fpr_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:{}</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">hyper_vals</span><span class="p">}</span>
+    <span class="k">for</span> <span class="n">c_dir</span><span class="p">,</span><span class="n">i</span> <span class="ow">in</span> <span class="n">hyper_vals</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">i</span><span class="p">:</span>
+            <span class="n">actual_p</span> <span class="o">=</span> <span class="n">i</span><span class="p">[</span><span class="n">node</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">rand_ngram_pvals</span><span class="p">[</span><span class="n">c_dir</span><span class="p">]:</span>
+                <span class="n">rand_p_vals</span> <span class="o">=</span> <span class="n">rand_ngram_pvals</span><span class="p">[</span><span class="n">c_dir</span><span class="p">][</span><span class="n">node</span><span class="p">]</span>
+                <span class="n">num_fp</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">([</span><span class="n">x</span> <span class="o">&lt;</span> <span class="n">actual_p</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">rand_p_vals</span><span class="p">])</span>
+                <span class="n">fpr_dict</span><span class="p">[</span><span class="n">c_dir</span><span class="p">][</span><span class="n">node</span><span class="p">]</span> <span class="o">=</span> <span class="n">num_fp</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="n">rand_p_vals</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">fpr_dict</span><span class="p">[</span><span class="n">c_dir</span><span class="p">][</span><span class="n">node</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">return</span> <span class="n">fpr_dict</span>
+
+
+<div class="viewcode-block" id="plot_functional_scores">
+<a class="viewcode-back" href="../../dedansy.html#dansy.enrichment_plotting_helpers.plot_functional_scores">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">plot_functional_scores</span><span class="p">(</span><span class="n">res</span><span class="p">,</span> <span class="n">show_FPR_handle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">aspect</span> <span class="o">=</span> <span class="mf">0.9</span><span class="p">,</span> <span class="n">order</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    This creates the bubble plots for both the separation and distinction scores calculated by deDANSy.</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">    -----------</span>
+<span class="sd">        - res: pandas DataFrame</span>
+<span class="sd">            The dataframe containing all scores and FPR values of the deDANSy analysis</span>
+<span class="sd">        - show_FPR_handle: bool</span>
+<span class="sd">            Whether the FPR portion of the legend should be displayed</span>
+<span class="sd">        - aspect: float</span>
+<span class="sd">            The aspect ratio of both plots</span>
+<span class="sd">        - order: dict</span>
+<span class="sd">            Key-value pairs of comparisons and their order</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">    --------</span>
+<span class="sd">        - ax: list of matplotlib Axes</span>
+<span class="sd">            The axes of each subplot generated</span>
+
+<span class="sd">    &#39;&#39;&#39;</span>
+
+    <span class="c1"># Starting with the Separation Scores subplot</span>
+    <span class="n">data_plot</span><span class="p">,</span> <span class="n">comp_order</span> <span class="o">=</span> <span class="n">create_score_plot_data</span><span class="p">(</span><span class="n">res</span><span class="p">,</span> <span class="s1">&#39;Separation&#39;</span><span class="p">,</span> <span class="n">order</span><span class="p">)</span>
+    
+    <span class="n">_</span><span class="p">,</span> <span class="n">axs</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">sns</span><span class="o">.</span><span class="n">scatterplot</span><span class="p">(</span><span class="n">data_plot</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="s1">&#39;Separation_Category_Order&#39;</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="s1">&#39;Order&#39;</span><span class="p">,</span>
+                    <span class="n">size</span><span class="o">=</span><span class="s1">&#39;Separation_Score&#39;</span><span class="p">,</span>
+                    <span class="n">hue</span><span class="o">=</span><span class="s1">&#39;Separation_Significance&#39;</span><span class="p">,</span>
+                    <span class="n">sizes</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">50</span><span class="p">),</span> <span class="n">size_norm</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">5</span><span class="p">),</span>
+                    <span class="n">palette</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;mediumorchid&#39;</span><span class="p">,</span> <span class="s1">&#39;silver&#39;</span><span class="p">],</span>
+                    <span class="n">hue_order</span><span class="o">=</span><span class="p">[</span><span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">],</span>
+                    <span class="n">linewidth</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span><span class="n">edgecolor</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">)</span>
+
+    <span class="c1"># Adding in labels</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;Separation Score&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+    
+    <span class="c1"># Cleaning up the ticks</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">xticks</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">],[</span><span class="s1">&#39;More&#39;</span><span class="p">,</span> <span class="s1">&#39;Less&#39;</span><span class="p">],</span> <span class="n">rotation</span><span class="o">=</span><span class="mi">45</span><span class="p">,</span> <span class="n">ha</span><span class="o">=</span><span class="s1">&#39;right&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">yticks</span><span class="p">([</span><span class="n">v</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">comp_order</span><span class="o">.</span><span class="n">values</span><span class="p">()],</span> <span class="p">[</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">comp_order</span><span class="o">.</span><span class="n">keys</span><span class="p">()])</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">(</span><span class="o">-</span><span class="mf">0.5</span><span class="p">,</span><span class="mf">1.5</span><span class="p">)</span>
+    
+    <span class="c1"># Cleaning up the legend</span>
+    <span class="n">handles</span><span class="p">,</span> <span class="n">labels</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">get_legend_handles_labels</span><span class="p">()</span>
+    <span class="n">new_handles</span><span class="p">,</span> <span class="n">new_labels</span> <span class="o">=</span> <span class="n">clean_up_legend</span><span class="p">(</span><span class="n">handles</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">show_FPR_handle</span><span class="p">)</span>
+    <span class="n">l</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">new_handles</span><span class="p">,</span><span class="n">new_labels</span><span class="p">,</span><span class="n">bbox_to_anchor</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="n">edgecolor</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">handletextpad</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+    <span class="n">l</span><span class="o">.</span><span class="n">get_frame</span><span class="p">()</span><span class="o">.</span><span class="n">set_linewidth</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
+
+    <span class="c1"># Setting some aesthetics for the handles</span>
+    <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="n">l</span><span class="o">.</span><span class="n">legend_handles</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">lines</span><span class="o">.</span><span class="n">Line2D</span><span class="p">):</span>
+            <span class="n">h</span><span class="o">.</span><span class="n">set_edgecolor</span><span class="p">(</span><span class="s1">&#39;k&#39;</span><span class="p">)</span>
+            <span class="n">h</span><span class="o">.</span><span class="n">set_linewidth</span><span class="p">(</span><span class="mf">.5</span><span class="p">)</span>
+        
+    <span class="c1"># Grid if there are more than 3 comparisons to provide a slight visual guidance</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">data_plot</span><span class="p">[</span><span class="s1">&#39;Comparison&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()))</span> <span class="o">&gt;=</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">visible</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="n">linewidth</span> <span class="o">=</span><span class="mf">0.25</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span> <span class="s1">&#39;:&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">set_aspect</span><span class="p">(</span><span class="n">aspect</span><span class="p">)</span>
+
+    <span class="c1"># Now the Distinction Score</span>
+    <span class="n">data_plot</span><span class="p">,</span><span class="n">comp_order</span> <span class="o">=</span> <span class="n">create_score_plot_data</span><span class="p">(</span><span class="n">res</span><span class="p">,</span> <span class="s1">&#39;Distinction&#39;</span><span class="p">,</span> <span class="n">order</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">sns</span><span class="o">.</span><span class="n">scatterplot</span><span class="p">(</span><span class="n">data_plot</span><span class="p">,</span><span class="n">x</span> <span class="o">=</span> <span class="s1">&#39;Distinction_Category_Order&#39;</span><span class="p">,</span>
+                    <span class="n">y</span> <span class="o">=</span> <span class="s1">&#39;Order&#39;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="s1">&#39;Distinction_Score&#39;</span><span class="p">,</span><span class="n">hue</span><span class="o">=</span><span class="s1">&#39;Distinction_Significance&#39;</span><span class="p">,</span><span class="n">sizes</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">50</span><span class="p">),</span><span class="n">size_norm</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">5</span><span class="p">),</span>
+                    <span class="n">palette</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;seagreen&#39;</span><span class="p">,</span> <span class="s1">&#39;silver&#39;</span><span class="p">],</span> <span class="n">hue_order</span><span class="o">=</span><span class="p">[</span><span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">],</span>
+                    <span class="n">linewidth</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span><span class="n">edgecolor</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">)</span>
+    
+    <span class="c1"># Tick clean up</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">xticks</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">],[</span><span class="s1">&#39;Stably Distinct&#39;</span><span class="p">,</span> <span class="s1">&#39;Unstable/Overlap&#39;</span><span class="p">],</span> <span class="n">rotation</span><span class="o">=</span><span class="mi">45</span><span class="p">,</span> <span class="n">ha</span><span class="o">=</span><span class="s1">&#39;right&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">yticks</span><span class="p">([</span><span class="n">v</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">comp_order</span><span class="o">.</span><span class="n">values</span><span class="p">()],</span> <span class="p">[</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">comp_order</span><span class="o">.</span><span class="n">keys</span><span class="p">()])</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;Distinction Scores&#39;</span><span class="p">,</span><span class="n">fontdict</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;size&#39;</span><span class="p">:</span><span class="mi">6</span><span class="p">})</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">([</span><span class="o">-</span><span class="mf">0.5</span><span class="p">,</span><span class="mf">1.5</span><span class="p">])</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">set_aspect</span><span class="p">(</span><span class="n">aspect</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="s1">&#39;y&#39;</span><span class="p">,</span><span class="n">labelleft</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+
+    <span class="c1"># Legend clean up and formatting</span>
+    <span class="n">handles</span><span class="p">,</span> <span class="n">labels</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">get_legend_handles_labels</span><span class="p">()</span>
+    <span class="n">new_handles</span><span class="p">,</span> <span class="n">new_labels</span> <span class="o">=</span> <span class="n">clean_up_legend</span><span class="p">(</span><span class="n">handles</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">show_FPR_handle</span><span class="p">)</span>
+    <span class="n">l</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">new_handles</span><span class="p">,</span><span class="n">new_labels</span><span class="p">,</span><span class="n">bbox_to_anchor</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="n">edgecolor</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">handletextpad</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+    <span class="n">l</span><span class="o">.</span><span class="n">get_frame</span><span class="p">()</span><span class="o">.</span><span class="n">set_linewidth</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
+    
+    <span class="c1"># Aesthetics of specific legend handles</span>
+    <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="n">l</span><span class="o">.</span><span class="n">legend_handles</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">lines</span><span class="o">.</span><span class="n">Line2D</span><span class="p">):</span>
+            <span class="n">h</span><span class="o">.</span><span class="n">set_edgecolor</span><span class="p">(</span><span class="s1">&#39;k&#39;</span><span class="p">)</span>
+            <span class="n">h</span><span class="o">.</span><span class="n">set_linewidth</span><span class="p">(</span><span class="mf">.5</span><span class="p">)</span>
+    
+    <span class="c1"># Grid if there are more than 3 comparisons to provide a slight visual guidance</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">data_plot</span><span class="p">[</span><span class="s1">&#39;Comparison&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()))</span> <span class="o">&gt;=</span><span class="mi">3</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">visible</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="n">linewidth</span> <span class="o">=</span><span class="mf">0.25</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span> <span class="s1">&#39;:&#39;</span><span class="p">)</span>
+        
+    <span class="k">return</span> <span class="n">axs</span></div>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">clean_up_legend</span><span class="p">(</span><span class="n">handles</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">show_FPR</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    An internal function that cleans up the legend of the bubble plot to ensure clear communication of results and scores. If desired the FPR portion of the legend will be omitted if it does not provide useful information.</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">    -----------</span>
+<span class="sd">        - handles: list</span>
+<span class="sd">            List of handles for the unmodified legend of the matplotlib/seaborn plot</span>
+<span class="sd">        - labels: list</span>
+<span class="sd">            List of labels for the unmodified legend of the matplotlib/seaborn plot</span>
+<span class="sd">        - show_FPR: bool</span>
+<span class="sd">            Flag of whether the FPR portion of the legend should be displayed.</span>
+<span class="sd">    </span>
+<span class="sd">    Returns:</span>
+<span class="sd">    --------</span>
+<span class="sd">        - new_h: list</span>
+<span class="sd">            List of handles for the new legend of the matplotlib/seaborn plot</span>
+<span class="sd">        - new_l: list</span>
+<span class="sd">            List of labels for the new legend of the matplotlib/seaborn plot</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">if</span> <span class="n">show_FPR</span><span class="p">:</span>
+            <span class="n">handles_2_rm</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">7</span><span class="p">,</span><span class="mi">9</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">handles_2_rm</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">7</span><span class="p">,</span><span class="mi">9</span><span class="p">]</span> <span class="c1">#Will not always need the FPR legend details so will remove them as well</span>
+    
+    <span class="n">new_h</span> <span class="o">=</span> <span class="p">[</span><span class="n">h</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">h</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">handles</span><span class="p">)</span> <span class="k">if</span> <span class="n">i</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">handles_2_rm</span><span class="p">]</span>
+    <span class="n">new_l</span> <span class="o">=</span> <span class="p">[</span><span class="n">h</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">h</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span> <span class="k">if</span> <span class="n">i</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">handles_2_rm</span><span class="p">]</span>
+    
+    <span class="k">if</span> <span class="n">show_FPR</span><span class="p">:</span>
+        <span class="n">new_l</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;FPR$\leq$0.05&#39;</span>
+        <span class="n">new_l</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;FPR &gt; 0.05&#39;</span>
+        <span class="n">new_l</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;Score&#39;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">new_l</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;Score&#39;</span>
+
+    <span class="k">return</span> <span class="n">new_h</span><span class="p">,</span> <span class="n">new_l</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">create_score_plot_data</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">metric</span><span class="p">,</span> <span class="n">order</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    This creates the plot data for generating the final bubble plot for a multicomparison result. This ensures a consistent easy to read bubble size is present and creates the order the plot will be generated in. </span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">    -----------</span>
+<span class="sd">        - data: pandas DataFrame</span>
+<span class="sd">            The scores dataframe generated by the deDANSy object</span>
+<span class="sd">        - metric: str</span>
+<span class="sd">            Either the Separation or Distinction score that will be used for plotting</span>
+<span class="sd">        - order: dict (Optional)</span>
+<span class="sd">            Key-value pairs that determine which order the multiple comparisons will be displayed in with the keys being the comparison and the values the order.</span>
+<span class="sd">    </span>
+<span class="sd">    Returns:</span>
+<span class="sd">    --------</span>
+<span class="sd">        - plot_data: pandas DataFrame</span>
+<span class="sd">            A modified dataframe which contains a new Order column and additional values to create consistent sizing</span>
+<span class="sd">        - comp_map: dict</span>
+<span class="sd">            The order dictionary that will be used for displaying the comparisons</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">plot_data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">order</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">comps</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">plot_data</span><span class="p">[</span><span class="s1">&#39;Comparison&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
+        <span class="n">comp_map</span> <span class="o">=</span> <span class="p">{</span><span class="n">v</span><span class="p">:</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">comps</span><span class="p">)}</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">comp_map</span> <span class="o">=</span> <span class="n">order</span>
+    <span class="n">plot_data</span><span class="p">[</span><span class="s1">&#39;Order&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">plot_data</span><span class="p">[</span><span class="s1">&#39;Comparison&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">comp_map</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">metric</span> <span class="o">==</span> <span class="s1">&#39;Separation&#39;</span><span class="p">:</span>
+        <span class="n">max_vals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">plot_data</span><span class="p">[</span><span class="s1">&#39;Separation_Score&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
+        <span class="n">cat_order</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;More&#39;</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span><span class="s1">&#39;Less&#39;</span><span class="p">:</span><span class="mi">1</span><span class="p">}</span>
+        <span class="n">plot_data</span><span class="p">[</span><span class="s1">&#39;Separation_Category_Order&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">plot_data</span><span class="p">[</span><span class="s1">&#39;Separation_Category&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">cat_order</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">max_vals</span><span class="p">,</span><span class="mi">5</span><span class="p">)):</span>
+            <span class="n">plot_data</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="nb">len</span><span class="p">(</span><span class="n">plot_data</span><span class="p">)]</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">plot_data</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="nb">len</span><span class="p">(</span><span class="n">plot_data</span><span class="p">),</span> <span class="s1">&#39;Separation_Score&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># The IQR scores tend to be between 0-2 so getting the closest integer and then taking 5 steps to force the size</span>
+        <span class="n">max_vals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">plot_data</span><span class="p">[</span><span class="s1">&#39;Distinction_Score&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
+        <span class="n">cat_order</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;Stably Distinct&#39;</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span><span class="s1">&#39;Unstable/Overlapping&#39;</span><span class="p">:</span><span class="mi">1</span><span class="p">}</span>
+        <span class="n">plot_data</span><span class="p">[</span><span class="s1">&#39;Distinction_Category_Order&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">plot_data</span><span class="p">[</span><span class="s1">&#39;Distinction_Category&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">cat_order</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">max_vals</span><span class="p">,</span><span class="mi">5</span><span class="p">)):</span>
+            <span class="n">plot_data</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="nb">len</span><span class="p">(</span><span class="n">plot_data</span><span class="p">)]</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">plot_data</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="nb">len</span><span class="p">(</span><span class="n">plot_data</span><span class="p">),</span> <span class="s1">&#39;Distinction_Score&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+
+    <span class="k">return</span> <span class="n">plot_data</span><span class="p">,</span><span class="n">comp_map</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Naegle Lab.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

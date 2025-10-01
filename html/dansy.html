@@ -1,0 +1,210 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DANSy &mdash; DANSy 1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=29a6c3e3"></script>
+      <script src="_static/doctools.js?v=9a2dae69"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="deDANSy" href="dedansy.html" />
+    <link rel="prev" title="Overview" href="Overview.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            DANSy
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="Overview.html">Overview</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">DANSy</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#dansy.dansy"><code class="docutils literal notranslate"><span class="pre">dansy</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#dansy.dansy.draw_network"><code class="docutils literal notranslate"><span class="pre">dansy.draw_network()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dansy.dansy.ngram_protein_count"><code class="docutils literal notranslate"><span class="pre">dansy.ngram_protein_count()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dansy.dansy.retrieve_longest_arch"><code class="docutils literal notranslate"><span class="pre">dansy.retrieve_longest_arch()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dansy.dansy.retrieve_protein_info"><code class="docutils literal notranslate"><span class="pre">dansy.retrieve_protein_info()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dansy.dansy.retrieve_random_ids"><code class="docutils literal notranslate"><span class="pre">dansy.retrieve_random_ids()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dansy.dansy.summary"><code class="docutils literal notranslate"><span class="pre">dansy.summary()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="#dansy-supporting-functions">DANSy Supporting Functions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#dansy.generateCompleteProteome.import_proteome_files"><code class="docutils literal notranslate"><span class="pre">import_proteome_files()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="dedansy.html">deDANSy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dedansy.html#dedansy-supporting-functions">deDANSy Supporting Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Examples/Examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Examples/Examples.html#base-dansy-analysis">Base DANSy Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Examples/Examples.html#differential-expression-dansy-dedansy-analysis">Differential Expression DANSy (deDANSy) Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Dependencies.html">Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Installation.html">Installation</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">DANSy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#dansy-supporting-functions">DANSy Supporting Functions</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">DANSy</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">DANSy</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/dansy.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="dansy">
+<h1>DANSy<a class="headerlink" href="#dansy" title="Link to this heading"></a></h1>
+<p>This is the base DANSy class that contains all the methods necessary to analyze a collection of proteins.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="dansy.dansy">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dansy.</span></span><span class="sig-name descname"><span class="pre">dansy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">protsOI</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ref</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interproIDs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dansy/dansy.html#dansy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dansy.dansy" title="Link to this definition"></a></dt>
+<dd><p>A domain n-gram network built off either a list of proteins of interest or a reference file generated by CoDIAC. If InterPro IDs are provided will extract n-grams that contain only those IDs. Default values will generate a 10-gram network model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>protsOI</strong><span class="classifier">list</span></dt><dd><p>List of UniProt IDs whose n-grams are desired to generate the n-gram network.</p>
+</dd>
+<dt><strong>ref</strong><span class="classifier">pandas DataFrame (Recommended)</span></dt><dd><p>Dataframe that has been generated from CoDIAC containing both InterPro and UniProt information.</p>
+</dd>
+<dt><strong>n</strong><span class="classifier">int (Optional)</span></dt><dd><p>N-gram lengths to be extracted</p>
+</dd>
+<dt><strong>interproIDs</strong><span class="classifier">list (Optional)</span></dt><dd><p>List of Interpro IDs to extract n-grams. If omitted, all n-grams will be extracted.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="dansy.dansy.draw_network">
+<span class="sig-name descname"><span class="pre">draw_network</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/dansy/dansy.html#dansy.draw_network"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dansy.dansy.draw_network" title="Link to this definition"></a></dt>
+<dd><p>Draws a basic version of the Graph with the networkx spring layout implementation. It is recommended to use the actual networkx package for a full implementation.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dansy.dansy.ngram_protein_count">
+<span class="sig-name descname"><span class="pre">ngram_protein_count</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ngram</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dansy/dansy.html#dansy.ngram_protein_count"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dansy.dansy.ngram_protein_count" title="Link to this definition"></a></dt>
+<dd><p>Returns the number of proteins an individual n-gram was found within.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dansy.dansy.retrieve_longest_arch">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">retrieve_longest_arch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ref</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dansy/dansy.html#dansy.retrieve_longest_arch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dansy.dansy.retrieve_longest_arch" title="Link to this definition"></a></dt>
+<dd><p>Retrieves the longest domain architecture length.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dansy.dansy.retrieve_protein_info">
+<span class="sig-name descname"><span class="pre">retrieve_protein_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ngram</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dansy/dansy.html#dansy.retrieve_protein_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dansy.dansy.retrieve_protein_info" title="Link to this definition"></a></dt>
+<dd><p>Retrieves the reference information of proteins of interest. If an InterPro ID/n-gram is provided it will use that instead and search for the proteins with that ID and return that instead.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dansy.dansy.retrieve_random_ids">
+<span class="sig-name descname"><span class="pre">retrieve_random_ids</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">882</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dansy/dansy.html#dansy.retrieve_random_ids"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dansy.dansy.retrieve_random_ids" title="Link to this definition"></a></dt>
+<dd><p>Generator of random UniProt IDs from the base network.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dansy.dansy.summary">
+<span class="sig-name descname"><span class="pre">summary</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">detailed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dansy/dansy.html#dansy.summary"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dansy.dansy.summary" title="Link to this definition"></a></dt>
+<dd><p>Output a summary of key features that are represented within the n-gram network.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="dansy-supporting-functions">
+<h1>DANSy Supporting Functions<a class="headerlink" href="#dansy-supporting-functions" title="Link to this heading"></a></h1>
+<p>These are functions integrated into DANSy, which are not necessary to call, but can aid in initial setup of a DANSy object.</p>
+<span class="target" id="module-dansy.generateCompleteProteome"></span><dl class="py function">
+<dt class="sig sig-object py" id="dansy.generateCompleteProteome.import_proteome_files">
+<span class="sig-prename descclassname"><span class="pre">dansy.generateCompleteProteome.</span></span><span class="sig-name descname"><span class="pre">import_proteome_files</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reference_file_suffix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ref_file_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dansy/generateCompleteProteome.html#import_proteome_files"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dansy.generateCompleteProteome.import_proteome_files" title="Link to this definition"></a></dt>
+<dd><p>Imports the files that are used for the generation of the reference dataframe of the complete canonical proteome.</p>
+<p>Note: Need to adjust this so it looks in only one folder from here on out.</p>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="Overview.html" class="btn btn-neutral float-left" title="Overview" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="dedansy.html" class="btn btn-neutral float-right" title="deDANSy" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Naegle Lab.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,404 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>deDANSy &mdash; DANSy 1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=29a6c3e3"></script>
+      <script src="_static/doctools.js?v=9a2dae69"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Installation" href="Installation.html" />
+    <link rel="prev" title="DANSy" href="dansy.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            DANSy
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="Overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Examples/Examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Examples/Examples.html#base-dansy-analysis">Base DANSy Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Examples/Examples.html#differential-expression-dansy-dedansy-analysis">Differential Expression DANSy (deDANSy) Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Dependencies.html">Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dansy.html">DANSy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dansy.html#dansy-supporting-functions">DANSy Supporting Functions</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">deDANSy</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#dansy.DEdansy"><code class="docutils literal notranslate"><span class="pre">DEdansy</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#dansy.DEdansy.DEG_network_sep"><code class="docutils literal notranslate"><span class="pre">DEdansy.DEG_network_sep()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dansy.DEdansy.calc_DEG_ngrams"><code class="docutils literal notranslate"><span class="pre">DEdansy.calc_DEG_ngrams()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dansy.DEdansy.calculate_ngram_enrichment"><code class="docutils literal notranslate"><span class="pre">DEdansy.calculate_ngram_enrichment()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dansy.DEdansy.calculate_scores"><code class="docutils literal notranslate"><span class="pre">DEdansy.calculate_scores()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dansy.DEdansy.create_contrast_metadata"><code class="docutils literal notranslate"><span class="pre">DEdansy.create_contrast_metadata()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dansy.DEdansy.deg_summary"><code class="docutils literal notranslate"><span class="pre">DEdansy.deg_summary()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dansy.DEdansy.get_ngram_results"><code class="docutils literal notranslate"><span class="pre">DEdansy.get_ngram_results()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dansy.DEdansy.plot_DEG_ns"><code class="docutils literal notranslate"><span class="pre">DEdansy.plot_DEG_ns()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dansy.DEdansy.plot_ngram_enrichment"><code class="docutils literal notranslate"><span class="pre">DEdansy.plot_ngram_enrichment()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dansy.DEdansy.plot_scores"><code class="docutils literal notranslate"><span class="pre">DEdansy.plot_scores()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="#dedansy-supporting-functions">deDANSy Supporting Functions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#dansy.network_separation_helpers.build_network_reference_dict"><code class="docutils literal notranslate"><span class="pre">build_network_reference_dict()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dansy.network_separation_helpers.network_separation"><code class="docutils literal notranslate"><span class="pre">network_separation()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dansy.enrichment_plotting_helpers.collapse_to_max_info"><code class="docutils literal notranslate"><span class="pre">collapse_to_max_info()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dansy.enrichment_plotting_helpers.gather_enrichment_results"><code class="docutils literal notranslate"><span class="pre">gather_enrichment_results()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dansy.enrichment_plotting_helpers.get_max_info_enriched_ngrams"><code class="docutils literal notranslate"><span class="pre">get_max_info_enriched_ngrams()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dansy.enrichment_plotting_helpers.plot_enriched_ngrams"><code class="docutils literal notranslate"><span class="pre">plot_enriched_ngrams()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dansy.enrichment_plotting_helpers.plot_functional_scores"><code class="docutils literal notranslate"><span class="pre">plot_functional_scores()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dansy.enrichment_helpers.calculate_fpr"><code class="docutils literal notranslate"><span class="pre">calculate_fpr()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dansy.enrichment_helpers.calculate_separation_stability"><code class="docutils literal notranslate"><span class="pre">calculate_separation_stability()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dansy.enrichment_helpers.cohen_d"><code class="docutils literal notranslate"><span class="pre">cohen_d()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dansy.enrichment_helpers.individual_trial_calc"><code class="docutils literal notranslate"><span class="pre">individual_trial_calc()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dansy.enrichment_helpers.retrieve_fpr_checks"><code class="docutils literal notranslate"><span class="pre">retrieve_fpr_checks()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="Installation.html">Installation</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="dansy.html">DANSy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dansy.html#dansy-supporting-functions">DANSy Supporting Functions</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">DANSy</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">deDANSy</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/dedansy.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="dedansy">
+<h1>deDANSy<a class="headerlink" href="#dedansy" title="Link to this heading"></a></h1>
+<p>This is the deDANSy class, which extend the DANSy analysis to differential expression analysis results.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="dansy.DEdansy">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dansy.</span></span><span class="sig-name descname"><span class="pre">DEdansy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id_conv</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conv_cols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Gene</span> <span class="pre">stable</span> <span class="pre">ID'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_ids</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'gene_id'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">uniprot_ref</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">penalty</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'dynamic'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">run_conversion</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dansy/deDANSy.html#DEdansy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dansy.DEdansy" title="Link to this definition"></a></dt>
+<dd><p>A container class of multiple Domain n-gram networks related to a differentially expressed dataset that was generated using the DESeq analysis pipeline. This provides methods to analyze and contrast pairs of domain architecture subnetworks to understand changes in functional molecular ecosystems available to different conditions.</p>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dansy.DEdansy.DEG_network_sep" title="dansy.DEdansy.DEG_network_sep"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DEG_network_sep</span></code></a>([force_run])</p></td>
+<td><p>This computes the network separation of two conditions that designates individual genes as differentially expressed.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#dansy.DEdansy.calc_DEG_ngrams" title="dansy.DEdansy.calc_DEG_ngrams"><code class="xref py py-obj docutils literal notranslate"><span class="pre">calc_DEG_ngrams</span></code></a>(comp[, batch_mode])</p></td>
+<td><p>Defines the DEG UniProt IDs and the associated n-grams for the datasset of interest</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dansy.DEdansy.calculate_ngram_enrichment" title="dansy.DEdansy.calculate_ngram_enrichment"><code class="xref py py-obj docutils literal notranslate"><span class="pre">calculate_ngram_enrichment</span></code></a>(comparison[, ...])</p></td>
+<td><p>Calculates the n-gram enrichment for the comparison of interest to find the most significant n-grams.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#dansy.DEdansy.calculate_scores" title="dansy.DEdansy.calculate_scores"><code class="xref py py-obj docutils literal notranslate"><span class="pre">calculate_scores</span></code></a>(comps[, fpr_trials, ...])</p></td>
+<td><p>This calculates the separation and distinct functional neighborhood scores for a deDANSy instance.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dansy.DEdansy.create_contrast_metadata" title="dansy.DEdansy.create_contrast_metadata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_contrast_metadata</span></code></a>(comparisons, ...[, ...])</p></td>
+<td><p>This create the metadata for the deDANSy object that contains information for each comparison of interest and the cutoffs to define differentially expressed genes/proteins (DEGs).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#dansy.DEdansy.deg_summary" title="dansy.DEdansy.deg_summary"><code class="xref py py-obj docutils literal notranslate"><span class="pre">deg_summary</span></code></a>([detailed])</p></td>
+<td><p>This provides a summary of the DEG information that has been used within this dataset.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dansy.DEdansy.get_ngram_results" title="dansy.DEdansy.get_ngram_results"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_ngram_results</span></code></a>(comparison)</p></td>
+<td><p>Returns the n-gram enrichment results of the comparison of interest.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#dansy.DEdansy.plot_DEG_ns" title="dansy.DEdansy.plot_DEG_ns"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_DEG_ns</span></code></a>([pos, deg_labels, large_cc_mode])</p></td>
+<td><p>Using the defined differentially expressed genes displaying a network graph of the n-grams that are associated or shared between the DEG conditions.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dansy.DEdansy.plot_ngram_enrichment" title="dansy.DEdansy.plot_ngram_enrichment"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_ngram_enrichment</span></code></a>(comparison[, p, q, ...])</p></td>
+<td><p>Creates a bubble plot of the enriched n-grams for up and down-regulated n-grams for the comparison of interest.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#dansy.DEdansy.plot_scores" title="dansy.DEdansy.plot_scores"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_scores</span></code></a>([show_FPR, aspect, order])</p></td>
+<td><p>This creates the bubble plots for the separation and distinction scores.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="dansy.DEdansy.DEG_network_sep">
+<span class="sig-name descname"><span class="pre">DEG_network_sep</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">force_run</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dansy/deDANSy.html#DEdansy.DEG_network_sep"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dansy.DEdansy.DEG_network_sep" title="Link to this definition"></a></dt>
+<dd><p>This computes the network separation of two conditions that designates individual genes as differentially expressed. Silently passes a nan if it fails.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dansy.DEdansy.calc_DEG_ngrams">
+<span class="sig-name descname"><span class="pre">calc_DEG_ngrams</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">comp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dansy/deDANSy.html#DEdansy.calc_DEG_ngrams"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dansy.DEdansy.calc_DEG_ngrams" title="Link to this definition"></a></dt>
+<dd><p>Defines the DEG UniProt IDs and the associated n-grams for the datasset of interest</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dansy.DEdansy.calculate_ngram_enrichment">
+<span class="sig-name descname"><span class="pre">calculate_ngram_enrichment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">comparison</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fpr_trials</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dansy/deDANSy.html#DEdansy.calculate_ngram_enrichment"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dansy.DEdansy.calculate_ngram_enrichment" title="Link to this definition"></a></dt>
+<dd><p>Calculates the n-gram enrichment for the comparison of interest to find the most significant n-grams.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dansy.DEdansy.calculate_scores">
+<span class="sig-name descname"><span class="pre">calculate_scores</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">comps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fpr_trials</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_pval</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_ss_trials</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">processes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overwrite</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dansy/deDANSy.html#DEdansy.calculate_scores"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dansy.DEdansy.calculate_scores" title="Link to this definition"></a></dt>
+<dd><p>This calculates the separation and distinct functional neighborhood scores for a deDANSy instance. It creates new attributes for the deDANSy instance containing all the information of interest. If scores for a condition have been generated, this will raise a warning and overwrite existing scores.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>dedansy</strong><span class="classifier">deDANSy object</span></dt><dd><p>The base deDANSy object containing all n-grams and expression data</p>
+</dd>
+<dt><strong>comps</strong><span class="classifier">list or str</span></dt><dd><p>The conditions that will be compared</p>
+</dd>
+<dt><strong>fpr_trials</strong><span class="classifier">int (Optional)</span></dt><dd><p>Number of FPR trials to perform.</p>
+</dd>
+<dt><strong>min_pval</strong><span class="classifier">int (Optional)</span></dt><dd><p>The log10 transform of the minimum p-value to use for the p-value pruning sweep step.</p>
+</dd>
+<dt><strong>num_ss_trials</strong><span class="classifier">int (Optional)</span></dt><dd><p>The number of subsampled (and random) networks used to build distributions for comparing the network separation and IQR</p>
+</dd>
+<dt><strong>processes</strong><span class="classifier">int (Optional)</span></dt><dd><p>Number of processes to use if multiprocessing is desired. (Recommended having 4-8 when feasible)</p>
+</dd>
+<dt><strong>seed</strong><span class="classifier">int</span></dt><dd><p>Seed for random numbers. If not provided will use system time</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>The following attributes are added or adjusted:</dt><dd></dd>
+<dt><strong>scores</strong><span class="classifier">pandas DataFrame</span></dt><dd><p>All scores, p-values, and FPR values for each condition</p>
+</dd>
+<dt><strong>raw_dists</strong><span class="classifier">pandas DataFrame</span></dt><dd><p>For each condition the raw values that made up the distributions for each score</p>
+</dd>
+<dt><strong>fpr_dists</strong><span class="classifier">pandas DataFrame</span></dt><dd><p>For each condition the p-values from the random FPR trials for calculating the FPR</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dansy.DEdansy.create_contrast_metadata">
+<span class="sig-name descname"><span class="pre">create_contrast_metadata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">comparisons</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fc_cols</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pval_cols</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fcs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alphas</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dansy/deDANSy.html#DEdansy.create_contrast_metadata"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dansy.DEdansy.create_contrast_metadata" title="Link to this definition"></a></dt>
+<dd><p>This create the metadata for the deDANSy object that contains information for each comparison of interest and the cutoffs to define differentially expressed genes/proteins (DEGs). Must provide the same number of columns for both the fold change and p-value columns</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>comparisons</strong><span class="classifier">list</span></dt><dd><p>All comparisons that will be used that match what is provided in the deDANSy dataset</p>
+</dd>
+<dt><strong>fc_cols</strong><span class="classifier">str or list</span></dt><dd><p>Either a stem or list of columns used for the foldchanges to define DEGs (Use the delim parameter and a stem if reoccurring patterns are used where the comparison is at the end.)</p>
+</dd>
+<dt><strong>pval_cols</strong><span class="classifier">str or list</span></dt><dd><p>Either a stem or list of columns used for the p-values to define DEGs. (Use the delim parameter and a stem if reoccurring patterns are used where the comparison is at the end.)</p>
+</dd>
+<dt><strong>fcs</strong><span class="classifier">float or list</span></dt><dd><p>The fold-change cutoff. Can either be a single value or a list of values of the same size as comparisons</p>
+</dd>
+<dt><strong>alphas</strong><span class="classifier">float or list</span></dt><dd><p>The p-value cutoff. Can either be a single value or a list of values of the same size as comparisons</p>
+</dd>
+<dt><strong>delim</strong><span class="classifier">str (Optional)</span></dt><dd><p>Delimiter used in column names separating the stem of the column from the comparison. If none then will take the</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>comp_meta</strong><span class="classifier">pandas DataFrame</span></dt><dd><p>DataFrame where each row is a single comparison</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dansy.DEdansy.deg_summary">
+<span class="sig-name descname"><span class="pre">deg_summary</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">detailed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dansy/deDANSy.html#DEdansy.deg_summary"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dansy.DEdansy.deg_summary" title="Link to this definition"></a></dt>
+<dd><p>This provides a summary of the DEG information that has been used within this dataset.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dansy.DEdansy.get_ngram_results">
+<span class="sig-name descname"><span class="pre">get_ngram_results</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">comparison</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dansy/deDANSy.html#DEdansy.get_ngram_results"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dansy.DEdansy.get_ngram_results" title="Link to this definition"></a></dt>
+<dd><p>Returns the n-gram enrichment results of the comparison of interest.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dansy.DEdansy.plot_DEG_ns">
+<span class="sig-name descname"><span class="pre">plot_DEG_ns</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pos</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deg_labels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">large_cc_mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dansy/deDANSy.html#DEdansy.plot_DEG_ns"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dansy.DEdansy.plot_DEG_ns" title="Link to this definition"></a></dt>
+<dd><p>Using the defined differentially expressed genes displaying a network graph of the n-grams that are associated or shared between the DEG conditions.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dansy.DEdansy.plot_ngram_enrichment">
+<span class="sig-name descname"><span class="pre">plot_ngram_enrichment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">comparison</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_FPR</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dansy/deDANSy.html#DEdansy.plot_ngram_enrichment"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dansy.DEdansy.plot_ngram_enrichment" title="Link to this definition"></a></dt>
+<dd><p>Creates a bubble plot of the enriched n-grams for up and down-regulated n-grams for the comparison of interest. The resulting plot can be paritally customized based on additional keyword parameters. This function is a wrapper for the plot_enriched_ngrams function from the enrichment_plotting_helpers module, but specific to the deDANSy object instance.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dansy.DEdansy.plot_scores">
+<span class="sig-name descname"><span class="pre">plot_scores</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">show_FPR</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aspect</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.9</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dansy/deDANSy.html#DEdansy.plot_scores"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dansy.DEdansy.plot_scores" title="Link to this definition"></a></dt>
+<dd><p>This creates the bubble plots for the separation and distinction scores. This is a wrapper function for the base plotting function found in the enrichment_plotting_helpers.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>show_FPR</strong><span class="classifier">bool (Optional)</span></dt><dd><p>Whether the FPR legend handles should be displayed.</p>
+</dd>
+<dt><strong>aspect</strong><span class="classifier">float (Optional)</span></dt><dd><p>The aspect ratio for each score plot.</p>
+</dd>
+<dt><strong>order</strong><span class="classifier">dict (Optional)</span></dt><dd><p>Key-value pairs for each comparison and what order they should be displayed on the axis.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>ax</strong><span class="classifier">matplotlib Axes</span></dt><dd><p>The axes of the resulting plot</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="dedansy-supporting-functions">
+<h1>deDANSy Supporting Functions<a class="headerlink" href="#dedansy-supporting-functions" title="Link to this heading"></a></h1>
+<p>These are functions integrated into deDANSy, which are not necessary to call, but can aid in the analysis of a deDANSy object or graphs from multiple (de)DANSy objects.</p>
+<span class="target" id="module-dansy.network_separation_helpers"></span><dl class="py function">
+<dt class="sig sig-object py" id="dansy.network_separation_helpers.build_network_reference_dict">
+<span class="sig-prename descclassname"><span class="pre">dansy.network_separation_helpers.</span></span><span class="sig-name descname"><span class="pre">build_network_reference_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ref_ngram_net</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">penalty</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dansy/network_separation_helpers.html#build_network_reference_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dansy.network_separation_helpers.build_network_reference_dict" title="Link to this definition"></a></dt>
+<dd><p>This builds the dict that contains the reference network information necessary for calculating the network separation value from a provided DomainNgramNetwork object.</p>
+<p>It is recommended to use this function to generate the reference dictionary prior to calculating network separation, especially when using a dynamic penalty and comparing several networks, to improve the execution speed of the calculation.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dansy.network_separation_helpers.network_separation">
+<span class="sig-prename descclassname"><span class="pre">dansy.network_separation_helpers.</span></span><span class="sig-name descname"><span class="pre">network_separation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">G_in</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">H_in</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ref_G_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mmd_verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_run</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dansy/network_separation_helpers.html#network_separation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dansy.network_separation_helpers.network_separation" title="Link to this definition"></a></dt>
+<dd><p>Calculates the network separation between two networks of interest that lie on a common larger, reference network.</p>
+</dd></dl>
+
+<span class="target" id="module-dansy.enrichment_plotting_helpers"></span><dl class="py function">
+<dt class="sig sig-object py" id="dansy.enrichment_plotting_helpers.collapse_to_max_info">
+<span class="sig-prename descclassname"><span class="pre">dansy.enrichment_plotting_helpers.</span></span><span class="sig-name descname"><span class="pre">collapse_to_max_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ngram_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">res_df</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dansy/enrichment_plotting_helpers.html#collapse_to_max_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dansy.enrichment_plotting_helpers.collapse_to_max_info" title="Link to this definition"></a></dt>
+<dd><p>This collapses the n-grams to those that represent the most discriminating information of interest. This will take longer n-grams and collapse them into shorter ones if the trends of p-values are similar, but the longer n-grams are slightly less signficant. If a longer n-gram is more significant it will not be collapsed.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dansy.enrichment_plotting_helpers.gather_enrichment_results">
+<span class="sig-prename descclassname"><span class="pre">dansy.enrichment_plotting_helpers.</span></span><span class="sig-name descname"><span class="pre">gather_enrichment_results</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hyper_values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fpr_values</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dansy/enrichment_plotting_helpers.html#gather_enrichment_results"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dansy.enrichment_plotting_helpers.gather_enrichment_results" title="Link to this definition"></a></dt>
+<dd><p>This gathers both the statistical results from the enrichment analysis and the FPR calculations to return a complete results dataframe.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dansy.enrichment_plotting_helpers.get_max_info_enriched_ngrams">
+<span class="sig-prename descclassname"><span class="pre">dansy.enrichment_plotting_helpers.</span></span><span class="sig-name descname"><span class="pre">get_max_info_enriched_ngrams</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">res_df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">condition_labels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dansy/enrichment_plotting_helpers.html#get_max_info_enriched_ngrams"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dansy.enrichment_plotting_helpers.get_max_info_enriched_ngrams" title="Link to this definition"></a></dt>
+<dd><p>Returns the top X values of enriched n-grams that passes a quantile and/or p-value cutoff. This will collapse n-grams that provide similar p-value trends into a single representative n-gram if a shorter n-gram is in the longer n-gram. Longer n-grams that have more signficant p-values than their shorter counterparts will be retained.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dansy.enrichment_plotting_helpers.plot_enriched_ngrams">
+<span class="sig-prename descclassname"><span class="pre">dansy.enrichment_plotting_helpers.</span></span><span class="sig-name descname"><span class="pre">plot_enriched_ngrams</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">res</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dansyOI</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">condition_labels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_FPR</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dansy/enrichment_plotting_helpers.html#plot_enriched_ngrams"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dansy.enrichment_plotting_helpers.plot_enriched_ngrams" title="Link to this definition"></a></dt>
+<dd><p>This plots the top X percent (default 5) n-grams enriched between two different conditions. For clarity n-grams that contain similar information will be collapsed into the shorter n-gram (i.e. if EGF-like domain and EGF-like domain|EGF-like domain both have similar enrichment values they will only be represented by EGF-like domain).</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dansy.enrichment_plotting_helpers.plot_functional_scores">
+<span class="sig-prename descclassname"><span class="pre">dansy.enrichment_plotting_helpers.</span></span><span class="sig-name descname"><span class="pre">plot_functional_scores</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">res</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_FPR_handle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aspect</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.9</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dansy/enrichment_plotting_helpers.html#plot_functional_scores"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dansy.enrichment_plotting_helpers.plot_functional_scores" title="Link to this definition"></a></dt>
+<dd><p>This creates the bubble plots for both the separation and distinction scores calculated by deDANSy.</p>
+</dd></dl>
+
+<span class="target" id="module-dansy.enrichment_helpers"></span><dl class="py function">
+<dt class="sig sig-object py" id="dansy.enrichment_helpers.calculate_fpr">
+<span class="sig-prename descclassname"><span class="pre">dansy.enrichment_helpers.</span></span><span class="sig-name descname"><span class="pre">calculate_fpr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">actual_res</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_res</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dansy/enrichment_helpers.html#calculate_fpr"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dansy.enrichment_helpers.calculate_fpr" title="Link to this definition"></a></dt>
+<dd><p>For each result of interest calculates the False positive rate</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dansy.enrichment_helpers.calculate_separation_stability">
+<span class="sig-prename descclassname"><span class="pre">dansy.enrichment_helpers.</span></span><span class="sig-name descname"><span class="pre">calculate_separation_stability</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dedansy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_trials</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pval_sweep</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">array([1.00000000e+00,</span> <span class="pre">3.16227766e-01,</span> <span class="pre">1.00000000e-01,</span> <span class="pre">3.16227766e-02,</span> <span class="pre">1.00000000e-02,</span> <span class="pre">3.16227766e-03,</span> <span class="pre">1.00000000e-03,</span> <span class="pre">3.16227766e-04,</span> <span class="pre">1.00000000e-04,</span> <span class="pre">3.16227766e-05,</span> <span class="pre">1.00000000e-05,</span> <span class="pre">3.16227766e-06,</span> <span class="pre">1.00000000e-06,</span> <span class="pre">3.16227766e-07,</span> <span class="pre">1.00000000e-07,</span> <span class="pre">3.16227766e-08,</span> <span class="pre">1.00000000e-08,</span> <span class="pre">3.16227766e-09,</span> <span class="pre">1.00000000e-09,</span> <span class="pre">3.16227766e-10,</span> <span class="pre">1.00000000e-10])</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_distributions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">processes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dansy/enrichment_helpers.html#calculate_separation_stability"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dansy.enrichment_helpers.calculate_separation_stability" title="Link to this definition"></a></dt>
+<dd><p>Generates the distribution of network separation and interquartile range of network separation values during pruning for generating the different scores for deDANSy analysis. This is the key function of the algorithm that gathers all the results.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dansy.enrichment_helpers.cohen_d">
+<span class="sig-prename descclassname"><span class="pre">dansy.enrichment_helpers.</span></span><span class="sig-name descname"><span class="pre">cohen_d</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dansy/enrichment_helpers.html#cohen_d"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dansy.enrichment_helpers.cohen_d" title="Link to this definition"></a></dt>
+<dd><p>Calculates the Cohen’s d effect size of 2 lists of values, where the second is considered the “control” group.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dansy.enrichment_helpers.individual_trial_calc">
+<span class="sig-prename descclassname"><span class="pre">dansy.enrichment_helpers.</span></span><span class="sig-name descname"><span class="pre">individual_trial_calc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dedansy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arch_weights</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">comp_arch_dist</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ratio</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sweep</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">originals</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dist_flag</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">123</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dansy/enrichment_helpers.html#individual_trial_calc"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dansy.enrichment_helpers.individual_trial_calc" title="Link to this definition"></a></dt>
+<dd><p>Calculates the subsampled and randomly chosen genes network separtion and pruning analysis.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dansy.enrichment_helpers.retrieve_fpr_checks">
+<span class="sig-prename descclassname"><span class="pre">dansy.enrichment_helpers.</span></span><span class="sig-name descname"><span class="pre">retrieve_fpr_checks</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dedansy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_DEGs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fpr_trials</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_internal_trials</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deg_ratios</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.7</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">processes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">123</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dansy/enrichment_helpers.html#retrieve_fpr_checks"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dansy.enrichment_helpers.retrieve_fpr_checks" title="Link to this definition"></a></dt>
+<dd><p>Performs a false positive rate check on the values for the differentially expressed genes by performing the same subsampling and random gene selection analysis with random genes that were measured to determine if findings are true positives. This process can be highly time consuming based on the number of FPR trials that are to conducted.</p>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="dansy.html" class="btn btn-neutral float-left" title="DANSy" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="Installation.html" class="btn btn-neutral float-right" title="Installation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Naegle Lab.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

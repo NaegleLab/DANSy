@@ -1,0 +1,31 @@
+Examples
+=========================================
+
+Base DANSy Analysis
+=========================================
+
+In the base version of DANSy, a collection of proteins are analyzed. This creates a simple linguistic network class, which can be paired with existing network analysis tools (such as those found in the `networkx <networkx_>`_ package) to provide additional insights of abstract relationships between the functions of the proteins of interest. We have provided examples that demonstrate how to create the DANSy network for both a large and small collection of proteins.
+
+.. toctree::
+   :maxdepth: 2
+
+   base_dansy.ipynb
+   
+Differential Expression DANSy (deDANSy) Analysis
+=================================================
+
+In deDANSy, the expression of each protein/gene is incorporated into the linguistic network and used to describe how distinct and separated functions endowed by the domains are for up- or down-regulated genes. In this analysis, we assume the expression status (i.e. up- vs down-regulated) is determined by both a combination of fold-change and statistical significance. 
+
+.. important:: This analysis can be conducted on either bulk RNA-sequencing or (phospho)proteomics datasets. We have not tested in other contexts, but if a set of gene IDs (e.g. ENSEMBL or Entrez IDs) or UniProt IDs are provided deDANSy can be potentially applied. However, we caution against using deDANSy for other applications currently.
+
+Here, we provide example analyses that uses either RNA-sequencing results from `Shimpi and Tan, et al, Adv Healthcare Mater (2021) <shimpi_data_>`_ or phosphoproteomic results from `Chen, et al, Mol Cancer Ther (2024) <chen_data_>`_ to showcase the functionality of deDANSy.
+
+.. toctree::
+   :maxdepth: 2
+
+   deDANSy.ipynb
+
+
+.. _networkx: https://networkx.org/
+.. _shimpi_data: https://pmc.ncbi.nlm.nih.gov/articles/PMC10238572/
+.. _chen_data: https://pmc.ncbi.nlm.nih.gov/articles/PMC10762338/

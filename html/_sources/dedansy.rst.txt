@@ -1,0 +1,21 @@
+deDANSy
+-------
+
+This is the deDANSy class, which extend the DANSy analysis to differential expression analysis results.
+
+.. autoclass:: dansy.DEdansy
+    :members: create_contrast_metadata, calc_DEG_ngrams, DEG_network_sep, plot_DEG_ns, calculate_scores, plot_scores, calculate_ngram_enrichment, plot_ngram_enrichment, get_ngram_results, deg_summary
+
+deDANSy Supporting Functions
+-----------------------------
+
+These are functions integrated into deDANSy, which are not necessary to call, but can aid in the analysis of a deDANSy object or graphs from multiple (de)DANSy objects.
+
+.. automodule:: dansy.network_separation_helpers
+    :members: network_separation, build_network_reference_dict
+
+.. automodule:: dansy.enrichment_plotting_helpers
+    :members: get_max_info_enriched_ngrams, plot_enriched_ngrams, collapse_to_max_info, gather_enrichment_results, plot_functional_scores
+
+.. automodule:: dansy.enrichment_helpers
+    :members: cohen_d, individual_trial_calc, calculate_separation_stability, retrieve_fpr_checks, calculate_fpr

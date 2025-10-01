@@ -1,0 +1,337 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>dansy.generateCompleteProteome &mdash; DANSy 1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=29a6c3e3"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            DANSy
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Examples/Examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Dependencies.html">Dependencies</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../dansy.html">DANSy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../dansy.html#supporting-functions">Supporting Functions</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">DANSy</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">dansy.generateCompleteProteome</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for dansy.generateCompleteProteome</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os.path</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">path</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">dansy.ngramUtilities</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ngramUtilities</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">os</span><span class="w"> </span><span class="kn">import</span> <span class="n">listdir</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">generate_complete_adjacency</span><span class="p">(</span><span class="n">generate_files</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">readable_flag</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">filenames</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">ref_version</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">ref_dir</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Base function that conducts the full n-gram analysis pipeline on the complete canonical human proteome and generates the adjacency matrix and the n-grams that were subsumed due to redundant information.</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">    -----------</span>
+<span class="sd">        - generate_files: bool</span>
+<span class="sd">            Flag to determine if csv files should be generated in the project directory</span>
+<span class="sd">        - readable_flag: bool</span>
+<span class="sd">            Flag to determine if the adjacency matrix should use the InterPro IDs or the domain names</span>
+<span class="sd">        - filename: list</span>
+<span class="sd">            Strings for the name of files to be generated.</span>
+<span class="sd">        - ref_version: str</span>
+<span class="sd">            Version of reference files to use indicated by the suffix of the file name</span>
+<span class="sd">        -ref_dir: str</span>
+<span class="sd">            Directory for the csv file</span>
+<span class="sd">    </span>
+<span class="sd">    Returns:</span>
+<span class="sd">    --------</span>
+<span class="sd">        - full_adj: pandas DataFrame</span>
+<span class="sd">            dataframe that contains the adjacency matrix of the complete proteome. Self-loops have been removed</span>
+<span class="sd">        - removed_ngrams: list</span>
+<span class="sd">            List of the n-grams that had redundant information that were subsumed during analysis.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+
+    <span class="k">if</span> <span class="n">filenames</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">adj_file</span> <span class="o">=</span> <span class="s1">&#39;Current_Complete_Proteome_Adjacency.csv&#39;</span>
+        <span class="n">ngram_file</span> <span class="o">=</span> <span class="s1">&#39;Current_Complete_Proteome_Removed_Ngrams.csv&#39;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">adj_file</span> <span class="o">=</span> <span class="n">filenames</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">ngram_file</span> <span class="o">=</span> <span class="n">filenames</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="n">ref_df</span><span class="p">,</span> <span class="n">interpro_dict</span> <span class="o">=</span> <span class="n">import_proteome_files</span><span class="p">(</span><span class="n">ref_version</span><span class="p">,</span> <span class="n">ref_dir</span><span class="p">)</span>
+    
+    <span class="n">all_domains</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">interpro_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">()]</span>
+    <span class="n">adj_df</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">removed_ngrams</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">ngramUtilities</span><span class="o">.</span><span class="n">full_ngram_analysis</span><span class="p">(</span><span class="n">ref_df</span><span class="p">,</span> <span class="n">all_domains</span><span class="p">,</span> <span class="n">min_arch</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">readable_flag</span><span class="o">=</span><span class="n">readable_flag</span><span class="p">,</span> <span class="n">max_ngram</span><span class="o">=</span><span class="mi">303</span><span class="p">,</span><span class="n">max_node_len</span><span class="o">=</span><span class="mi">303</span><span class="p">)</span>
+
+    <span class="n">full_adj</span> <span class="o">=</span> <span class="n">adj_df</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">full_adj</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+        <span class="n">full_adj</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">node</span><span class="p">,</span><span class="n">node</span><span class="p">]</span><span class="o">=</span><span class="mi">0</span>
+   
+    <span class="k">if</span> <span class="n">generate_files</span><span class="p">:</span>
+        <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">full_adj</span><span class="p">,</span><span class="n">adj_file</span><span class="p">)</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="n">ngram_file</span><span class="p">,</span> <span class="n">removed_ngrams</span><span class="p">,</span> <span class="n">delimiter</span> <span class="o">=</span> <span class="s1">&#39;,&#39;</span><span class="p">,</span> <span class="n">fmt</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">full_adj</span><span class="p">,</span> <span class="n">removed_ngrams</span>
+
+<div class="viewcode-block" id="import_proteome_files">
+<a class="viewcode-back" href="../../dansy.html#dansy.generateCompleteProteome.import_proteome_files">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">import_proteome_files</span><span class="p">(</span><span class="n">reference_file_suffix</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">ref_file_dir</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Imports the files that are used for the generation of the reference dataframe of the complete canonical proteome.</span>
+
+<span class="sd">    Note: Need to adjust this so it looks in only one folder from here on out.</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">    -----------</span>
+<span class="sd">        - reference_file_version: str</span>
+<span class="sd">          String of the suffix of the reference files to be used  </span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">    --------</span>
+<span class="sd">        - ref_df: pandas DataFrame</span>
+<span class="sd">            Dataframe containing the InterPro, UniProt, and PDB information of individual proteins as retrieved via CoDIAC</span>
+<span class="sd">        - interpro_dict: dict</span>
+<span class="sd">            dictionary containing the InterPro IDs and domain names for conversion purposes</span>
+<span class="sd">    </span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">all_refs</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="n">ref_file_dir</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="s1">&#39;data/Current_Human_Proteome/&#39;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="n">ref_file_dir</span>
+    
+    <span class="k">if</span> <span class="n">reference_file_suffix</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">reference_file_suffix</span> <span class="o">=</span> <span class="s1">&#39;May12_2025.csv&#39;</span> <span class="c1"># The current version of the reference files</span>
+    
+    <span class="n">ref_files</span> <span class="o">=</span> <span class="n">listdir</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">fileName</span> <span class="ow">in</span> <span class="n">ref_files</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">fileName</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="n">reference_file_suffix</span><span class="p">):</span>
+            <span class="n">all_refs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">d</span><span class="o">+</span><span class="n">fileName</span><span class="p">)</span>
+
+    <span class="n">ref_df</span> <span class="o">=</span> <span class="n">ngramUtilities</span><span class="o">.</span><span class="n">import_reference_file</span><span class="p">(</span><span class="n">all_refs</span><span class="p">)</span>
+    <span class="n">ref_df</span><span class="p">,</span> <span class="n">interpro_dict</span> <span class="o">=</span> <span class="n">ngramUtilities</span><span class="o">.</span><span class="n">add_Interpro_ID_architecture</span><span class="p">(</span><span class="n">ref_df</span><span class="p">)</span>
+
+    <span class="c1"># If the full proteome reference files already had Interpro IDs this can lead to an empty dictionary</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">interpro_dict</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">interpro_dict</span> <span class="o">=</span> <span class="n">ngramUtilities</span><span class="o">.</span><span class="n">generate_interpro_conversion</span><span class="p">(</span><span class="n">ref_df</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">ref_df</span><span class="p">,</span> <span class="n">interpro_dict</span></div>
+
+
+<div class="viewcode-block" id="import_adjacency">
+<a class="viewcode-back" href="../../dansy.html#dansy.generateCompleteProteome.import_adjacency">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">import_adjacency</span><span class="p">(</span><span class="n">adj_file</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">adj_dir</span> <span class="o">=</span> <span class="s1">&#39;data/&#39;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Imports the adjacency matrix from either a designated file or by generating a new file. </span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">    -----------</span>
+<span class="sd">        adj_file: str</span>
+<span class="sd">            File name of the adjacency file</span>
+<span class="sd">        adj_dir: str (optional)</span>
+<span class="sd">            Directory Name of where the adjacency file is located. By default it will place files in the data folder.</span>
+<span class="sd">    </span>
+<span class="sd">    Returns:</span>
+<span class="sd">    --------</span>
+<span class="sd">        full_adj: pandas DataFrame</span>
+<span class="sd">            Full adjacency matrix of the n-gram analysis of the human proteome.</span>
+
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">if</span> <span class="n">adj_file</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">adj_file</span>  <span class="o">=</span> <span class="s1">&#39;Current_Complete_Proteome_Adjacency.csv&#39;</span>
+    
+    <span class="n">full_path</span> <span class="o">=</span> <span class="n">adj_dir</span><span class="o">+</span><span class="n">adj_file</span>
+    <span class="k">if</span> <span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">full_path</span><span class="p">):</span>
+        <span class="n">full_adj</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">full_path</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">index_col</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Generating a new Adjacency Matrix but not a csv file.&#39;</span><span class="p">)</span>
+        <span class="n">full_adj</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">generate_complete_adjacency</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">full_adj</span></div>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">import_removed_ngrams</span><span class="p">(</span><span class="n">rm_ngrams_file</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">rm_dir</span> <span class="o">=</span> <span class="s1">&#39;\data&#39;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Imports the list of n-grams that were removed during n-gram analysis of the complete proteome from either the file or via the n-gram analysis.</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">    -----------</span>
+<span class="sd">        rm_ngrams_file: str (optional)</span>
+<span class="sd">            File name if not provided will generate a File with the title: Current_Complete_Proteoeme_Removed_Ngrams.csv</span>
+<span class="sd">        rm_dir: str (optional)</span>
+<span class="sd">            Directory Name of where the file is located. By default it will place files in the data folder.</span>
+<span class="sd">    </span>
+<span class="sd">    Returns:</span>
+<span class="sd">    --------</span>
+<span class="sd">        removed_ngrams: list</span>
+<span class="sd">            List of subsumed n-grams with redundant information</span>
+
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">if</span> <span class="n">rm_ngrams_file</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">rm_ngrams_file</span>  <span class="o">=</span> <span class="s1">&#39;Current_Complete_Proteome_Removed_Ngrams.csv&#39;</span>
+
+    <span class="n">full_path</span> <span class="o">=</span> <span class="n">rm_dir</span> <span class="o">+</span> <span class="n">rm_ngrams_file</span>
+    <span class="k">if</span> <span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">full_path</span><span class="p">):</span>
+        <span class="n">temp</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">full_path</span><span class="p">,</span> <span class="n">header</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">removed_ngrams</span> <span class="o">=</span> <span class="n">temp</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">removed_ngrams</span> <span class="o">=</span> <span class="n">generate_complete_adjacency</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">removed_ngrams</span>
+
+<div class="viewcode-block" id="import_adjacency_from_json">
+<a class="viewcode-back" href="../../dansy.html#dansy.generateCompleteProteome.import_adjacency_from_json">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">import_adjacency_from_json</span><span class="p">(</span><span class="n">adj_json</span> <span class="o">=</span> <span class="s2">&quot;Current_Adjacency.json&quot;</span><span class="p">,</span> <span class="n">adj_dir</span> <span class="o">=</span> <span class="s1">&#39;data/&#39;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Imports the adjacency matrix from the designated json file. The JSON file should have keys correspond to the index of the final adjacency dataframe.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters:</span>
+<span class="sd">    -----------</span>
+<span class="sd">        adj_json: str</span>
+<span class="sd">            File name of the adjacency json file</span>
+<span class="sd">        adj_dir: str (optional)</span>
+<span class="sd">            Directory Name of where the adjacency file is located. By default it will look for files in the data folder.</span>
+<span class="sd">    </span>
+<span class="sd">    Returns:</span>
+<span class="sd">    --------</span>
+<span class="sd">        adj: pandas DataFrame</span>
+<span class="sd">            Full adjacency matrix of the n-gram analysis of the human proteome.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+
+    <span class="n">full_path</span> <span class="o">=</span> <span class="n">adj_dir</span> <span class="o">+</span> <span class="n">adj_json</span>
+    <span class="k">if</span> <span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">full_path</span><span class="p">):</span>
+        <span class="n">js_adj</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_json</span><span class="p">(</span><span class="n">full_path</span><span class="p">,</span> <span class="n">orient</span> <span class="o">=</span> <span class="s1">&#39;index&#39;</span><span class="p">)</span>
+        <span class="c1"># The JSON file helps reduce the memory footprint of the adjacency matrix by omitting 0s so have to fill them in. Also ensuring all inputted data is an integer.</span>
+        <span class="n">js_adj</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">adj</span> <span class="o">=</span> <span class="n">js_adj</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;int64&#39;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">FileExistsError</span><span class="p">(</span><span class="s1">&#39;The JSON Adjacency File does not exist.&#39;</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">adj</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">generate_adjacency_json</span><span class="p">(</span><span class="n">adj_file</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">adj_json</span> <span class="o">=</span> <span class="s2">&quot;Current_Adjacency.json&quot;</span><span class="p">,</span> <span class="n">adj_dir</span> <span class="o">=</span> <span class="s1">&#39;data/&#39;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Imports the adjacency matrix from the designated json file. The JSON file should have keys correspond to the index of the final adjacency dataframe.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters:</span>
+<span class="sd">    -----------</span>
+<span class="sd">        adj_file: str</span>
+<span class="sd">            File name for the csv file corresponding to the adjacency matrix.</span>
+<span class="sd">        adj_json: str</span>
+<span class="sd">            File name of the adjacency json file</span>
+<span class="sd">        adj_dir: str (optional)</span>
+<span class="sd">            Directory Name of where the adjacency file is located. By default it will look for files in the data folder.</span>
+<span class="sd">    </span>
+<span class="sd">    Returns:</span>
+<span class="sd">    --------</span>
+<span class="sd">        adj: pandas DataFrame</span>
+<span class="sd">            Full adjacency matrix of the n-gram analysis of the human proteome.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+
+    <span class="c1"># Setting a default name if not provided.</span>
+    <span class="k">if</span> <span class="n">adj_file</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">adj_file</span>  <span class="o">=</span> <span class="s1">&#39;Current_Complete_Proteome_Adjacency.csv&#39;</span>
+
+    <span class="n">base_adj</span> <span class="o">=</span> <span class="n">import_adjacency</span><span class="p">(</span><span class="n">adj_file</span><span class="o">=</span><span class="n">adj_file</span><span class="p">,</span> <span class="n">adj_dir</span><span class="o">=</span><span class="n">adj_dir</span><span class="p">)</span>
+    <span class="n">adj_dict</span> <span class="o">=</span> <span class="n">base_adj</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(</span><span class="n">orient</span><span class="o">=</span><span class="s1">&#39;index&#39;</span><span class="p">)</span>
+
+    <span class="c1"># Running through each entry and removing the 0s except the self-referencing ones to preserve adjacency matrix shape and reduce memory footprint.</span>
+    <span class="k">for</span> <span class="n">ngram</span> <span class="ow">in</span> <span class="n">adj_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+    
+        <span class="n">keys_2_rm</span> <span class="o">=</span> <span class="n">base_adj</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="n">base_adj</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">ngram</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">keys_2_rm</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">k</span> <span class="o">!=</span> <span class="n">ngram</span><span class="p">:</span>
+                <span class="k">del</span> <span class="n">adj_dict</span><span class="p">[</span><span class="n">ngram</span><span class="p">][</span><span class="n">k</span><span class="p">]</span>
+    
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">adj_json</span><span class="p">,</span><span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">output</span><span class="p">:</span>
+        <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">adj_dict</span><span class="p">,</span> <span class="n">output</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="kc">None</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Naegle Lab.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

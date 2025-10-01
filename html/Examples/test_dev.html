@@ -1,0 +1,636 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>&lt;no title&gt; &mdash; DANSy 1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=29a6c3e3"></script>
+      <script src="../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            DANSy
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Dependencies.html">Dependencies</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../dansy.html">DANSy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dansy.html#supporting-functions">Supporting Functions</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">DANSy</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">&lt;no title&gt;</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/Examples/test_dev.ipynb.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">networkx</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nx</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pybiomart</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dataset</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">random</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">dansy</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># First need to import and create an ID conversion dataframe</span>
+<span class="n">bm_dataset</span> <span class="o">=</span> <span class="n">Dataset</span><span class="p">(</span><span class="n">host</span> <span class="o">=</span> <span class="s1">&#39;http://useast.ensembl.org&#39;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;hsapiens_gene_ensembl&#39;</span><span class="p">,)</span>
+<span class="n">gene_ID_conv</span> <span class="o">=</span> <span class="n">bm_dataset</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">attributes</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;ensembl_gene_id&#39;</span><span class="p">,</span><span class="s1">&#39;external_gene_name&#39;</span><span class="p">,</span><span class="s1">&#39;uniprotswissprot&#39;</span><span class="p">])</span>
+
+<span class="c1"># Importing a small reference file</span>
+<span class="n">ref</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;DANSy_test_ref.csv&#39;</span><span class="p">)</span>
+<span class="n">full_ref</span><span class="p">,</span><span class="n">_</span> <span class="o">=</span> <span class="n">dansy</span><span class="o">.</span><span class="n">import_proteome_files</span><span class="p">(</span><span class="n">reference_file_suffix</span><span class="o">=</span><span class="s1">&#39;Jan7_2025.csv&#39;</span><span class="p">,</span> <span class="n">ref_file_dir</span><span class="o">=</span><span class="s1">&#39;../&#39;</span><span class="p">)</span>
+<br/></pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Now creating only a small version of the ID conversion dataframe</span>
+<span class="n">small_id_conv</span> <span class="o">=</span> <span class="n">gene_ID_conv</span><span class="p">[</span><span class="n">gene_ID_conv</span><span class="p">[</span><span class="s1">&#39;UniProtKB/Swiss-Prot ID&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">ref</span><span class="p">[</span><span class="s1">&#39;UniProt ID&#39;</span><span class="p">])]</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[99]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Building the dedansy object</span>
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;Shimpi_Tan_RNA_seq_Results.csv&#39;</span><span class="p">)</span>
+<span class="n">small_dataset</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;ensembl_gene_id&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">small_id_conv</span><span class="p">[</span><span class="s1">&#39;Gene stable ID&#39;</span><span class="p">])]</span>
+
+<span class="n">small_dedansy</span> <span class="o">=</span> <span class="n">dansy</span><span class="o">.</span><span class="n">DEdansy</span><span class="p">(</span><span class="n">dataset</span><span class="o">=</span><span class="n">dataset</span><span class="p">,</span> <span class="n">id_conv</span><span class="o">=</span><span class="n">gene_ID_conv</span><span class="p">,</span>
+                              <span class="n">data_ids</span><span class="o">=</span><span class="s1">&#39;ensembl_gene_id&#39;</span><span class="p">,</span>
+                              <span class="n">uniprot_ref</span><span class="o">=</span><span class="n">full_ref</span><span class="p">)</span>
+<span class="n">large_cc</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">nx</span><span class="o">.</span><span class="n">connected_components</span><span class="p">(</span><span class="n">small_dedansy</span><span class="o">.</span><span class="n">G</span><span class="p">),</span> <span class="n">key</span> <span class="o">=</span> <span class="nb">len</span><span class="p">)</span>
+<span class="n">base_interpro</span> <span class="o">=</span> <span class="n">small_dedansy</span><span class="o">.</span><span class="n">interpro2uniprot</span>
+<span class="n">ref_G</span> <span class="o">=</span> <span class="n">small_dedansy</span><span class="o">.</span><span class="n">G</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Starting to fetch n-grams.
+Finished getting all n-grams
+Starting to generate adjacency
+Finished building adjacency.
+Building the reference network information.
+</pre></div></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[135]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Getting the proteins within the largest connected component</span>
+<span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">123</span><span class="p">)</span>
+<span class="n">prots2keep</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+
+<span class="c1"># Restricting protein choice to be neighbors of the SH2 or Kinase domains and 20 randomly chosen nodes from the largest connected component</span>
+<span class="n">nodes_2_check</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">nx</span><span class="o">.</span><span class="n">neighbors</span><span class="p">(</span><span class="n">ref_G</span><span class="p">,</span> <span class="s1">&#39;IPR000980&#39;</span><span class="p">))</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">nx</span><span class="o">.</span><span class="n">neighbors</span><span class="p">(</span><span class="n">ref_G</span><span class="p">,</span> <span class="s1">&#39;IPR000719&#39;</span><span class="p">))</span> <span class="o">+</span> <span class="n">random</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">large_cc</span><span class="p">),</span> <span class="n">k</span> <span class="o">=</span><span class="mi">30</span><span class="p">)</span> <span class="o">+</span><span class="p">[</span><span class="s1">&#39;IPR000980&#39;</span><span class="p">,</span><span class="s1">&#39;IPR000719&#39;</span><span class="p">]</span>
+
+<span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">nodes_2_check</span><span class="p">:</span>
+
+    <span class="n">x</span> <span class="o">=</span> <span class="n">base_interpro</span><span class="p">[</span><span class="n">node</span><span class="p">]</span>
+    <span class="n">prots2keep</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+<span class="c1"># Now getting 20 randomly from the largest cc</span>
+<span class="n">small_prots</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">prots2keep</span><span class="p">),</span> <span class="n">k</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[136]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">small_ref</span> <span class="o">=</span> <span class="n">full_ref</span><span class="p">[</span><span class="n">full_ref</span><span class="p">[</span><span class="s1">&#39;UniProt ID&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">small_prots</span><span class="p">)]</span>
+<span class="n">small_id_conv</span> <span class="o">=</span> <span class="n">gene_ID_conv</span><span class="p">[</span><span class="n">gene_ID_conv</span><span class="p">[</span><span class="s1">&#39;UniProtKB/Swiss-Prot ID&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">small_prots</span><span class="p">)]</span>
+<span class="n">small_dataset</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;ensembl_gene_id&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">small_id_conv</span><span class="p">[</span><span class="s1">&#39;Gene stable ID&#39;</span><span class="p">])]</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[137]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">small_dedansy</span> <span class="o">=</span> <span class="n">dansy</span><span class="o">.</span><span class="n">DEdansy</span><span class="p">(</span><span class="n">dataset</span><span class="o">=</span><span class="n">small_dataset</span><span class="p">,</span> <span class="n">id_conv</span><span class="o">=</span><span class="n">small_id_conv</span><span class="p">,</span>
+                              <span class="n">data_ids</span><span class="o">=</span><span class="s1">&#39;ensembl_gene_id&#39;</span><span class="p">,</span>
+                              <span class="n">uniprot_ref</span><span class="o">=</span><span class="n">small_ref</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Starting to fetch n-grams.
+Finished getting all n-grams
+Starting to generate adjacency
+Finished building adjacency.
+Building the reference network information.
+</pre></div></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[138]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">x</span> <span class="o">=</span> <span class="n">small_dedansy</span><span class="o">.</span><span class="n">dataset</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">filter</span><span class="p">([</span><span class="s1">&#39;ensembl_gene_id&#39;</span><span class="p">,</span><span class="s1">&#39;log2FoldChange_HAS2&#39;</span><span class="p">,</span><span class="s1">&#39;padj_HAS2&#39;</span><span class="p">])</span>
+<span class="n">x</span><span class="o">.</span><span class="n">rename</span><span class="p">({</span><span class="s1">&#39;log2FoldChange_HAS2&#39;</span><span class="p">:</span><span class="s1">&#39;log2_FoldChange&#39;</span><span class="p">,</span><span class="s1">&#39;padj_HAS2&#39;</span><span class="p">:</span><span class="s1">&#39;padj&#39;</span><span class="p">},</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">x</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s1">&#39;Small_test_deDANSy_dataset.csv&#39;</span><span class="p">,</span><span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[160]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Creating a toy dataset that can be used for testing if the package is working properly. This will distribute logfoldchanges across the gene and p-values</span>
+<span class="n">new_fcs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">20</span><span class="p">)</span>
+<span class="n">new_alphas</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">lognormal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[161]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">x</span><span class="p">[</span><span class="s1">&#39;log2_FoldChange&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_fcs</span>
+<span class="n">x</span><span class="p">[</span><span class="s1">&#39;padj&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">10</span><span class="o">**</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="o">*</span><span class="n">new_alphas</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[162]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">small_dedansy</span> <span class="o">=</span> <span class="n">dansy</span><span class="o">.</span><span class="n">DEdansy</span><span class="p">(</span><span class="n">dataset</span><span class="o">=</span><span class="n">x</span><span class="p">,</span> <span class="n">id_conv</span><span class="o">=</span><span class="n">small_id_conv</span><span class="p">,</span>
+                              <span class="n">data_ids</span><span class="o">=</span><span class="s1">&#39;ensembl_gene_id&#39;</span><span class="p">,</span>
+                              <span class="n">uniprot_ref</span><span class="o">=</span><span class="n">small_ref</span><span class="p">)</span>
+<span class="n">small_dedansy</span><span class="o">.</span><span class="n">create_contrast_metadata</span><span class="p">(</span><span class="n">comparisons</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;loose&#39;</span><span class="p">,</span><span class="s1">&#39;restrictive&#39;</span><span class="p">],</span>
+                                        <span class="n">fc_cols</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;log2_FoldChange&#39;</span><span class="p">,</span> <span class="s1">&#39;log2_FoldChange&#39;</span><span class="p">],</span>
+                                       <span class="n">pval_cols</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;padj&#39;</span><span class="p">,</span><span class="s1">&#39;padj&#39;</span><span class="p">],</span>
+                                       <span class="n">fcs</span><span class="o">=</span><span class="p">[</span><span class="mf">0.5</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span>
+                                       <span class="n">alphas</span><span class="o">=</span><span class="p">[</span><span class="mf">0.05</span><span class="p">,</span><span class="mf">0.01</span><span class="p">])</span>
+<span class="n">small_dedansy</span><span class="o">.</span><span class="n">calc_DEG_ngrams</span><span class="p">(</span><span class="s1">&#39;loose&#39;</span><span class="p">)</span>
+<span class="n">pos</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">spring_layout</span><span class="p">(</span><span class="n">small_dedansy</span><span class="o">.</span><span class="n">G</span><span class="p">)</span>
+<span class="n">small_dedansy</span><span class="o">.</span><span class="n">plot_DEG_ns</span><span class="p">(</span><span class="n">pos</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Starting to fetch n-grams.
+Finished getting all n-grams
+Starting to generate adjacency
+Finished building adjacency.
+Building the reference network information.
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/Examples_test_dev_10_1.png" src="../_images/Examples_test_dev_10_1.png" />
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[163]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">small_dedansy</span><span class="o">.</span><span class="n">calc_DEG_ngrams</span><span class="p">(</span><span class="s1">&#39;restrictive&#39;</span><span class="p">)</span>
+<span class="n">small_dedansy</span><span class="o">.</span><span class="n">plot_DEG_ns</span><span class="p">(</span><span class="n">pos</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Will be overwriting existing DEG data.
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/Examples_test_dev_11_1.png" src="../_images/Examples_test_dev_11_1.png" />
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[164]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">small_dedansy</span><span class="o">.</span><span class="n">calculate_scores</span><span class="p">(</span><span class="n">comps</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;loose&#39;</span><span class="p">,</span> <span class="s1">&#39;restrictive&#39;</span><span class="p">],</span><span class="n">num_ss_trials</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">fpr_trials</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">min_pval</span><span class="o">=-</span><span class="mi">4</span><span class="p">,</span> <span class="n">processes</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+2025-08-11 12:17:24:.....Starting deDANSy scoring analysis with random seed: 1754929044
+2025-08-11 12:17:24:.....Done with enrichment-based pruning for loose
+2025-08-11 12:17:24:.....Done with enrichment-based pruning for restrictive
+2025-08-11 12:17:24:.....Starting the false positive rate procedure.
+2025-08-11 12:17:24:.....Finished FPR procedure for loose.
+2025-08-11 12:17:24:.....Finished FPR procedure for restrictive.
+2025-08-11 12:17:24:.....Preparing the FPR results for export
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[165]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">small_dedansy</span><span class="o">.</span><span class="n">scores</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[165]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Comparison</th>
+      <th>Separation_Score</th>
+      <th>Separation_Category</th>
+      <th>Separation_p</th>
+      <th>Separation_FPR</th>
+      <th>Distinction_Score</th>
+      <th>Distinction_Category</th>
+      <th>Distinction_p</th>
+      <th>Distinction_FPR</th>
+    </tr>
+    <tr>
+      <th>Comparison</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>loose</th>
+      <td>loose</td>
+      <td>0.512952</td>
+      <td>More</td>
+      <td>0.833534</td>
+      <td>1.0</td>
+      <td>0.755102</td>
+      <td>Unstable/Overlapping</td>
+      <td>0.387094</td>
+      <td>1.0</td>
+    </tr>
+    <tr>
+      <th>restrictive</th>
+      <td>restrictive</td>
+      <td>0.817012</td>
+      <td>More</td>
+      <td>NaN</td>
+      <td>0.0</td>
+      <td>0.929458</td>
+      <td>Unstable/Overlapping</td>
+      <td>NaN</td>
+      <td>0.0</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[166]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">x</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s1">&#39;Small_test_deDANSy_dataset.csv&#39;</span><span class="p">,</span><span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[170]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">small_ref</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s1">&#39;Testing_Reference_File.csv&#39;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<br/></pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[172]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">small_id_conv</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s1">&#39;Testing_ID_Conversion.csv&#39;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[177]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">small_dedansy</span><span class="o">.</span><span class="n">calc_DEG_ngrams</span><span class="p">(</span><span class="s1">&#39;restrictive&#39;</span><span class="p">)</span>
+<span class="n">ns</span> <span class="o">=</span> <span class="n">small_dedansy</span><span class="o">.</span><span class="n">DEG_network_sep</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Will be overwriting existing DEG data.
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[180]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">ns</span><span class="p">)</span><span class="o">==</span><span class="kc">False</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Huh?&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Huh?
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[186]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">small_dedansy</span><span class="o">.</span><span class="n">calculate_ngram_enrichment</span><span class="p">(</span><span class="s1">&#39;loose&#39;</span><span class="p">,</span><span class="n">fpr_trials</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Will be overwriting existing DEG data.
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[191]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">small_dedansy</span><span class="o">.</span><span class="n">ngram_results</span><span class="p">[</span><span class="s1">&#39;loose&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[191]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>variable</th>
+      <th>p</th>
+      <th>ngram</th>
+      <th>FPR</th>
+      <th>-log10(p)</th>
+      <th>FPR &lt;= 0.05</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>Up</td>
+      <td>0.140351</td>
+      <td>IPR000980</td>
+      <td>0.000000</td>
+      <td>0.852785</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>Up</td>
+      <td>0.284211</td>
+      <td>IPR015022|IPR000719|IPR000961|IPR001478</td>
+      <td>0.054054</td>
+      <td>0.546360</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>Up</td>
+      <td>0.284211</td>
+      <td>IPR000980|IPR001496</td>
+      <td>0.043478</td>
+      <td>0.546360</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>Up</td>
+      <td>0.150000</td>
+      <td>IPR002219|IPR003595|IPR014020|IPR000980|IPR006020</td>
+      <td>0.000000</td>
+      <td>0.823909</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>12</th>
+      <td>Down</td>
+      <td>0.300000</td>
+      <td>IPR001452|IPR000719</td>
+      <td>0.000000</td>
+      <td>0.522879</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>13</th>
+      <td>Down</td>
+      <td>0.129128</td>
+      <td>IPR000719</td>
+      <td>0.000000</td>
+      <td>0.888980</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>14</th>
+      <td>Down</td>
+      <td>0.342621</td>
+      <td>IPR000719|IPR000961</td>
+      <td>0.176471</td>
+      <td>0.465186</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <th>15</th>
+      <td>Down</td>
+      <td>0.300000</td>
+      <td>IPR000719|IPR000961|IPR011072|IPR015008|IPR001849</td>
+      <td>0.000000</td>
+      <td>0.522879</td>
+      <td>True</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[194]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">small_dedansy</span><span class="o">.</span><span class="n">plot_ngram_enrichment</span><span class="p">(</span><span class="s1">&#39;loose&#39;</span><span class="p">,</span><span class="n">p</span><span class="o">=</span><span class="mf">0.99</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/Examples_test_dev_21_0.png" src="../_images/Examples_test_dev_21_0.png" />
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Naegle Lab.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
