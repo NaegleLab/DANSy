@@ -1,0 +1,580 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>dansy.dansy &mdash; DANSy 1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=29a6c3e3"></script>
+      <script src="../../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            DANSy
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Examples/Examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Examples/Examples.html#base-dansy-analysis">Base DANSy Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Examples/Examples.html#differential-expression-dansy-dedansy-analysis">Differential Expression DANSy (deDANSy) Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Dependencies.html">Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../dansy.html">DANSy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../dansy.html#dansy-supporting-functions">DANSy Supporting Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../dedansy.html">deDANSy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../dedansy.html#dedansy-supporting-functions">deDANSy Supporting Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Installation.html">Installation</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../dansy.html">DANSy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../dansy.html#dansy-supporting-functions">DANSy Supporting Functions</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">DANSy</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">dansy.dansy</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for dansy.dansy</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">random</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">networkx</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nx</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">dansy.generateCompleteProteome</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">generateCompleteProteome</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">dansy.ngramUtilities</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ngramUtilities</span>
+
+<div class="viewcode-block" id="dansy">
+<a class="viewcode-back" href="../../dansy.html#dansy.dansy">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">dansy</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    A domain n-gram network built off either a list of proteins of interest or a reference file generated by CoDIAC. If InterPro IDs are provided will extract n-grams that contain only those IDs. Default values will generate a 10-gram network model.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    -----------</span>
+<span class="sd">    protsOI : list</span>
+<span class="sd">        List of UniProt IDs whose n-grams are desired to generate the n-gram network.</span>
+<span class="sd">    ref : pandas DataFrame (Recommended)</span>
+<span class="sd">        Dataframe that has been generated from CoDIAC containing both InterPro and UniProt information.</span>
+<span class="sd">    n : int (Optional)</span>
+<span class="sd">        N-gram lengths to be extracted</span>
+<span class="sd">    interproIDs : list (Optional)</span>
+<span class="sd">        List of Interpro IDs to extract n-grams. If omitted, all n-grams will be extracted.</span>
+
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">protsOI</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">ref</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span><span class="n">n</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span><span class="n">interproIDs</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        
+        <span class="c1"># Bare minimum attributes required for setting up an empty n-gram network.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">protsOI</span> <span class="o">=</span> <span class="n">protsOI</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ref</span> <span class="o">=</span> <span class="n">ref</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_n</span> <span class="o">=</span> <span class="n">n</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">interproIDs</span> <span class="o">=</span> <span class="n">interproIDs</span>
+
+        <span class="c1"># If any parameters were included that can generate the n-gram network actually populating and generating the network.</span>
+        <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">protsOI</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ref</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">populate_ngramNet</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">network_params</span> <span class="o">=</span> <span class="p">{}</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">n</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n</span>
+    
+    <span class="nd">@n</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">n</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s1">&#39;The maximum length of n-gram (n) cannot be readjusted.&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">populate_ngramNet</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">attribs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        This will actually generate the n-gram network object and go through the domain n-gram analysis and populate each attribute with the user defined and default parameters.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="c1"># Getting the Proteins of interest that will be used for the analysis. If proteins of interest are not provided then will raise an error.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_prots</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_ref_df</span><span class="p">()</span>
+        
+        <span class="c1"># Unpack the additional, optional parameters that alter the behavior of the network generated or provide descriptions.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_interpro_ids</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_ngram_parameters</span><span class="p">(</span><span class="o">**</span><span class="n">attribs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">unpack_opts</span><span class="p">(</span><span class="o">**</span><span class="n">attribs</span><span class="p">)</span>
+
+        <span class="c1"># Now generating the actual Domain N-gram Network that is the basis of this class</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">build_dgNet</span><span class="p">()</span>
+    
+    <span class="c1"># Adding in protein of interest</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_prots</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Adds in the protein list if it was not provided</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+
+        <span class="c1"># If the protein list is not provided but the reference file is, then import the entire protein list from the reference file</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">protsOI</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">ref</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">ref</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_ref</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ref</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">protsOI</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">extract_uniprots</span><span class="p">(</span><span class="n">ref</span><span class="p">)</span>
+        
+        <span class="c1"># Ensuring the correct data type for downstream analysis</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">protsOI</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">protsOI</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">protsOI</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">protsOI</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">protsOI</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">protsOI</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">protsOI</span><span class="p">,</span> <span class="nb">set</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">protsOI</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">protsOI</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;UniProt IDs should be provided as a list.&#39;</span><span class="p">)</span>
+
+    <span class="c1"># Adding in the reference dataframe for the n-gram analysis</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_ref_df</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Adds in the dataframe that contains all the reference information for the protein domain architectures.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="c1"># if no reference file is provided then this will load the current whole proteome reference file in the designated directory.</span>
+        
+        <span class="c1"># Import the complete proteome reference file if no reference file has been specified.</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ref</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">ref_data</span><span class="p">,</span><span class="n">_</span> <span class="o">=</span> <span class="n">generateCompleteProteome</span><span class="o">.</span><span class="n">import_proteome_files</span><span class="p">()</span>
+        
+        <span class="c1"># Ensure the reference data is a dataframe and not just the string to the reference file.</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ref_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_ref</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ref</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">get_refs</span><span class="p">(</span><span class="n">ref_data</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_interpro_ids</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Add the list of interpro ids that will be used to find the n-grams of interest.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="c1"># Setting up the InterPro IDs that will be used to extract the n-grams</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">interproIDs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">tokens</span> <span class="o">=</span> <span class="n">ngramUtilities</span><span class="o">.</span><span class="n">generate_interpro_conversion</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ref</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">interproIDs</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">tokens</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+
+
+    <span class="c1"># Getting the reference data frame used for each instance of the class</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_refs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">ref_df</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ref</span> <span class="o">=</span> <span class="n">ref_df</span><span class="p">[</span><span class="n">ref_df</span><span class="p">[</span><span class="s1">&#39;UniProt ID&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">protsOI</span><span class="p">)]</span>
+
+    <span class="c1"># Building the actual domain n-gram network</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">build_dgNet</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">adj</span><span class="p">,</span><span class="n">_</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">interpro2uniprot</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">collapsed_ngrams</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">interpro_conversion</span> <span class="o">=</span> <span class="n">ngramUtilities</span><span class="o">.</span><span class="n">full_ngram_analysis</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ref</span><span class="p">,</span>
+                                                                                                                            <span class="bp">self</span><span class="o">.</span><span class="n">interproIDs</span><span class="p">,</span>
+                                                                                                                            <span class="n">max_ngram</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">,</span> 
+                                                                                                                            <span class="n">min_arch</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">min_arch</span><span class="p">,</span>
+                                                                                                                            <span class="n">readable_flag</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">readable_flag</span><span class="p">,</span>
+                                                                                                                            <span class="n">max_node_len</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">max_node_len</span><span class="p">,</span>
+                                                                                                                            <span class="n">concat_flag</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">collapse</span><span class="p">,</span>
+                                                                                                                            <span class="n">verbose</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">)</span>
+
+        <span class="c1"># Get the full list of n-grams</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ngrams</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">adj</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">generate_network</span><span class="p">()</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">generate_network</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Uses networkx to generate a network view of the n-gram network. This will remove the self-loop edges from the n-gram network, but does not touch the adjacency matrix.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="c1"># Using networkx to generate the network and then remove the self loops.</span>
+        
+        <span class="c1"># In some instances all provided proteins will have the exact same domain architecture so a networkx graph generation is somewhat useless and fails </span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">adj</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">G</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">from_pandas_adjacency</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">adj</span><span class="p">)</span>
+            <span class="n">G</span><span class="o">.</span><span class="n">remove_edges_from</span><span class="p">(</span><span class="n">nx</span><span class="o">.</span><span class="n">selfloop_edges</span><span class="p">(</span><span class="n">G</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">G</span> <span class="o">=</span> <span class="n">G</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Only one n-gram was found in the dataset. Please double-check inputs.&#39;</span><span class="p">)</span>
+            <span class="n">G</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">()</span>
+            <span class="n">G</span><span class="o">.</span><span class="n">add_node</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">adj</span><span class="o">.</span><span class="n">columns</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">G</span> <span class="o">=</span> <span class="n">G</span>
+
+    
+    <span class="c1"># Utility to draw basic network, but is recommended to use the actual networkx package.</span>
+<div class="viewcode-block" id="dansy.draw_network">
+<a class="viewcode-back" href="../../dansy.html#dansy.dansy.draw_network">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">draw_network</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Draws a basic version of the Graph with the networkx spring layout implementation. It is recommended to use the actual networkx package for a full implementation.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        
+        <span class="c1"># Default values </span>
+        <span class="n">basic_network_params</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;node_size&#39;</span><span class="p">:</span><span class="mi">1</span><span class="p">,</span>
+                                  <span class="s1">&#39;edgecolors&#39;</span><span class="p">:</span><span class="s1">&#39;k&#39;</span><span class="p">,</span>
+                                  <span class="s1">&#39;linewidths&#39;</span><span class="p">:</span><span class="mf">0.1</span><span class="p">,</span>
+                                  <span class="s1">&#39;width&#39;</span><span class="p">:</span><span class="mf">0.25</span><span class="p">,</span>
+                                  <span class="s1">&#39;edge_color&#39;</span><span class="p">:</span><span class="s1">&#39;#808080&#39;</span><span class="p">,</span>
+                                  <span class="p">}</span>
+        
+        <span class="c1"># Retrieving any of the network values that were set as attributes and placing into the network parameters</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">network_params</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">basic_network_params</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">network_params</span><span class="p">:</span>
+                    <span class="n">basic_network_params</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">network_params</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="s1">&#39;pos&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">network_params</span><span class="p">:</span>
+            <span class="n">basic_network_params</span><span class="p">[</span><span class="s1">&#39;pos&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">network_params</span><span class="p">[</span><span class="s1">&#39;pos&#39;</span><span class="p">]</span>
+
+        <span class="n">nx</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">G</span><span class="p">,</span><span class="o">**</span><span class="n">basic_network_params</span><span class="p">)</span></div>
+
+
+
+    <span class="c1"># Check the reference file status</span>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">check_ref</span><span class="p">(</span><span class="n">ref</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Checks whether the provided reference is a string to a specific file or an already imported DataFrame. It will return the actual DataFrame that was imported.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ref</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">ref_df</span> <span class="o">=</span> <span class="n">ngramUtilities</span><span class="o">.</span><span class="n">import_reference_file</span><span class="p">(</span><span class="n">ref</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ref</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">):</span>
+            <span class="n">ref_df</span> <span class="o">=</span> <span class="n">ref</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;Reference File is not correct&#39;</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">ref_df</span>
+    
+    <span class="c1"># Extract all UniProt IDs from a reference file if only the reference file is to be used</span>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">extract_uniprots</span><span class="p">(</span><span class="n">ref</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Extracts a list of the entire UniProts that were contained within a provided reference file.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+
+        <span class="k">if</span> <span class="s1">&#39;UniProt ID&#39;</span> <span class="ow">in</span> <span class="n">ref</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+            <span class="n">uniprot_ids</span> <span class="o">=</span> <span class="n">ref</span><span class="p">[</span><span class="s1">&#39;UniProt ID&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;The reference file is missing a UniProt ID column. Please check or regenerate the reference file.&#39;</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">uniprot_ids</span>
+
+    <span class="c1"># Return a human readable version of specified n-grams</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">return_legible_ngram</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ngram</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Given an n-gram of interest. It will convert the name to a human legible version.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+
+        <span class="k">if</span> <span class="s1">&#39;|&#39;</span> <span class="ow">in</span> <span class="n">ngram</span><span class="p">:</span>
+            <span class="n">split_ngram</span> <span class="o">=</span> <span class="n">ngram</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;|&#39;</span><span class="p">)</span>
+            <span class="n">ngram_conv</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">dom</span> <span class="ow">in</span> <span class="n">split_ngram</span><span class="p">:</span>
+                <span class="n">ngram_conv</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">interpro_conversion</span><span class="p">[</span><span class="n">dom</span><span class="p">])</span>
+            <span class="n">ngram_conv</span> <span class="o">=</span> <span class="s1">&#39;|&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">ngram_conv</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ngram_conv</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">interpro_conversion</span><span class="p">[</span><span class="n">ngram</span><span class="p">]</span>
+        
+        <span class="k">return</span> <span class="n">ngram_conv</span>
+    
+<div class="viewcode-block" id="dansy.ngram_protein_count">
+<a class="viewcode-back" href="../../dansy.html#dansy.dansy.ngram_protein_count">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">ngram_protein_count</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ngram</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Returns the number of proteins an individual n-gram was found within.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">if</span> <span class="n">ngram</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">collapsed_ngrams</span><span class="p">:</span>
+            <span class="n">cands</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ngrams</span> <span class="k">if</span> <span class="n">ngram</span> <span class="ow">in</span> <span class="n">i</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">cands</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;The n-gram of interest was somehow found across several non-redundant n-grams?&#39;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">c</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">interpro2uniprot</span><span class="p">[</span><span class="n">cands</span><span class="p">[</span><span class="mi">0</span><span class="p">]])</span>
+        <span class="k">elif</span> <span class="n">ngram</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ngrams</span><span class="p">:</span>
+            <span class="n">c</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">interpro2uniprot</span><span class="p">[</span><span class="n">ngram</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;The inputted n-gram is not found.&#39;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">c</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">unpack_opts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Unpacks both necessary and optional attributes that can be used for downstream analysis. It will check for a list of acceptable optional parameters that can be set with some being necessary for the analysis and others to help with record-keeping/descriptions.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        
+        <span class="n">opts</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;collapse&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;max_node_len&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;min_arch&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;readable_flag&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;verbose&#39;</span><span class="p">]</span>
+
+        <span class="n">network_opts</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;pos&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;node_size&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;node_color&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;linewidths&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;edge_color&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;width&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;edgecolors&#39;</span><span class="p">]</span>
+        <span class="n">ignored_opts</span> <span class="o">=</span> <span class="p">[]</span>
+        
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">opts</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="n">v</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">network_opts</span><span class="p">:</span>
+                <span class="k">pass</span> <span class="c1"># separate function to unpack the network associated parameters</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">ignored_opts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+        
+        <span class="n">network_params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">unpack_net_opts</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">network_params</span> <span class="o">=</span> <span class="n">network_params</span>
+
+        <span class="k">if</span> <span class="n">ignored_opts</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;The following parameters were ignored:</span><span class="si">{</span><span class="n">ignored_opts</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">unpack_net_opts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Unpacks key value parameters that relate to the basic drawing of a network. This does not fully encompass all parameters found within an networkx function.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+
+        <span class="n">network_opts</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;pos&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;node_size&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;node_color&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;linewidths&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;edge_color&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;width&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;edgecolors&#39;</span><span class="p">]</span>
+
+        <span class="n">network_params</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">network_opts</span><span class="p">:</span>
+                <span class="n">network_params</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+
+        <span class="k">return</span> <span class="n">network_params</span>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_ngram_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Using the parameters given override defaults as necessary.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+
+        <span class="c1"># Default values for the n-gram analysis</span>
+        <span class="n">ngram_parameters</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;min_arch&#39;</span><span class="p">:</span><span class="mi">1</span><span class="p">,</span>
+                          <span class="s1">&#39;max_node_len&#39;</span><span class="p">:</span><span class="kc">None</span><span class="p">,</span>
+                          <span class="s1">&#39;collapse&#39;</span><span class="p">:</span><span class="kc">True</span><span class="p">,</span>
+                          <span class="s1">&#39;readable_flag&#39;</span><span class="p">:</span><span class="kc">False</span><span class="p">,</span>
+                          <span class="s1">&#39;verbose&#39;</span><span class="p">:</span><span class="kc">True</span><span class="p">}</span>
+        
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">ngram_parameters</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="n">ngram_parameters</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">ngram_parameters</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+
+<div class="viewcode-block" id="dansy.summary">
+<a class="viewcode-back" href="../../dansy.html#dansy.dansy.summary">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">summary</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">detailed</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Output a summary of key features that are represented within the n-gram network.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+
+        <span class="c1"># Generating the baseline dataframe that will hold the summarized data.</span>
+
+        <span class="n">index</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;Proteins&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;n-grams&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;Network Isolates&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;Network Connected Components&#39;</span><span class="p">,</span>
+                 <span class="p">]</span>
+        
+        <span class="n">net_sum</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="n">index</span><span class="p">,</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;&#39;</span><span class="p">])</span>
+        <span class="k">if</span> <span class="s1">&#39;name&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">:</span>
+            <span class="n">net_sum</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">net_sum</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;Domain n-gram Network&#39;</span>
+        <span class="n">net_sum</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="s1">&#39;Proteins&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">protsOI</span><span class="p">)</span>
+        <span class="n">net_sum</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="s1">&#39;n-grams&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ngrams</span><span class="p">)</span>
+        <span class="n">net_sum</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="s1">&#39;Network Isolates&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">number_of_isolates</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">G</span><span class="p">)</span>
+        <span class="n">net_sum</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="s1">&#39;Network Connected Components&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">number_connected_components</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">G</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">detailed</span><span class="p">:</span>
+            <span class="n">net_sum</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="s1">&#39;Collapsed n-grams&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">collapsed_ngrams</span><span class="p">)</span>
+            <span class="n">net_sum</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="s1">&#39;Network Edges&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">number_of_edges</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">G</span><span class="p">)</span>
+            <span class="n">net_sum</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="s1">&#39;Maximum Length of Protein Domain Architecture&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">retrieve_longest_arch</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ref</span><span class="p">)</span>
+
+
+        <span class="k">return</span> <span class="n">net_sum</span></div>
+
+    
+<div class="viewcode-block" id="dansy.retrieve_longest_arch">
+<a class="viewcode-back" href="../../dansy.html#dansy.dansy.retrieve_longest_arch">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">retrieve_longest_arch</span><span class="p">(</span><span class="n">ref</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;Retrieves the longest domain architecture length.&#39;&#39;&#39;</span>
+
+        <span class="n">arch_max</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">ref</span><span class="p">[</span><span class="s1">&#39;Interpro Domain Architecture IDs&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;|&#39;</span><span class="p">))))</span>
+
+        <span class="k">return</span> <span class="n">arch_max</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">import_precomp_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">adj</span><span class="p">,</span><span class="n">ref</span><span class="p">,</span><span class="n">interpro_ids</span><span class="p">,</span><span class="n">n</span><span class="p">,</span><span class="n">collapsed_ngrams</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span><span class="o">**</span><span class="n">net_attribs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        For instances where a precomputed n-gram network was generated already, this will import the data if it does not already exist. </span>
+<span class="sd">        &#39;&#39;&#39;</span>
+
+        <span class="c1"># Check pre-existence of any values</span>
+        <span class="k">if</span> <span class="p">(</span><span class="s1">&#39;adj&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ref</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">interproIDs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Cannot alter already computed n-gram network parameters. Please create a new instance.&#39;</span><span class="p">)</span>
+        
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">adj</span> <span class="o">=</span> <span class="n">adj</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ref</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_ref</span><span class="p">(</span><span class="n">ref</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">interproIDs</span> <span class="o">=</span> <span class="n">interpro_ids</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_n</span> <span class="o">=</span> <span class="n">n</span>
+
+        <span class="c1"># Populate the n-gram lists</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ngrams</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">adj</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">collapsed_ngrams</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">collapsed_ngrams</span> <span class="o">=</span> <span class="n">collapsed_ngrams</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">validate_n</span><span class="p">()</span>
+
+        <span class="c1"># Create the n-gram to UniProt mapping. This uses the preexisting function.</span>
+        <span class="n">_</span><span class="p">,</span><span class="n">ngram_dict</span> <span class="o">=</span> <span class="n">ngramUtilities</span><span class="o">.</span><span class="n">get_ngrams_from_df</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ref</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">interproIDs</span><span class="p">,</span><span class="n">arch_num</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">max_ngram</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">)</span>
+
+        <span class="c1"># For the n-grams that were already collapsed removing from the n-gram dict to reduce redundant information.</span>
+        <span class="k">if</span> <span class="n">collapsed_ngrams</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">interpro2uniprot</span> <span class="o">=</span> <span class="n">ngram_dict</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">ngram</span> <span class="ow">in</span> <span class="n">collapsed_ngrams</span><span class="p">:</span>
+                <span class="k">del</span> <span class="n">ngram_dict</span><span class="p">[</span><span class="n">ngram</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">interpro2uniprot</span> <span class="o">=</span> <span class="n">ngram_dict</span>
+
+        <span class="c1"># Unpacking only network options</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">network_params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">unpack_net_opts</span><span class="p">(</span><span class="o">**</span><span class="n">net_attribs</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">generate_network</span><span class="p">()</span>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">validate_n</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Ensure that the n that has been provided matches the n-gram model that has been provided.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+
+        <span class="c1"># Check n-grams within the adjacency matrix</span>
+        <span class="n">cur_max_n</span> <span class="o">=</span> <span class="nb">max</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;|&#39;</span><span class="p">))</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ngrams</span><span class="p">])</span>
+        <span class="n">max_possible</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">retrieve_longest_arch</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ref</span><span class="p">)</span>
+        
+        <span class="c1"># First checks that there is no mismatch in longest extracted n-gram.</span>
+        <span class="k">if</span> <span class="n">cur_max_n</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s1">&#39;The provided max n-gram length is longer than n-grams in the provided n-gram list.&#39;</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="s1">&#39;collapsed_ngrams&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">:</span>
+            <span class="n">col_max</span> <span class="o">=</span> <span class="nb">max</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;|&#39;</span><span class="p">))</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">collapsed_ngrams</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">col_max</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s1">&#39;The provided max n-gram length is longer than n-grams in the provided n-gram list.&#39;</span><span class="p">)</span>
+            
+        <span class="c1"># Now checking whether there may have just been a mistake of the longest and raise a warning. If ther maximum length is much smaller than the maximum possible length and that does not match the provided n</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">cur_max_n</span> <span class="o">&lt;</span> <span class="n">max_possible</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">!=</span> <span class="n">cur_max_n</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s1">&#39;The provided max n-gram does not match the provided n-gram list.&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">&gt;</span>  <span class="n">max_possible</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;The maximum possible n-gram that can be extracted was smaller than the desired maximum n-gram length.&#39;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="dansy.retrieve_protein_info">
+<a class="viewcode-back" href="../../dansy.html#dansy.dansy.retrieve_protein_info">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">retrieve_protein_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prot</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">ngram</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Retrieves the reference information of proteins of interest. If an InterPro ID/n-gram is provided it will use that instead and search for the proteins with that ID and return that instead.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+
+        <span class="k">if</span> <span class="n">prot</span> <span class="o">==</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">ngram</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;Either a protein list or an n-gram are necessary. Please provide either one.&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">prot</span> <span class="o">!=</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">ngram</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;Please provide either a protein list or an n-gram and not both.&#39;</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">ngram</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">prot</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">interpro2uniprot</span><span class="p">[</span><span class="n">ngram</span><span class="p">]</span>
+        
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">prot</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">prot</span> <span class="o">=</span> <span class="p">[</span><span class="n">prot</span><span class="p">]</span>
+
+        <span class="n">prot_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ref</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">ref</span><span class="p">[</span><span class="s1">&#39;UniProt ID&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">prot</span><span class="p">)]</span>
+
+        <span class="k">return</span> <span class="n">prot_info</span></div>
+
+    
+<div class="viewcode-block" id="dansy.retrieve_random_ids">
+<a class="viewcode-back" href="../../dansy.html#dansy.dansy.retrieve_random_ids">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">retrieve_random_ids</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">num</span><span class="p">,</span> <span class="n">iters</span> <span class="o">=</span> <span class="mi">50</span><span class="p">,</span> <span class="n">seed</span> <span class="o">=</span> <span class="mi">882</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;Generator of random UniProt IDs from the base network.&#39;&#39;&#39;</span>
+        <span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+        <span class="n">seedlist</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">100000</span><span class="p">),</span> <span class="n">k</span><span class="o">=</span><span class="n">iters</span><span class="p">)</span>
+        <span class="n">full_id_list</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ref</span><span class="p">[</span><span class="s1">&#39;UniProt ID&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">iters</span><span class="p">):</span>
+            <span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">seedlist</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+            <span class="n">rand_ids</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">full_id_list</span><span class="p">,</span> <span class="n">k</span> <span class="o">=</span> <span class="n">num</span><span class="p">)</span>
+            <span class="k">yield</span> <span class="n">rand_ids</span></div>
+</div>
+
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Naegle Lab.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,626 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>dansy.enrichment_helpers &mdash; DANSy 1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=29a6c3e3"></script>
+      <script src="../../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            DANSy
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Examples/Examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Dependencies.html">Dependencies</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../dansy.html">DANSy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../dansy.html#supporting-functions">Supporting Functions</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">DANSy</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">dansy.enrichment_helpers</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for dansy.enrichment_helpers</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">random</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">scipy.stats</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">stats</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">multiprocessing</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">mp</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">dansy.network_separation_helpers</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ns_helpers</span>
+
+<span class="c1"># Defining a function to calculate cohen&#39;s D since I do not want to make the assumption that there is equal variance between the random and subsampled distributions. </span>
+<div class="viewcode-block" id="cohen_d">
+<a class="viewcode-back" href="../../dedansy.html#dansy.enrichment_helpers.cohen_d">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">cohen_d</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Calculates the Cohen&#39;s d effect size of 2 lists of values, where the second is considered the &quot;control&quot; group.</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">    -----------</span>
+<span class="sd">        a,b: list or numpy array</span>
+<span class="sd">            Distribution of values to compare the effect size of</span>
+<span class="sd">    </span>
+<span class="sd">    Returns:</span>
+<span class="sd">    --------</span>
+<span class="sd">        d: numpy float</span>
+<span class="sd">            Cohen&#39;s d effect size (Returns nan if all values are nan)</span>
+
+<span class="sd">    &#39;&#39;&#39;</span>
+    
+    <span class="c1"># For certain cases there might be all nans so just check that first</span>
+    <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">a</span><span class="p">))</span> <span class="ow">and</span> <span class="nb">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">b</span><span class="p">)):</span> 
+        <span class="n">d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Means</span>
+        <span class="n">x1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+        <span class="n">x2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+
+        <span class="c1"># Sizes</span>
+        <span class="n">n1</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+        <span class="n">n2</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+
+        <span class="c1"># Defining the pooled standard deviation (Note: need to account for the definition by cohen that uses N-1 for the variance, which numpy does not use)</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(((</span><span class="n">n1</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">nanstd</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">ddof</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">n2</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">nanstd</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">ddof</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">n1</span><span class="o">+</span><span class="n">n2</span><span class="o">-</span><span class="mi">2</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">s</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">d</span> <span class="o">=</span> <span class="p">(</span><span class="n">x1</span><span class="o">-</span><span class="n">x2</span><span class="p">)</span><span class="o">/</span><span class="n">s</span>
+        <span class="k">elif</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+            <span class="n">d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+        <span class="k">else</span><span class="p">:</span> <span class="c1">#Shouldn&#39;t ever get to this</span>
+            <span class="n">d</span> <span class="o">=</span> <span class="mi">0</span>
+        
+
+    <span class="k">return</span> <span class="n">d</span></div>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">hypergeom_prune_ns</span><span class="p">(</span><span class="n">dedansy</span><span class="p">,</span> <span class="n">sweep</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Builds a distribution of network separation values between two conditions on the deDANSy network based on the enrichment pruning over more restrictive p-value thresholds.</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">    ----------- </span>
+<span class="sd">        - dedansy: deDANSy object</span>
+<span class="sd">            The object containing all the enriched n-grams for both conditions of interest</span>
+<span class="sd">        - sweep: list</span>
+<span class="sd">            List of thresholds to use for pruning of differential expression status</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">    --------</span>
+<span class="sd">        - ns_sweep: list</span>
+<span class="sd">            Network separation values for each of the thresholds provided</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+
+    <span class="c1"># Get the enrichment p-values for each n-gram of both conditions</span>
+    <span class="n">up_hyper_vals</span> <span class="o">=</span> <span class="n">dedansy</span><span class="o">.</span><span class="n">ngram_DEG_hypergeom</span><span class="p">(</span><span class="s1">&#39;Up&#39;</span><span class="p">)</span>
+    <span class="n">dn_hyper_vals</span> <span class="o">=</span> <span class="n">dedansy</span><span class="o">.</span><span class="n">ngram_DEG_hypergeom</span><span class="p">(</span><span class="s1">&#39;Down&#39;</span><span class="p">)</span>
+    
+    <span class="n">ns_sweep</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">sweep</span><span class="p">:</span>
+        
+        <span class="c1"># Get only n-grams that pass the threshold</span>
+        <span class="n">up_check</span> <span class="o">=</span> <span class="p">[</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">up_hyper_vals</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">v</span> <span class="o">&lt;=</span> <span class="n">i</span><span class="p">]</span>
+        <span class="n">dn_check</span> <span class="o">=</span> <span class="p">[</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">dn_hyper_vals</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">v</span> <span class="o">&lt;=</span> <span class="n">i</span><span class="p">]</span>
+
+        <span class="c1"># Setting up the networks for determining the network separation</span>
+        <span class="n">up_net</span> <span class="o">=</span> <span class="n">dedansy</span><span class="o">.</span><span class="n">G</span><span class="o">.</span><span class="n">subgraph</span><span class="p">(</span><span class="n">up_check</span><span class="p">)</span>
+        <span class="n">dn_net</span> <span class="o">=</span> <span class="n">dedansy</span><span class="o">.</span><span class="n">G</span><span class="o">.</span><span class="n">subgraph</span><span class="p">(</span><span class="n">dn_check</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">up_net</span><span class="o">.</span><span class="n">nodes</span><span class="p">())</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">dn_net</span><span class="o">.</span><span class="n">nodes</span><span class="p">())</span><span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">ns</span> <span class="o">=</span> <span class="n">ns_helpers</span><span class="o">.</span><span class="n">network_separation</span><span class="p">(</span><span class="n">up_net</span><span class="p">,</span> <span class="n">dn_net</span><span class="p">,</span> <span class="n">dedansy</span><span class="o">.</span><span class="n">ref_data</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ns</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>    
+        <span class="n">ns_sweep</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ns</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">ns_sweep</span>
+
+<span class="c1"># Below is a handful of helper functions to try and do network separation on a number of iterations to create a null distribution of DEG network separation values</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_random_count_dist</span><span class="p">(</span><span class="n">count_weights</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Creates list of counts for different domain architecture lengths to use in subsampling and random gene selection to calculate robust enrichment of different n-grams. This creates a small bit of randomness to ensure some leeway of genes chosen to not bias n-grams of specific lengths being consistently over-represented. The total distribution of domain architectures from 0 to 10 are individual elements, while those &gt;10 will be accumulated as these represent &lt;5% of the human proteome.</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">    -----------</span>
+<span class="sd">        - count_weights: list</span>
+<span class="sd">            List of counts of the total distribution of domain architecture lengths of the measured universe in the deDANSy object</span>
+<span class="sd">    </span>
+<span class="sd">    Returns:</span>
+<span class="sd">    --------</span>
+<span class="sd">        - rand_counts: list</span>
+<span class="sd">            List of random integers for each domain architecture length</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">rand_counts</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">count_weights</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="mi">11</span><span class="p">]:</span> <span class="c1">#Skip the 0 length architectures as they do not contribute to the network</span>
+        
+        <span class="c1"># Give leeway of about +/-15% for randomly choosen an integer of similar size to the original count</span>
+        <span class="n">i_min</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">i</span><span class="o">*</span><span class="mf">.85</span><span class="p">)</span>
+        <span class="n">i_max</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">i</span><span class="o">*</span><span class="mf">1.15</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">i_min</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">i_max</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">r</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">r</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">randrange</span><span class="p">(</span><span class="n">i_min</span><span class="p">,</span> <span class="n">i_max</span><span class="p">)</span>
+        <span class="n">rand_counts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+    
+    <span class="c1"># For the 10+ architectures choose between 0 and the actual value since going above will really skew n-grams</span>
+    <span class="k">if</span> <span class="n">count_weights</span><span class="p">[</span><span class="mi">11</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">rand_counts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">randrange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">count_weights</span><span class="p">[</span><span class="mi">11</span><span class="p">]))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">rand_counts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">rand_counts</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">get_random_id_indices</span><span class="p">(</span><span class="n">arch_len_array</span><span class="p">,</span> <span class="n">rand_count_list</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Get the indices of randomly chosen genes to use as a null distribution.</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">    -----------</span>
+<span class="sd">        - arch_len_array: list</span>
+<span class="sd">            The list of protein architecture lengths to choose randomly from</span>
+<span class="sd">        - rand_count_list: list</span>
+<span class="sd">            The number of genes to choose with each architecture length</span>
+<span class="sd">    </span>
+<span class="sd">            </span>
+<span class="sd">    Returns:</span>
+<span class="sd">    --------</span>
+<span class="sd">        - rand_4_analysis: list</span>
+<span class="sd">            List of indices from the original dataframe containing all protein information.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">rand_4_analysis</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">11</span><span class="p">):</span>
+        <span class="n">cands</span> <span class="o">=</span> <span class="n">arch_len_array</span><span class="p">[</span><span class="n">arch_len_array</span> <span class="o">==</span> <span class="n">i</span><span class="p">]</span>
+        <span class="n">rand_ids</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">cands</span><span class="o">.</span><span class="n">index</span><span class="p">),</span> <span class="n">k</span><span class="o">=</span><span class="n">rand_count_list</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="c1"># Using indices as these are conserved across all the analysis and have smallish memory footprint</span>
+        <span class="n">rand_4_analysis</span> <span class="o">+=</span> <span class="n">rand_ids</span>
+
+    <span class="c1"># For the &gt;10 n-grams now getting candidates</span>
+    <span class="n">cands</span> <span class="o">=</span> <span class="n">arch_len_array</span><span class="p">[</span><span class="n">arch_len_array</span> <span class="o">&gt;</span> <span class="mi">10</span><span class="p">]</span>
+    <span class="n">rand_ids</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">cands</span><span class="o">.</span><span class="n">index</span><span class="p">),</span> <span class="n">k</span><span class="o">=</span><span class="n">rand_count_list</span><span class="p">[</span><span class="mi">10</span><span class="p">])</span>
+    <span class="n">rand_4_analysis</span> <span class="o">+=</span> <span class="n">rand_ids</span>
+
+    <span class="k">return</span> <span class="n">rand_4_analysis</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">designate_rand_DEGs</span><span class="p">(</span><span class="n">rand_indices</span><span class="p">,</span> <span class="n">ref_df</span><span class="p">,</span> <span class="n">up_fraction</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Designates randomly chosen genes as either up or down regulated while preserving the relative fraction of each condition.</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">    -----------</span>
+<span class="sd">        - rand_indices: list</span>
+<span class="sd">            List of protein indices from the reference data frame that were randomly chosen</span>
+<span class="sd">        - ref_df: pandas DataFrame </span>
+<span class="sd">            The reference dataframe that contains all protein info</span>
+<span class="sd">        - up_fraction: float</span>
+<span class="sd">            The relative fraction of up to down regulated genes/proteins being expressed</span>
+<span class="sd">    </span>
+<span class="sd">    Returns:</span>
+<span class="sd">    --------</span>
+<span class="sd">        - rand_DEGs: dict</span>
+<span class="sd">            Up and down lists of UniProt IDs from the randomly chosen genes</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+
+    <span class="c1"># Now double-checking the distribution</span>
+    <span class="n">random_prots</span> <span class="o">=</span> <span class="n">ref_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">rand_indices</span><span class="p">]</span>
+
+    <span class="c1"># Now designating the random genes as either up or down based on the proportion of DEGs that were for both</span>
+    <span class="n">rand_up_num</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">up_fraction</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">random_prots</span><span class="p">))</span>
+
+    <span class="c1"># Alternative to the random sampling which has issues with reproducibility when called multiple times</span>
+    <span class="n">rand_prot_set</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">random_prots</span><span class="p">[</span><span class="s1">&#39;UniProt ID&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
+    <span class="c1">#random.shuffle(rand_prot_set)</span>
+    <span class="c1">#rand_up_chosen = rand_prot_set[0:rand_up_num]</span>
+    <span class="c1">#rand_down_chosen = rand_prot_set[rand_up_num:]</span>
+
+    <span class="n">rand_up_chosen</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">rand_prot_set</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">rand_up_num</span><span class="p">))</span>
+    <span class="n">rand_down_chosen</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">rand_prot_set</span><span class="p">)</span><span class="o">.</span><span class="n">difference</span><span class="p">(</span><span class="n">rand_up_chosen</span><span class="p">))</span>
+    <span class="n">rand_DEGs</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;Up&#39;</span><span class="p">:</span><span class="n">rand_up_chosen</span><span class="p">,</span><span class="s1">&#39;Down&#39;</span><span class="p">:</span><span class="n">rand_down_chosen</span><span class="p">}</span>
+    <span class="k">return</span> <span class="n">rand_DEGs</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">get_random_net_sep_metrics</span><span class="p">(</span><span class="n">normalized_arch_weights</span><span class="p">,</span> <span class="n">complete_arch_dist</span><span class="p">,</span> <span class="n">dedansy</span><span class="p">,</span><span class="n">deg_ratio</span><span class="p">,</span><span class="n">pvals</span><span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="n">num</span><span class="o">=</span><span class="mi">21</span><span class="p">),</span><span class="n">return_dist</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Performs the network separation and pruning analysis on randomly chosen genes from the dedansy object.</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">    -----------</span>
+<span class="sd">        - normalized_arch_weights: list</span>
+<span class="sd">            The relative fraction of the domain architecture lengths from 0-10 and 10+ from the deDANSy object of differentially expressed genes/proteins</span>
+<span class="sd">        - complete_arch_dist: list</span>
+<span class="sd">            The proteins that are found for each domain architecture length to choose gene randomly from</span>
+<span class="sd">        - dedansy: deDANSy object</span>
+<span class="sd">            The object that contains all the protein information being analyzed</span>
+<span class="sd">        - deg_ratio: float</span>
+<span class="sd">            The relative fraction of up to down regulated genes/proteins</span>
+<span class="sd">        - pvals: numpy array (Optional)</span>
+<span class="sd">            The threshold p-values to use for pruning analysis</span>
+<span class="sd">        - return_dist: bool (Optional)</span>
+<span class="sd">            Whether the distribution of p-values during the p-value sweep is return. Default is False as this is a niche request</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">    --------</span>
+<span class="sd">        - o: tuple</span>
+<span class="sd">            Tuple containing both the network separation prior to pruning and the interquartile range of network separation values during the pruning analysis</span>
+<span class="sd">        </span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    
+    <span class="c1"># Setting the randomly chosen genes</span>
+    <span class="n">rcd</span> <span class="o">=</span> <span class="n">get_random_count_dist</span><span class="p">(</span><span class="n">normalized_arch_weights</span><span class="p">)</span>
+    <span class="n">rii</span> <span class="o">=</span> <span class="n">get_random_id_indices</span><span class="p">(</span><span class="n">complete_arch_dist</span><span class="p">,</span><span class="n">rcd</span><span class="p">)</span>
+    <span class="n">r_prots</span> <span class="o">=</span> <span class="n">designate_rand_DEGs</span><span class="p">(</span><span class="n">rii</span><span class="p">,</span> <span class="n">dedansy</span><span class="o">.</span><span class="n">ref</span><span class="p">,</span><span class="n">deg_ratio</span><span class="p">)</span>
+    <span class="n">dedansy</span><span class="o">.</span><span class="n">set_DEG_ngrams</span><span class="p">(</span><span class="n">r_prots</span><span class="p">[</span><span class="s1">&#39;Up&#39;</span><span class="p">],</span><span class="n">r_prots</span><span class="p">[</span><span class="s1">&#39;Down&#39;</span><span class="p">],</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="c1"># Getting the two (or three) metrics</span>
+    <span class="n">ns</span> <span class="o">=</span> <span class="n">dedansy</span><span class="o">.</span><span class="n">DEG_network_sep</span><span class="p">()</span>
+    <span class="n">ns_vals</span> <span class="o">=</span> <span class="n">hypergeom_prune_ns</span><span class="p">(</span><span class="n">dedansy</span><span class="p">,</span> <span class="n">pvals</span><span class="p">)</span>
+    <span class="n">ns_iqr</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">iqr</span><span class="p">(</span><span class="n">ns_vals</span><span class="p">,</span> <span class="n">nan_policy</span><span class="o">=</span><span class="s1">&#39;omit&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">return_dist</span><span class="p">:</span>
+        <span class="n">o</span> <span class="o">=</span> <span class="p">(</span><span class="n">ns</span><span class="p">,</span><span class="n">ns_iqr</span><span class="p">,</span><span class="n">ns_vals</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">o</span> <span class="o">=</span> <span class="p">(</span><span class="n">ns</span><span class="p">,</span><span class="n">ns_iqr</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">o</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">get_subsample_net_sep_metrics</span><span class="p">(</span><span class="n">dedansy</span><span class="p">,</span><span class="n">orig_DEGs</span><span class="p">,</span> <span class="n">rand_prot_nums</span><span class="p">,</span><span class="n">pvals</span><span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="n">num</span><span class="o">=</span><span class="mi">21</span><span class="p">),</span><span class="n">return_dist</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Performing the network separation and pruning analysis on a subsampled set of proteins from the differentially expressed genes/proteins.</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">        - dedansy: deDANSy object</span>
+<span class="sd">            The dansy object containing all expression and protein information</span>
+<span class="sd">        - orig_DEGs: list</span>
+<span class="sd">            List of two elements which contain lists of all the UniProt IDs that are either up or down (in that order) regulated</span>
+<span class="sd">        - rand_prot_nums: list</span>
+<span class="sd">            Number of randomly chosen proteins for each condition to ensure we match the randomly chosen genes</span>
+<span class="sd">        - pvals: numpy array</span>
+<span class="sd">            The threshold p-values to use during the pruning step</span>
+<span class="sd">        - return_dist: bool</span>
+<span class="sd">            Whether the distribution of p-values during the p-value sweep is return. Default is False as this is a niche request</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">    --------</span>
+<span class="sd">        - o: tuple</span>
+<span class="sd">            Tuple containing both the network separation prior to pruning and the interquartile range of network separation values during the pruning analysis</span>
+<span class="sd">        </span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    
+    <span class="c1"># Setting up the original differentially expressed genes/proteins and randomly sampling them</span>
+    <span class="n">orig_up</span> <span class="o">=</span> <span class="n">orig_DEGs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">orig_dn</span> <span class="o">=</span> <span class="n">orig_DEGs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">rand_up</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">orig_up</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">rand_prot_nums</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">rand_dn</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">orig_dn</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">rand_prot_nums</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="c1"># Setting the subsampled genes and getting the metrics of interest</span>
+    <span class="n">dedansy</span><span class="o">.</span><span class="n">set_DEG_ngrams</span><span class="p">(</span><span class="n">rand_up</span><span class="p">,</span><span class="n">rand_dn</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">ns</span> <span class="o">=</span> <span class="n">dedansy</span><span class="o">.</span><span class="n">DEG_network_sep</span><span class="p">()</span>
+    <span class="n">ns_vals</span> <span class="o">=</span> <span class="n">hypergeom_prune_ns</span><span class="p">(</span><span class="n">dedansy</span><span class="p">,</span><span class="n">pvals</span><span class="p">)</span>
+    <span class="n">ns_iqr</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">iqr</span><span class="p">(</span><span class="n">ns_vals</span><span class="p">,</span> <span class="n">nan_policy</span><span class="o">=</span><span class="s1">&#39;omit&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">return_dist</span><span class="p">:</span>
+        <span class="n">o</span> <span class="o">=</span> <span class="p">(</span><span class="n">ns</span><span class="p">,</span><span class="n">ns_iqr</span><span class="p">,</span><span class="n">ns_vals</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">o</span> <span class="o">=</span> <span class="p">(</span><span class="n">ns</span><span class="p">,</span><span class="n">ns_iqr</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">o</span>
+
+<div class="viewcode-block" id="individual_trial_calc">
+<a class="viewcode-back" href="../../dedansy.html#dansy.enrichment_helpers.individual_trial_calc">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">individual_trial_calc</span><span class="p">(</span><span class="n">dedansy</span><span class="p">,</span> <span class="n">arch_weights</span><span class="p">,</span> <span class="n">comp_arch_dist</span><span class="p">,</span> <span class="n">ratio</span><span class="p">,</span> <span class="n">sweep</span><span class="p">,</span> <span class="n">originals</span><span class="p">,</span><span class="n">dist_flag</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">seed</span> <span class="o">=</span><span class="mi">123</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Calculates the subsampled and randomly chosen genes network separtion and pruning analysis.</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">    -----------</span>
+<span class="sd">        - dedansy: deDANSy object</span>
+<span class="sd">            The dansy object containing all expression and protein information</span>
+<span class="sd">        - arch_weights: list</span>
+<span class="sd">            The relative fraction of the domain architecture lengths from 0-10 and 10+ from the deDANSy object of differentially expressed genes/proteins</span>
+<span class="sd">        - comp_arch_dist: list</span>
+<span class="sd">            The proteins that are found for each domain architecture length to choose gene randomly from</span>
+<span class="sd">        - ratio: float</span>
+<span class="sd">            The relative fraction of up to down regulated genes/proteins</span>
+<span class="sd">        - sweep: numpy array</span>
+<span class="sd">            The threshold p-values to use for pruning analysis</span>
+<span class="sd">        - originals: list</span>
+<span class="sd">            List of two elements which contain lists of all the UniProt IDs that are either up or down (in that order) regulated</span>
+<span class="sd">        - dist_flag: bool (Optional)</span>
+<span class="sd">            Whether the distribution of p-values during the p-value sweep is return. Default is False as this is a niche request</span>
+<span class="sd">        - seed: int (Optional)</span>
+<span class="sd">            Random number generator seed to ensure reproducibility. Default is 123</span>
+<span class="sd">    </span>
+<span class="sd">    Returns:</span>
+<span class="sd">    --------</span>
+<span class="sd">        - list of tuples</span>
+<span class="sd">            The random and then subsampled data of the unpruned network separation, the interquartile range of network separation during pruning, and if requested the distribution of values</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+
+    <span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+    <span class="n">rand_data</span> <span class="o">=</span> <span class="n">get_random_net_sep_metrics</span><span class="p">(</span><span class="n">normalized_arch_weights</span><span class="o">=</span><span class="n">arch_weights</span><span class="p">,</span>
+                                          <span class="n">complete_arch_dist</span><span class="o">=</span><span class="n">comp_arch_dist</span><span class="p">,</span>
+                                          <span class="n">dedansy</span><span class="o">=</span><span class="n">dedansy</span><span class="p">,</span>
+                                          <span class="n">deg_ratio</span><span class="o">=</span><span class="n">ratio</span><span class="p">,</span>
+                                          <span class="n">pvals</span><span class="o">=</span><span class="n">sweep</span><span class="p">,</span>
+                                          <span class="n">return_dist</span><span class="o">=</span><span class="n">dist_flag</span><span class="p">)</span>
+    <span class="c1"># Since the random function above generates the sizes will pass this on.</span>
+    <span class="n">rand_szs</span> <span class="o">=</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">dedansy</span><span class="o">.</span><span class="n">up_DEGs</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">dedansy</span><span class="o">.</span><span class="n">down_DEGs</span><span class="p">))</span>
+    <span class="n">subsample_data</span> <span class="o">=</span> <span class="n">get_subsample_net_sep_metrics</span><span class="p">(</span><span class="n">dedansy</span><span class="o">=</span><span class="n">dedansy</span><span class="p">,</span>
+                                <span class="n">orig_DEGs</span><span class="o">=</span><span class="n">originals</span><span class="p">,</span>
+                                <span class="n">rand_prot_nums</span><span class="o">=</span><span class="n">rand_szs</span><span class="p">,</span>
+                                <span class="n">pvals</span><span class="o">=</span><span class="n">sweep</span><span class="p">,</span>
+                                <span class="n">return_dist</span><span class="o">=</span><span class="n">dist_flag</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">rand_data</span> <span class="o">+</span> <span class="n">subsample_data</span><span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="calculate_separation_stability">
+<a class="viewcode-back" href="../../dedansy.html#dansy.enrichment_helpers.calculate_separation_stability">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">calculate_separation_stability</span><span class="p">(</span><span class="n">dedansy</span><span class="p">,</span> <span class="n">num_trials</span> <span class="o">=</span> <span class="mi">50</span><span class="p">,</span> <span class="n">pval_sweep</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="o">-</span><span class="mi">10</span><span class="p">,</span><span class="mi">21</span><span class="p">),</span> <span class="n">return_distributions</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span><span class="n">processes</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Generates the distribution of network separation and interquartile range of network separation values during pruning for generating the different scores for deDANSy analysis. This is the key function of the algorithm that gathers all the results.</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">    -----------</span>
+<span class="sd">        - dedansy: deDANSy object</span>
+<span class="sd">            The dansy object containing all expression and protein information</span>
+<span class="sd">        - num_trials: int (Optional, Default 50)</span>
+<span class="sd">            The number of trials for subsampling and random gene selection</span>
+<span class="sd">        - pval_sweep: numpy array</span>
+<span class="sd">            The threshold p-values to use for pruning analysis</span>
+<span class="sd">        - return_distribution: bool</span>
+<span class="sd">            Whether the distribution of p-values during the p-value sweep is return. Default is False as this is a niche request</span>
+<span class="sd">        - processes: int</span>
+<span class="sd">            Number of multiprocessing workers to use for analysis</span>
+<span class="sd">        - verbose: bool</span>
+<span class="sd">            Whether progress statements should be displayed</span>
+<span class="sd">    </span>
+<span class="sd">    Returns:</span>
+<span class="sd">    --------</span>
+<span class="sd">        - o: list of tuples</span>
+<span class="sd">            The full distribution of values for each individual trial of the subsampled and randomly chosen genes</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+   
+   <span class="c1"># Setting up the inputs as necessary for the dependent functions by getting the information about the measured universe proteins</span>
+    <span class="n">orig_up</span> <span class="o">=</span> <span class="n">dedansy</span><span class="o">.</span><span class="n">up_DEGs</span>
+    <span class="n">orig_dn</span> <span class="o">=</span> <span class="n">dedansy</span><span class="o">.</span><span class="n">down_DEGs</span>
+    <span class="n">original_DEGs</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">orig_up</span><span class="p">)</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">orig_dn</span><span class="p">)</span>
+    <span class="n">deg_info</span> <span class="o">=</span> <span class="n">dedansy</span><span class="o">.</span><span class="n">retrieve_protein_info</span><span class="p">(</span><span class="n">original_DEGs</span><span class="p">)</span>
+    <span class="n">arch_lens</span> <span class="o">=</span> <span class="n">deg_info</span><span class="p">[</span><span class="s1">&#39;Interpro Domain Architecture IDs&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;|&#39;</span><span class="p">)))</span>
+    <span class="n">max_length</span> <span class="o">=</span> <span class="nb">max</span><span class="p">([</span><span class="nb">max</span><span class="p">(</span><span class="n">arch_lens</span><span class="p">),</span><span class="mi">11</span><span class="p">])</span>
+    <span class="n">deg_arch_dist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">histogram</span><span class="p">(</span><span class="n">arch_lens</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="nb">range</span><span class="p">(</span><span class="n">max_length</span><span class="o">+</span><span class="mi">1</span><span class="p">))</span>
+    <span class="n">complete_arch_dist</span> <span class="o">=</span> <span class="n">dedansy</span><span class="o">.</span><span class="n">ref</span><span class="p">[</span><span class="s1">&#39;Interpro Domain Architecture IDs&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;|&#39;</span><span class="p">)))</span>
+    <span class="n">weight_list</span> <span class="o">=</span> <span class="n">deg_arch_dist</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">:</span><span class="mi">11</span><span class="p">]</span>
+    <span class="n">weight_list</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">weight_list</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">deg_arch_dist</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">11</span><span class="p">:]))</span>
+
+    <span class="c1"># Now normalizing the list 70% of the total number of DEGs available</span>
+    <span class="n">weight_list_n</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">weight_list</span><span class="o">/</span><span class="nb">sum</span><span class="p">(</span><span class="n">weight_list</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">weight_list</span><span class="p">)</span><span class="o">*</span><span class="mf">0.7</span><span class="p">))</span>
+    <span class="n">up_frac</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">dedansy</span><span class="o">.</span><span class="n">up_DEGs</span><span class="p">)</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="n">deg_info</span><span class="p">)</span>
+    
+    <span class="c1"># For reproducibility (mostly only for when multiprocessing is enacted) creating a seed list that will be passed to the individual trials function</span>
+    <span class="n">seedlist</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">50</span><span class="o">*</span><span class="n">num_trials</span><span class="p">),</span> <span class="n">num_trials</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">processes</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+
+        <span class="c1"># Intializing some of the variables of the for loop</span>
+        <span class="n">rand_ns</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">num_trials</span><span class="p">)</span>
+        <span class="n">subsample_ns</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">num_trials</span><span class="p">)</span>
+        <span class="n">rand_iqr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">num_trials</span><span class="p">)</span>
+        <span class="n">subsample_iqr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">num_trials</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">return_distributions</span><span class="p">:</span> 
+            <span class="n">rand_ns_dists</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">subsample_ns_dists</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="c1"># Progress statement</span>
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Starting calculations&#39;</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_trials</span><span class="p">):</span>
+            <span class="n">a</span> <span class="o">=</span> <span class="n">individual_trial_calc</span><span class="p">(</span><span class="n">dedansy</span><span class="p">,</span> <span class="n">weight_list_n</span><span class="p">,</span><span class="n">complete_arch_dist</span><span class="p">,</span><span class="n">up_frac</span><span class="p">,</span><span class="n">pval_sweep</span><span class="p">,[</span><span class="n">orig_up</span><span class="p">,</span><span class="n">orig_dn</span><span class="p">],</span><span class="n">dist_flag</span><span class="o">=</span><span class="n">return_distributions</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="n">seedlist</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+            <span class="c1"># Unpacking the values into the datastructures above</span>
+            <span class="n">rand_ns</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">a</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">rand_iqr</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">a</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">return_distributions</span><span class="p">:</span>
+                <span class="n">rand_ns_dists</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">a</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+                <span class="n">subsample_ns</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">a</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+                <span class="n">subsample_iqr</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">a</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span>
+                <span class="n">subsample_ns_dists</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">a</span><span class="p">[</span><span class="mi">5</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">subsample_ns</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">a</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+                <span class="n">subsample_iqr</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">a</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Will do multiprocessing&#39;</span><span class="p">)</span>
+
+        <span class="c1"># Setting up the arguments to be passed to multiple processes</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="p">[(</span><span class="n">dedansy</span><span class="p">,</span> <span class="n">weight_list_n</span><span class="p">,</span><span class="n">complete_arch_dist</span><span class="p">,</span><span class="n">up_frac</span><span class="p">,</span><span class="n">pval_sweep</span><span class="p">,[</span><span class="n">orig_up</span><span class="p">,</span><span class="n">orig_dn</span><span class="p">],</span><span class="n">return_distributions</span><span class="p">,</span> <span class="n">seedlist</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_trials</span><span class="p">)]</span>
+        
+        <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;dansy.enrichment_helpers&#39;</span><span class="p">:</span>
+            <span class="n">pool</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">Pool</span><span class="p">(</span><span class="n">processes</span><span class="o">=</span><span class="n">processes</span><span class="p">)</span>
+            <span class="k">with</span> <span class="n">pool</span> <span class="k">as</span> <span class="n">p</span><span class="p">:</span>
+                <span class="n">a</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">starmap</span><span class="p">(</span><span class="n">individual_trial_calc</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span><span class="n">chunksize</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+            <span class="n">pool</span><span class="o">.</span><span class="n">close</span><span class="p">()</span> <span class="c1"># In case but not necessary</span>
+
+        <span class="c1"># Unpacking the values into the datastructures above</span>
+        <span class="n">rand_ns</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">a</span><span class="p">]</span>
+        <span class="n">rand_iqr</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">a</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">return_distributions</span><span class="p">:</span>
+            <span class="n">rand_ns_dists</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">a</span><span class="p">]</span>
+            <span class="n">subsample_ns</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">a</span><span class="p">]</span>
+            <span class="n">subsample_iqr</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">a</span><span class="p">]</span>
+            <span class="n">subsample_ns_dists</span><span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">a</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">subsample_ns</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">a</span><span class="p">]</span>
+            <span class="n">subsample_iqr</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">a</span><span class="p">]</span>
+    
+    <span class="c1"># Prepping the export</span>
+    <span class="k">if</span> <span class="n">return_distributions</span><span class="p">:</span>
+        <span class="n">o</span> <span class="o">=</span> <span class="p">[</span><span class="n">rand_ns</span><span class="p">,</span><span class="n">rand_iqr</span><span class="p">,</span><span class="n">rand_ns_dists</span><span class="p">,</span><span class="n">subsample_ns</span><span class="p">,</span><span class="n">subsample_iqr</span><span class="p">,</span><span class="n">subsample_ns_dists</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">o</span> <span class="o">=</span> <span class="p">[</span><span class="n">rand_ns</span><span class="p">,</span><span class="n">rand_iqr</span><span class="p">,</span><span class="n">subsample_ns</span><span class="p">,</span><span class="n">subsample_iqr</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">o</span></div>
+
+
+<div class="viewcode-block" id="retrieve_fpr_checks">
+<a class="viewcode-back" href="../../dedansy.html#dansy.enrichment_helpers.retrieve_fpr_checks">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">retrieve_fpr_checks</span><span class="p">(</span><span class="n">dedansy</span><span class="p">,</span><span class="n">num_DEGs</span><span class="p">,</span><span class="n">fpr_trials</span> <span class="o">=</span> <span class="mi">50</span><span class="p">,</span> <span class="n">num_internal_trials</span> <span class="o">=</span> <span class="mi">50</span><span class="p">,</span> <span class="n">deg_ratios</span> <span class="o">=</span> <span class="mf">0.7</span><span class="p">,</span> <span class="n">processes</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">seed</span> <span class="o">=</span><span class="mi">123</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Performs a false positive rate check on the values for the differentially expressed genes by performing the same subsampling and random gene selection analysis with random genes that were measured to determine if findings are true positives. This process can be highly time consuming based on the number of FPR trials that are to conducted.</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">    -----------</span>
+<span class="sd">        - dedansy: deDANSy object</span>
+<span class="sd">            The dansy object containing all expression and protein information</span>
+<span class="sd">        - num_DEGs: int</span>
+<span class="sd">            The number of differentially expressed genes in the deDANSy object</span>
+<span class="sd">        - fpr_trials: int (Optional, Default 50)</span>
+<span class="sd">            The number of False Positive Rate trials to conduct</span>
+<span class="sd">        - num_internal_trials: int (Optional, Default 50)</span>
+<span class="sd">            The number of trials for subsampling and random gene selection that will be used for all the FPR trials. (Should match what was done on the analysis of interest)</span>
+<span class="sd">        - deg_ratios: float</span>
+<span class="sd">            Relative ratio of differentially expressed genes to designate as up or down</span>
+<span class="sd">        - processes: int</span>
+<span class="sd">            Number of multiprocessing workers to use for analysis</span>
+<span class="sd">        - seed</span>
+<span class="sd">            Random number generator seed</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">    --------</span>
+<span class="sd">        - internal_fpr: list</span>
+<span class="sd">            List of p-values for the network separation and interquartile range during pruning </span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    
+    <span class="c1">#  Setting up the random DEGs generator</span>
+    <span class="n">rand_DEGs</span> <span class="o">=</span> <span class="n">dedansy</span><span class="o">.</span><span class="n">retrieve_random_ids</span><span class="p">(</span><span class="n">num</span><span class="o">=</span><span class="n">num_DEGs</span><span class="p">,</span> <span class="n">iters</span><span class="o">=</span><span class="n">fpr_trials</span><span class="p">,</span><span class="n">seed</span> <span class="o">=</span> <span class="n">seed</span><span class="p">)</span>
+
+    <span class="n">internal_fpr</span> <span class="o">=</span> <span class="p">[]</span>
+    
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">fpr_trials</span><span class="p">):</span>
+        <span class="n">cur_DEGs</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">rand_DEGs</span><span class="p">)</span>
+        <span class="n">cur_DEGs</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">cur_DEGs</span><span class="p">)</span> <span class="c1"># In case of weird issues with random sampling using sorted</span>
+        <span class="n">orig_up</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">cur_DEGs</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="nb">round</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">cur_DEGs</span><span class="p">)</span><span class="o">*</span><span class="n">deg_ratios</span><span class="p">))</span>
+        <span class="n">orig_dn</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">cur_DEGs</span><span class="p">)</span><span class="o">.</span><span class="n">difference</span><span class="p">(</span><span class="n">orig_up</span><span class="p">))</span>
+        <span class="n">dedansy</span><span class="o">.</span><span class="n">set_DEG_ngrams</span><span class="p">(</span><span class="n">up_DEGs</span><span class="o">=</span><span class="n">orig_up</span><span class="p">,</span> <span class="n">down_DEGs</span><span class="o">=</span><span class="n">orig_dn</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">temp</span> <span class="o">=</span> <span class="n">calculate_separation_stability</span><span class="p">(</span><span class="n">dedansy</span><span class="p">,</span><span class="n">num_trials</span><span class="o">=</span><span class="n">num_internal_trials</span><span class="p">,</span><span class="n">processes</span><span class="o">=</span><span class="n">processes</span><span class="p">,</span><span class="n">verbose</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="n">rand_iqr</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">temp</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
+        <span class="n">subsample_iqr</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">temp</span><span class="p">[</span><span class="mi">3</span><span class="p">]]</span>
+        <span class="n">rand_full_ns</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">temp</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+        <span class="n">actual_full_ns</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">temp</span><span class="p">[</span><span class="mi">2</span><span class="p">]]</span>
+
+        <span class="c1"># Now getting some of the stats and results</span>
+        <span class="n">temp_iqr_res</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">mannwhitneyu</span><span class="p">(</span><span class="n">rand_iqr</span><span class="p">,</span><span class="n">subsample_iqr</span><span class="p">)</span>
+        <span class="n">temp_ns_res</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">mannwhitneyu</span><span class="p">(</span><span class="n">rand_full_ns</span><span class="p">,</span> <span class="n">actual_full_ns</span><span class="p">)</span>
+
+        <span class="n">internal_fpr</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">temp_ns_res</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">temp_iqr_res</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+
+    <span class="k">return</span> <span class="n">internal_fpr</span></div>
+
+
+<div class="viewcode-block" id="calculate_fpr">
+<a class="viewcode-back" href="../../dedansy.html#dansy.enrichment_helpers.calculate_fpr">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">calculate_fpr</span><span class="p">(</span><span class="n">actual_res</span><span class="p">,</span> <span class="n">random_res</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    For each result of interest calculates the False positive rate</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">    -----------</span>
+<span class="sd">        - actual_res: list</span>
+<span class="sd">            The results from conducting the analysis</span>
+<span class="sd">        - random_res: list</span>
+<span class="sd">            The p-values from the random FPR trials</span>
+<span class="sd">    </span>
+<span class="sd">    Returns:</span>
+<span class="sd">    --------</span>
+<span class="sd">        - tuple of FPR values</span>
+<span class="sd">    </span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">ns_res</span> <span class="o">=</span> <span class="n">actual_res</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">iqr_res</span> <span class="o">=</span> <span class="n">actual_res</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">ns_rand_res</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">random_res</span><span class="p">]</span>
+    <span class="n">iqr_rand_res</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">random_res</span><span class="p">]</span>
+
+    <span class="c1"># Now calculating the fpr values</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="o">&lt;=</span> <span class="n">ns_res</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">ns_rand_res</span><span class="p">]</span>
+    <span class="n">ns_fpr</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="o">&lt;=</span> <span class="n">iqr_res</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">iqr_rand_res</span><span class="p">]</span>
+    <span class="n">iqr_fpr</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="p">(</span><span class="n">ns_fpr</span><span class="p">,</span> <span class="n">iqr_fpr</span><span class="p">)</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Naegle Lab.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

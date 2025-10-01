@@ -1,0 +1,378 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>dansy.network_separation_helpers &mdash; DANSy 1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=29a6c3e3"></script>
+      <script src="../../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            DANSy
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Examples/Examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Dependencies.html">Dependencies</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../dansy.html">DANSy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../dansy.html#supporting-functions">Supporting Functions</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">DANSy</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">dansy.network_separation_helpers</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for dansy.network_separation_helpers</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">networkx</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nx</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dansy.dansy</span><span class="w"> </span><span class="kn">import</span> <span class="n">dansy</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">mean_minimum_dist</span><span class="p">(</span><span class="n">G_nodes</span><span class="p">,</span> <span class="n">ref_net_params_dict</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Calculates the average shortest path length between nodes within the network along a reference network. Nodes that are isolates within the reference network have a shortest path length of 0, and nodes within the network which represent a completely collapses connected component also have a shortest path length of 0 or a penalty value if provided. </span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="c1"># Unpacking the reference information that is used in calculating the shortest path lengths</span>
+    <span class="n">ref_isolates</span> <span class="o">=</span> <span class="n">ref_net_params_dict</span><span class="p">[</span><span class="s1">&#39;isolates&#39;</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">G_nodes</span><span class="p">,</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">):</span>
+        <span class="n">nodesOI</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">G_nodes</span><span class="o">.</span><span class="n">nodes</span><span class="p">())</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">nodesOI</span> <span class="o">=</span> <span class="n">G_nodes</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">nodesOI</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="c1"># Don&#39;t bother checking the expected isolates. These will be accounted for in the total length as they contribute as 0s in the final calculation.</span>
+        <span class="n">nodes_2_check</span> <span class="o">=</span> <span class="n">nodesOI</span><span class="o">.</span><span class="n">difference</span><span class="p">(</span><span class="n">ref_isolates</span><span class="p">)</span>
+        
+        <span class="c1"># Get the shortest path length for individual nodes that do exist in the reference network</span>
+        <span class="n">spl</span> <span class="o">=</span> <span class="n">spl_inner</span><span class="p">(</span><span class="n">nodes_2_check</span><span class="p">,</span> <span class="n">nodesOI</span><span class="p">,</span> <span class="n">ref_net_params_dict</span><span class="p">)</span>
+        
+        <span class="c1"># Ensuring the isolates are accounted for in the average</span>
+        <span class="n">mean_min_dist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">spl</span><span class="p">)</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="n">nodesOI</span><span class="p">)</span>
+    
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">mean_min_dist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+
+    <span class="k">return</span> <span class="n">mean_min_dist</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">spl_inner</span><span class="p">(</span><span class="n">nodes_2_check</span><span class="p">,</span> <span class="n">all_nodes</span><span class="p">,</span> <span class="n">ref_net_analysis_parameters</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    An inner calculation function that gets the shortest path length between nodes of interest and target nodes that are often found within 2 subnetworks of a larger network. For nodes that do not have connections between the subnetworks these are given a penalty term that is defined in the reference network information provided.</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">    -----------</span>
+<span class="sd">        - nodes_2_check: list</span>
+<span class="sd">            - Nodes of interest who act as a source of the shortest path lengths are to be gathered</span>
+<span class="sd">        - all_nodes: list</span>
+<span class="sd">            - The target list of nodes that the shortest path distance from the nodes of interest is to be queried for.</span>
+<span class="sd">        - ref_net_analysis_parameters: dict</span>
+<span class="sd">            - A dictionary that contains several components of the reference, background network that are used in the calculation. See build_network_reference_dict for more details.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">    --------</span>
+<span class="sd">        - spl: list</span>
+<span class="sd">            - The shortest path distances for all the nodes of interest. (Note that if there are no connections between a node of interest and the target nodes, this will be the penalty term found in the reference network dict.)</span>
+<span class="sd">    </span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    
+    <span class="n">reference_spl_dict</span> <span class="o">=</span> <span class="n">ref_net_analysis_parameters</span><span class="p">[</span><span class="s1">&#39;spl&#39;</span><span class="p">]</span>
+    <span class="n">penalty_input</span> <span class="o">=</span> <span class="n">ref_net_analysis_parameters</span><span class="p">[</span><span class="s1">&#39;penalty&#39;</span><span class="p">]</span>
+
+    <span class="c1"># Verify that the penalty that was to be used is an appropriate format and can be used for downstream analysis</span>
+    <span class="n">dynamic_flag</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="c1"># If a constant term is provided</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">penalty_input</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="n">penalty</span> <span class="o">=</span> <span class="n">penalty_input</span>
+    <span class="c1"># If one of the acceptable methods is provided and thus being calculated</span>
+    <span class="k">elif</span> <span class="n">penalty_input</span> <span class="o">==</span> <span class="s1">&#39;dynamic&#39;</span><span class="p">:</span>
+        <span class="n">dynamic_flag</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;Inappropriate penalty term input&#39;</span><span class="p">)</span>
+
+    <span class="c1"># Some precomputing for the dynamic method</span>
+    <span class="k">if</span> <span class="n">dynamic_flag</span><span class="p">:</span>
+    
+        <span class="k">if</span> <span class="s1">&#39;CCs&#39;</span> <span class="ow">in</span> <span class="n">ref_net_analysis_parameters</span> <span class="ow">and</span> <span class="s1">&#39;cc_diameters&#39;</span> <span class="ow">in</span> <span class="n">ref_net_analysis_parameters</span><span class="p">:</span>
+            <span class="n">ccs</span> <span class="o">=</span> <span class="n">ref_net_analysis_parameters</span><span class="p">[</span><span class="s1">&#39;CCs&#39;</span><span class="p">]</span>
+            <span class="n">cc_diams</span> <span class="o">=</span> <span class="n">ref_net_analysis_parameters</span><span class="p">[</span><span class="s1">&#39;cc_diameters&#39;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+           <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;An invalid reference data dictionary was provided. Please run build_network_reference_dict&#39;</span><span class="p">)</span>
+        
+        <span class="c1"># Reduce the connected components that are being referenced are only the ones that contain nodes within the network.</span>
+        <span class="n">ccs</span> <span class="o">=</span> <span class="p">[</span><span class="n">cc</span> <span class="k">for</span> <span class="n">cc</span> <span class="ow">in</span> <span class="n">ccs</span> <span class="k">if</span> <span class="n">cc</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">nodes_2_check</span><span class="p">)]</span>
+        
+        <span class="c1"># Fail-safe check for debugging</span>
+        <span class="k">if</span> <span class="n">nodes_2_check</span><span class="p">:</span>
+            <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="n">cc_diams</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ccs</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">):</span>      
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Whoops something went very wrong and this should not happen.&#39;</span><span class="p">)</span>
+    
+    <span class="c1"># In some instances there may be some nodes removed from the spl dict (via pruning), so will filter out nodes that are not a part of that</span>
+    <span class="n">orig_nodes</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">nodes_2_check</span><span class="p">)</span>
+    <span class="n">nodes_2_check</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">nodes_2_check</span><span class="p">)</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">reference_spl_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+
+    <span class="c1"># If there was a pruned shortest path length dict passed then ensuring that the full complement of nodes does not include the pruned nodes</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">nodes_2_check</span><span class="p">)</span> <span class="o">!=</span> <span class="n">orig_nodes</span><span class="p">:</span>
+        <span class="n">all_nodes</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">all_nodes</span><span class="p">)</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">reference_spl_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+
+
+    <span class="c1"># Now getting the shortest path lengths based on the provided parameters</span>
+    <span class="n">spl</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">nodes_2_check</span><span class="p">:</span>
+        <span class="n">tmp_spl</span> <span class="o">=</span> <span class="n">reference_spl_dict</span><span class="p">[</span><span class="n">node</span><span class="p">]</span>
+        <span class="n">spl_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span><span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">tmp_spl</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">all_nodes</span><span class="p">}</span>
+        <span class="k">if</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">spl_dict</span><span class="p">:</span>
+            <span class="k">del</span> <span class="n">spl_dict</span><span class="p">[</span><span class="n">node</span><span class="p">]</span> <span class="c1"># Removing the self-reference that is always 0</span>
+
+        <span class="k">if</span> <span class="n">spl_dict</span><span class="p">:</span>
+            <span class="n">spl</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">spl_dict</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span>
+        <span class="k">else</span><span class="p">:</span> <span class="c1"># If a node by itself represents a single connected component from the reference adding a penalty for collapsing the entire connected component</span>
+            
+            <span class="c1"># The dynamic method </span>
+            <span class="k">if</span> <span class="n">dynamic_flag</span><span class="p">:</span>
+                <span class="n">penalty</span> <span class="o">=</span> <span class="n">cc_diams</span><span class="p">[</span><span class="n">node</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+                <span class="n">spl</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">penalty</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">spl</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">penalty</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">spl</span>
+
+
+<div class="viewcode-block" id="network_separation">
+<a class="viewcode-back" href="../../dedansy.html#dansy.network_separation_helpers.network_separation">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">network_separation</span><span class="p">(</span><span class="n">G_in</span><span class="p">,</span> <span class="n">H_in</span><span class="p">,</span> <span class="n">ref_G_data</span><span class="p">,</span> <span class="n">mmd_verbose</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">force_run</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">verbose</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Calculates the network separation between two networks of interest that lie on a common larger, reference network.</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">    -----------</span>
+<span class="sd">        - G_in, H_in: networkx Graph | DomainNgramNetwork</span>
+<span class="sd">            - networks of interest</span>
+<span class="sd">        - ref_G_data: dict</span>
+<span class="sd">            - dict containing information about the larger, common network that the two given networks are subnetworks of.</span>
+<span class="sd">        - mmd_verbose: bool (Optional, to be deprecated)</span>
+<span class="sd">            - Whether a statement is printed.</span>
+<span class="sd">        - force_run: bool (Optional)</span>
+<span class="sd">            - Whether the network separation should be run even if it does not meet minimum values necessary.</span>
+<span class="sd">    </span>
+<span class="sd">    Returns:</span>
+<span class="sd">    --------</span>
+<span class="sd">        - s : float</span>
+<span class="sd">            - the network separation of two different subnetworks.</span>
+
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="c1"># Unpacking the reference network information that is used for getting minimum distance values</span>
+    <span class="n">ref_isolates</span> <span class="o">=</span> <span class="n">ref_G_data</span><span class="p">[</span><span class="s1">&#39;isolates&#39;</span><span class="p">]</span>
+
+    <span class="c1"># Now getting the minimum distances for both the sub-networks of interest</span>
+    <span class="c1"># As part of the mean minimum distance calculation there is a secondary option to set penalties for disconnected nodes. If it is not provided then will set the penalty to zero</span>
+    <span class="n">mmd_ref</span> <span class="o">=</span> <span class="p">{</span><span class="o">**</span><span class="n">ref_G_data</span><span class="p">}</span> <span class="c1"># Need to create a copy otherwise can overwrite the penalty value by accident</span>
+    <span class="k">if</span> <span class="s1">&#39;mean_dist_penalty&#39;</span> <span class="ow">in</span> <span class="n">ref_G_data</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ref_G_data</span><span class="p">[</span><span class="s1">&#39;mean_dist_penalty&#39;</span><span class="p">],</span> <span class="nb">int</span><span class="p">):</span> <span class="c1"># To allow a separate penalty term for the mean shortest path distance calculation from the network separation</span>
+            <span class="n">mmd_ref</span><span class="p">[</span><span class="s1">&#39;penalty&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ref_G_data</span><span class="p">[</span><span class="s1">&#39;mean_dist_penalty&#39;</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ref_G_data</span><span class="p">[</span><span class="s1">&#39;mean_dist_penalty&#39;</span><span class="p">],</span> <span class="nb">bool</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">ref_G_data</span><span class="p">[</span><span class="s1">&#39;mean_dist_penalty&#39;</span><span class="p">]:</span>
+                <span class="k">pass</span> <span class="c1"># Already has the penalty term passed</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">mmd_ref</span><span class="p">[</span><span class="s1">&#39;penalty&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>     
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;An improper penalty value was provided for calculating the mean minimum distance.&#39;</span><span class="p">)</span>   
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">mmd_ref</span><span class="p">[</span><span class="s1">&#39;penalty&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="c1"># After some parameter sweeps there is a rough cutoff for networks that represent ~20 proteins that tend to exhibit wide ranges in network separation values that are not as informative to network characteristics as they frequently will have larger isolate fractions than landing within a large connected component. Here checking that both networks meet the minimum size otherwise raising an error. (Unless the force run flag is present.)</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">G_in</span><span class="p">,</span> <span class="n">dansy</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">H_in</span><span class="p">,</span> <span class="n">dansy</span><span class="p">):</span>  
+        <span class="k">if</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">G_in</span><span class="o">.</span><span class="n">protsOI</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">20</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">H_in</span><span class="o">.</span><span class="n">protsOI</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">20</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">force_run</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span> 
+                    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;At least one network does not reach recommended minimum size, but will still be analyzed.&#39;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;At least one network does not reach recommended minimum size.&#39;</span><span class="p">)</span>
+            
+        <span class="n">G</span> <span class="o">=</span> <span class="n">G_in</span><span class="o">.</span><span class="n">G</span>
+        <span class="n">H</span> <span class="o">=</span> <span class="n">H_in</span><span class="o">.</span><span class="n">G</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">G</span> <span class="o">=</span> <span class="n">G_in</span>
+        <span class="n">H</span> <span class="o">=</span> <span class="n">H_in</span>
+
+    <span class="c1"># Getting the list/set of nodes for doing calculations on</span>
+    <span class="n">G_v</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">())</span>
+    <span class="n">H_v</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">H</span><span class="o">.</span><span class="n">nodes</span><span class="p">())</span>
+
+    <span class="k">if</span> <span class="n">mmd_verbose</span><span class="p">:</span> <span class="c1"># This is for debugging purposes but can be retained if needed.</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Input penalty for the mean minimum distance is </span><span class="si">{</span><span class="n">mmd_ref</span><span class="p">[</span><span class="s1">&#39;penalty&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">G1_mmd</span> <span class="o">=</span> <span class="n">mean_minimum_dist</span><span class="p">(</span><span class="n">G_v</span><span class="p">,</span><span class="n">mmd_ref</span><span class="p">)</span>
+    <span class="n">G2_mmd</span> <span class="o">=</span> <span class="n">mean_minimum_dist</span><span class="p">(</span><span class="n">H_v</span><span class="p">,</span><span class="n">mmd_ref</span><span class="p">)</span>
+
+    <span class="c1"># To find the separation between the two networks will find the minimum distance from nodes in one network to nodes in the other network.</span>
+    <span class="c1"># First finding the overlap in nodes as these will be 0 and don&#39;t need to go through the process.</span>
+    <span class="n">node_overlap</span> <span class="o">=</span> <span class="n">G_v</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">H_v</span><span class="p">)</span>
+    <span class="n">nodesOI_1</span> <span class="o">=</span> <span class="n">G_v</span><span class="o">.</span><span class="n">difference</span><span class="p">(</span><span class="n">node_overlap</span><span class="p">)</span>
+    <span class="n">nodesOI_2</span> <span class="o">=</span> <span class="n">H_v</span><span class="o">.</span><span class="n">difference</span><span class="p">(</span><span class="n">node_overlap</span><span class="p">)</span>
+
+    <span class="c1"># For the nodes that were isolates in the reference network removing them from running in the for loop as they will not provide any additional information.</span>
+    <span class="n">nodesOI_1</span> <span class="o">=</span> <span class="n">nodesOI_1</span><span class="o">.</span><span class="n">difference</span><span class="p">(</span><span class="n">ref_isolates</span><span class="p">)</span>
+    <span class="n">nodesOI_2</span> <span class="o">=</span> <span class="n">nodesOI_2</span><span class="o">.</span><span class="n">difference</span><span class="p">(</span><span class="n">ref_isolates</span><span class="p">)</span>
+    
+    <span class="c1"># Running through the non-isolate nodes and getting the shortest distances from nodes within one network to nodes in another.</span>
+    <span class="n">spl_union</span> <span class="o">=</span> <span class="n">spl_inner</span><span class="p">(</span><span class="n">nodesOI_1</span><span class="p">,</span> <span class="n">H_v</span><span class="p">,</span><span class="n">ref_G_data</span><span class="p">)</span>
+    <span class="n">tmp</span> <span class="o">=</span> <span class="n">spl_inner</span><span class="p">(</span><span class="n">nodesOI_2</span><span class="p">,</span><span class="n">G_v</span><span class="p">,</span><span class="n">ref_G_data</span><span class="p">)</span>
+    <span class="n">spl_union</span> <span class="o">+=</span> <span class="n">tmp</span>
+
+    <span class="c1"># Now for the isolates to account for their contributions and creating a constant 1 path length penalty for those that are not shared between networks</span>
+    <span class="n">isols_1</span> <span class="o">=</span> <span class="n">G_v</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">ref_isolates</span><span class="p">)</span>
+    <span class="n">isols_2</span> <span class="o">=</span> <span class="n">H_v</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">ref_isolates</span><span class="p">)</span>
+    <span class="n">isol_correction_1</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">isols_1</span><span class="o">.</span><span class="n">difference</span><span class="p">(</span><span class="n">isols_2</span><span class="p">))</span>
+    <span class="n">isol_correction_2</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">isols_2</span><span class="o">.</span><span class="n">difference</span><span class="p">(</span><span class="n">isols_1</span><span class="p">))</span>
+
+    <span class="c1"># Getting the average minimum distance across the union of both networks</span>
+    <span class="n">union_mmd</span> <span class="o">=</span> <span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">spl_union</span><span class="p">)</span><span class="o">+</span><span class="n">isol_correction_1</span><span class="o">+</span><span class="n">isol_correction_2</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">number_of_nodes</span><span class="p">()</span><span class="o">+</span><span class="n">H</span><span class="o">.</span><span class="n">number_of_nodes</span><span class="p">())</span>
+    <span class="n">s</span> <span class="o">=</span> <span class="n">union_mmd</span> <span class="o">-</span> <span class="p">(</span><span class="n">G1_mmd</span><span class="o">+</span><span class="n">G2_mmd</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span>
+
+    <span class="k">return</span> <span class="n">s</span>   </div>
+
+
+ 
+<div class="viewcode-block" id="build_network_reference_dict">
+<a class="viewcode-back" href="../../dedansy.html#dansy.network_separation_helpers.build_network_reference_dict">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">build_network_reference_dict</span><span class="p">(</span><span class="n">ref_ngram_net</span><span class="p">,</span> <span class="n">penalty</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    This builds the dict that contains the reference network information necessary for calculating the network separation value from a provided DomainNgramNetwork object. </span>
+<span class="sd">    </span>
+<span class="sd">    It is recommended to use this function to generate the reference dictionary prior to calculating network separation, especially when using a dynamic penalty and comparing several networks, to improve the execution speed of the calculation.</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">    -----------</span>
+<span class="sd">        dnn: DomainNgramNetwork</span>
+<span class="sd">            - A populated Domain N-gram network that will be used as a reference</span>
+<span class="sd">        penalty: str or int (Optional)</span>
+<span class="sd">            - What type of penalty will be used for network separation. If not specified will default to the dynamic method.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">    --------</span>
+<span class="sd">        ref_data_dict: dict</span>
+<span class="sd">            - Key-value pairs that are used for network separation calculations.</span>
+
+
+<span class="sd">    Key-Value Pairs:</span>
+<span class="sd">        - penalty: int | &#39;dynamic&#39;</span>
+<span class="sd">            The penalty term that will be used for shortest path distances</span>
+<span class="sd">        - spl: dict</span>
+<span class="sd">            The shortest path length of all pairs of nodes within the network.</span>
+<span class="sd">        - isolates: list</span>
+<span class="sd">            List of isolates in the network</span>
+<span class="sd">        - CCs: list</span>
+<span class="sd">            List of tuples of nodes that are the connected components of the network</span>
+<span class="sd">        - cc_diameters: dict</span>
+<span class="sd">            Key-value pairs of nodes and the diameter of the connected componenet they are a part of.</span>
+<span class="sd">        - G: networkx Graph</span>
+<span class="sd">            The graph of the full network.</span>
+
+<span class="sd">    &#39;&#39;&#39;</span>
+
+    <span class="c1"># Default value for the penalty term</span>
+    <span class="k">if</span> <span class="n">penalty</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">penalty</span> <span class="o">=</span> <span class="s1">&#39;dynamic&#39;</span>
+
+    <span class="c1"># Shortest path lengths between individual nodes and non-isolate nodes</span>
+    <span class="n">comp_pw_shortest_path_lens</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">nx</span><span class="o">.</span><span class="n">all_pairs_shortest_path_length</span><span class="p">(</span><span class="n">ref_ngram_net</span><span class="o">.</span><span class="n">G</span><span class="p">))</span>
+    <span class="n">ccs</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">connected_components</span><span class="p">(</span><span class="n">ref_ngram_net</span><span class="o">.</span><span class="n">G</span><span class="p">)</span>
+    <span class="n">ccs</span> <span class="o">=</span> <span class="p">[</span><span class="n">cc</span> <span class="k">for</span> <span class="n">cc</span> <span class="ow">in</span> <span class="n">ccs</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">cc</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">]</span>
+    
+    <span class="c1"># Building a diameter dictionary where the keys are each node and the value is the diameter for the connected component including that node</span>
+    <span class="n">cc_diams</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">cc</span> <span class="ow">in</span> <span class="n">ccs</span><span class="p">:</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">diameter</span><span class="p">(</span><span class="n">ref_ngram_net</span><span class="o">.</span><span class="n">G</span><span class="o">.</span><span class="n">subgraph</span><span class="p">(</span><span class="n">cc</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">cc</span><span class="p">:</span>
+            <span class="n">cc_diams</span><span class="p">[</span><span class="n">node</span><span class="p">]</span> <span class="o">=</span> <span class="n">d</span>
+
+    <span class="n">ref_data_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;spl&#39;</span><span class="p">:</span><span class="n">comp_pw_shortest_path_lens</span><span class="p">,</span>
+                    <span class="s1">&#39;penalty&#39;</span><span class="p">:</span><span class="n">penalty</span><span class="p">,</span>
+                    <span class="s1">&#39;isolates&#39;</span><span class="p">:</span><span class="nb">list</span><span class="p">(</span><span class="n">nx</span><span class="o">.</span><span class="n">isolates</span><span class="p">(</span><span class="n">ref_ngram_net</span><span class="o">.</span><span class="n">G</span><span class="p">)),</span>
+                    <span class="s1">&#39;CCs&#39;</span><span class="p">:</span><span class="n">ccs</span><span class="p">,</span>
+                    <span class="s1">&#39;cc_diameters&#39;</span><span class="p">:</span><span class="n">cc_diams</span><span class="p">,</span>
+                    <span class="s1">&#39;G&#39;</span><span class="p">:</span><span class="n">ref_ngram_net</span><span class="o">.</span><span class="n">G</span><span class="p">}</span>
+
+    <span class="k">return</span> <span class="n">ref_data_dict</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Naegle Lab.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

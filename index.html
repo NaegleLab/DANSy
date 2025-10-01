@@ -1,0 +1,155 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DANSy &mdash; DANSy 1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=29a6c3e3"></script>
+      <script src="_static/doctools.js?v=9a2dae69"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Overview" href="Overview.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="#" class="icon icon-home">
+            DANSy
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Examples/Examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Examples/Examples.html#base-dansy-analysis">Base DANSy Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Examples/Examples.html#differential-expression-dansy-dedansy-analysis">Differential Expression DANSy (deDANSy) Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Dependencies.html">Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Installation.html">Installation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="dansy.html">DANSy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dansy.html#dansy-supporting-functions">DANSy Supporting Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dedansy.html">deDANSy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dedansy.html#dedansy-supporting-functions">deDANSy Supporting Functions</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="#">DANSy</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="#" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">DANSy</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="dansy">
+<h1>DANSy<a class="headerlink" href="#dansy" title="Link to this heading"></a></h1>
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Examples/Examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Examples/Examples.html#base-dansy-analysis">Base DANSy Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Examples/Examples.html#differential-expression-dansy-dedansy-analysis">Differential Expression DANSy (deDANSy) Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Dependencies.html">Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Installation.html">Installation</a></li>
+</ul>
+</div>
+</section>
+<section id="overview">
+<h1>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h1>
+<p>Domain Architecture Network Syntax (DANSy) is an analytical workflow that applies n-gram analysis with network theory to protein domain architectures. This linguistic network approach abstracts the functional connections between proteins to analyze either entire collections of proteins (DANSy) or collections defined by changes in expression (deDANSy). DANSy requires reference files to be generated by <a class="reference external" href="https://github.com/NaegleLab/CoDIAC">CoDIAC</a> to ensure a controlled vocabulary of domains and domain boundaries are fetched from <a class="reference external" href="https://www.ebi.ac.uk/interpro/">InterPro</a>.</p>
+<p>In DANSy, we extract each domain n-gram from a protein domain architecture and represent them as nodes on a network. If one domain n-gram is found in another, an edge is drawn between those n-gram nodes in the network. This network can then be analyzed with additional tools as shown in our <a class="reference internal" href="Examples/Examples.html"><span class="doc">Examples</span></a>.</p>
+<p>For deDANSy, the base DANSy analysis is extended to include differential expression analysis results to associate domain n-grams with either up- or down-regulated expression. The network is then analyzed to determine how separated the n-grams for each condition are from one another. In deDANSy, 2 scores are generated that define how separated and how distinct are these enriched n-grams for each condition in a comparison of interest.</p>
+<p>Please see our <a class="reference external" href="https://doi.org/10.1101/2024.12.04.626803">bioRxiv paper</a> for full details and the applications of DANSy.</p>
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">Reference:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="dansy.html">DANSy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dansy.html#dansy-supporting-functions">DANSy Supporting Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dedansy.html">deDANSy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dedansy.html#dedansy-supporting-functions">deDANSy Supporting Functions</a></li>
+</ul>
+</div>
+</section>
+<section id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Link to this heading"></a></h1>
+<ul class="simple">
+<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
+<li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
+<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
+</ul>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="Overview.html" class="btn btn-neutral float-right" title="Overview" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Naegle Lab.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

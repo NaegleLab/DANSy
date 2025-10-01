@@ -1,0 +1,892 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>dansy.deDANSy &mdash; DANSy 1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=29a6c3e3"></script>
+      <script src="../../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            DANSy
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Examples/Examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Examples/Examples.html#base-dansy-analysis">Base DANSy Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Examples/Examples.html#differential-expression-dansy-dedansy-analysis">Differential Expression DANSy (deDANSy) Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Dependencies.html">Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../dansy.html">DANSy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../dansy.html#dansy-supporting-functions">DANSy Supporting Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../dedansy.html">deDANSy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../dedansy.html#dedansy-supporting-functions">deDANSy Supporting Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Installation.html">Installation</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../dansy.html">DANSy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../dansy.html#dansy-supporting-functions">DANSy Supporting Functions</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">DANSy</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">dansy.deDANSy</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for dansy.deDANSy</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">random</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">itertools</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">networkx</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nx</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">scipy.stats</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">stats</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">dansy.ngramUtilities</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ngramUtilities</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">dansy.generateCompleteProteome</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">generateCompleteProteome</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">dansy.dedansy_algorithm</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">algorithm</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dansy.dansy</span><span class="w"> </span><span class="kn">import</span> <span class="n">dansy</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dansy.network_separation_helpers</span><span class="w"> </span><span class="kn">import</span> <span class="n">network_separation</span><span class="p">,</span><span class="n">build_network_reference_dict</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dansy.enrichment_plotting_helpers</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot_functional_scores</span><span class="p">,</span> <span class="n">gather_enrichment_results</span><span class="p">,</span> <span class="n">calc_ngram_fpr_vals</span><span class="p">,</span> <span class="n">plot_enriched_ngrams</span>
+
+
+<div class="viewcode-block" id="DEdansy">
+<a class="viewcode-back" href="../../dedansy.html#dansy.DEdansy">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">DEdansy</span><span class="p">(</span><span class="n">dansy</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    A container class of multiple Domain n-gram networks related to a differentially expressed dataset that was generated using the DESeq analysis pipeline. This provides methods to analyze and contrast pairs of domain architecture subnetworks to understand changes in functional molecular ecosystems available to different conditions.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">dataset</span><span class="p">,</span> <span class="n">id_conv</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">conv_cols</span> <span class="o">=</span> <span class="s1">&#39;Gene stable ID&#39;</span><span class="p">,</span> <span class="n">data_ids</span> <span class="o">=</span> <span class="s1">&#39;gene_id&#39;</span><span class="p">,</span> <span class="n">uniprot_ref</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span><span class="n">n</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span> <span class="n">penalty</span> <span class="o">=</span> <span class="s1">&#39;dynamic&#39;</span><span class="p">,</span><span class="n">run_conversion</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        
+        <span class="c1"># Bare minimum attributes required for setting up an empty n-gram network.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dataset</span> <span class="o">=</span> <span class="n">dataset</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ref</span> <span class="o">=</span> <span class="n">uniprot_ref</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_n</span> <span class="o">=</span> <span class="n">n</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">interproIDs</span> <span class="o">=</span> <span class="kc">None</span>
+        
+        <span class="c1"># Converting the dataset ids for individual genes to the UniProt IDs</span>
+        <span class="k">if</span> <span class="s1">&#39;dbl_check&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">check_IDs_flag</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;dbl_check&#39;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">check_IDs_flag</span> <span class="o">=</span> <span class="kc">False</span>
+        
+        <span class="k">if</span> <span class="n">run_conversion</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">id_conv</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Missing an ID converting dataframe.&#39;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">id_conversion_dict</span> <span class="o">=</span> <span class="n">create_id_conv</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">id_conv</span><span class="p">,</span> <span class="n">conv_cols</span><span class="p">,</span><span class="n">data_ids</span><span class="p">,</span><span class="n">check_IDs_flag</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">protsOI</span> <span class="o">=</span> <span class="n">convert_2_uniprotIDs</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span><span class="n">id_conv</span><span class="p">,</span> <span class="n">conv_cols</span><span class="p">,</span><span class="n">data_ids</span><span class="p">,</span> <span class="n">check_IDs_flag</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">protsOI</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="n">data_ids</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">id_conversion_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:[</span><span class="n">k</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">protsOI</span><span class="p">}</span>
+        <span class="c1"># Saving the data_id column for instances when the DEGs have to be calculated.</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data_ids</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data_id_col</span> <span class="o">=</span> <span class="n">data_ids</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data_id_col</span> <span class="o">=</span> <span class="n">data_ids</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">conversion_id_col</span> <span class="o">=</span> <span class="n">conv_cols</span>
+
+        <span class="c1"># Now making sure there is a common reference that can be used for generating the n-gram networks.</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ref</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_ref_df</span><span class="p">()</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">populate_ngramNet</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Building the reference network information.&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ref_data</span> <span class="o">=</span> <span class="n">build_network_reference_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">penalty</span><span class="o">=</span><span class="n">penalty</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="DEdansy.DEG_network_sep">
+<a class="viewcode-back" href="../../dedansy.html#dansy.DEdansy.DEG_network_sep">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">DEG_network_sep</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">force_run</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39; </span>
+<span class="sd">        This computes the network separation of two conditions that designates individual genes as differentially expressed. Silently passes a nan if it fails.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+
+        <span class="c1"># Get the UniProt IDs for the differentially expressed genes</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;up_DEGs&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;down_DEGs&#39;</span><span class="p">):</span>
+            <span class="k">pass</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;DEGs do not exist. Please run calc_DEG_ngrams.&#39;</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">up_ngrams</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">down_ngrams</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">ns</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="c1"># Generating networks for the individual DEG conditions</span>
+                <span class="n">up_net</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">G</span><span class="o">.</span><span class="n">subgraph</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">up_ngrams</span><span class="p">)</span>
+                <span class="n">dn_net</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">G</span><span class="o">.</span><span class="n">subgraph</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">down_ngrams</span><span class="p">)</span>
+                <span class="n">ns</span> <span class="o">=</span> <span class="n">network_separation</span><span class="p">(</span><span class="n">up_net</span><span class="p">,</span><span class="n">dn_net</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ref_data</span><span class="p">,</span><span class="n">force_run</span><span class="o">=</span><span class="n">force_run</span><span class="p">)</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="n">ns</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+        <span class="k">return</span> <span class="n">ns</span></div>
+
+    
+<div class="viewcode-block" id="DEdansy.calc_DEG_ngrams">
+<a class="viewcode-back" href="../../dedansy.html#dansy.DEdansy.calc_DEG_ngrams">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">calc_DEG_ngrams</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">comp</span><span class="p">,</span> <span class="n">batch_mode</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Defines the DEG UniProt IDs and the associated n-grams for the datasset of interest</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="c1"># Checking if there was a set of DEGs that already exists and printing statement saying it will be overwritten.</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="s1">&#39;up_DEGs&#39;</span><span class="p">):</span>
+            <span class="n">verbose_flag</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;G_collapsed&#39;</span><span class="p">):</span>
+                <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">G_collapsed</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">verbose_flag</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="c1"># This is only for running several and wanting to keep track of general progress.</span>
+        <span class="k">if</span> <span class="n">batch_mode</span><span class="p">:</span>
+            <span class="n">verbose_flag</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="c1"># Now extracting the data columns which for the comparison of interest to define the differentially expressed genes/proteins</span>
+        <span class="n">compOI_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">comp_metadata</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">comp</span><span class="p">]</span>
+        <span class="n">data_cols</span> <span class="o">=</span> <span class="p">[</span><span class="n">compOI_info</span><span class="p">[</span><span class="s1">&#39;fc_col&#39;</span><span class="p">],</span> <span class="n">compOI_info</span><span class="p">[</span><span class="s1">&#39;pval_col&#39;</span><span class="p">]]</span>
+        <span class="n">fc_thres</span> <span class="o">=</span> <span class="n">compOI_info</span><span class="p">[</span><span class="s1">&#39;fc_thres&#39;</span><span class="p">]</span>
+        <span class="n">alpha</span> <span class="o">=</span> <span class="n">compOI_info</span><span class="p">[</span><span class="s1">&#39;alpha&#39;</span><span class="p">]</span>
+
+        <span class="c1"># Reducing large dataframe to what is the info needed for generating the DEG networks</span>
+        <span class="n">cols</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">data_id_col</span><span class="p">]</span><span class="o">+</span><span class="n">data_cols</span>
+        <span class="n">dataset_OI</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dataset</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">cols</span><span class="p">)</span>
+
+        <span class="c1"># Getting the differentially expressed genes</span>
+        <span class="n">deg_up</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">dataset_OI</span><span class="p">[(</span><span class="n">dataset_OI</span><span class="p">[</span><span class="n">data_cols</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span> <span class="o">&lt;=</span> <span class="n">alpha</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">dataset_OI</span><span class="p">[</span><span class="n">data_cols</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">&gt;</span> <span class="n">fc_thres</span><span class="p">)][</span><span class="bp">self</span><span class="o">.</span><span class="n">data_id_col</span><span class="p">])</span>
+        <span class="n">deg_dn</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">dataset_OI</span><span class="p">[(</span><span class="n">dataset_OI</span><span class="p">[</span><span class="n">data_cols</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span> <span class="o">&lt;=</span> <span class="n">alpha</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">dataset_OI</span><span class="p">[</span><span class="n">data_cols</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">&lt;</span> <span class="o">-</span><span class="n">fc_thres</span><span class="p">)][</span><span class="bp">self</span><span class="o">.</span><span class="n">data_id_col</span><span class="p">])</span>
+
+        <span class="c1"># Keeping record of the data columns for a summary</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pval_data_col</span> <span class="o">=</span> <span class="n">data_cols</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fc_data_col</span> <span class="o">=</span> <span class="n">data_cols</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="c1"># Recording the thresholds for DEG values</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span> <span class="o">=</span> <span class="n">alpha</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fcthres</span> <span class="o">=</span> <span class="n">fc_thres</span>
+        <span class="c1"># And converting to the UniProt IDs to highlight n-grams within the network that were retained for each</span>
+        <span class="n">up_DEGs</span> <span class="o">=</span> <span class="p">[</span><span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">id_conversion_dict</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">deg_up</span><span class="p">]</span>
+        <span class="n">up_DEGs</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">itertools</span><span class="o">.</span><span class="n">chain</span><span class="o">.</span><span class="n">from_iterable</span><span class="p">(</span><span class="n">up_DEGs</span><span class="p">)))</span>
+        <span class="n">down_DEGs</span> <span class="o">=</span>  <span class="p">[</span><span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">id_conversion_dict</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">deg_dn</span><span class="p">]</span>
+        <span class="n">down_DEGs</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">itertools</span><span class="o">.</span><span class="n">chain</span><span class="o">.</span><span class="n">from_iterable</span><span class="p">(</span><span class="n">down_DEGs</span><span class="p">)))</span>
+
+        <span class="c1"># Now just due to random sampling issues making sure the DEGs are in alphabetical order and converting to a list</span>
+        <span class="n">up_DEGs</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">up_DEGs</span><span class="p">)</span>
+        <span class="n">down_DEGs</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">down_DEGs</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_DEG_ngrams</span><span class="p">(</span><span class="n">up_DEGs</span><span class="p">,</span><span class="n">down_DEGs</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose_flag</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_DEG_ngrams</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">up_DEGs</span><span class="p">,</span> <span class="n">down_DEGs</span><span class="p">,</span><span class="n">collapse</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        This actually sets the DEGs so that they are calculated, but allows for custom sets to be generated for very specific purposes. It is not recommended to use this</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="s1">&#39;up_DEGs&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Will be overwriting existing DEG data.&#39;</span><span class="p">)</span>
+
+        <span class="c1"># Setting the DEGs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">up_DEGs</span> <span class="o">=</span> <span class="n">up_DEGs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">down_DEGs</span> <span class="o">=</span> <span class="n">down_DEGs</span>
+
+        <span class="c1"># Now getting the n-grams associated with the collective DEGs </span>
+        <span class="n">up_ngram_cands</span> <span class="o">=</span> <span class="p">[</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">interpro2uniprot</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="nb">set</span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">up_DEGs</span><span class="p">)]</span>
+        <span class="n">down_ngram_cands</span> <span class="o">=</span> <span class="p">[</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">interpro2uniprot</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="nb">set</span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">down_DEGs</span><span class="p">)]</span>
+
+        <span class="c1"># Getting the n-gram candidates</span>
+        <span class="n">up_ngram_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span><span class="nb">set</span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">up_DEGs</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">interpro2uniprot</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">up_ngram_cands</span><span class="p">}</span>
+        <span class="n">down_ngram_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span><span class="nb">set</span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">down_DEGs</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">interpro2uniprot</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">down_ngram_cands</span><span class="p">}</span>
+        
+        <span class="c1"># Now collapsing these to the non-redundant ones</span>
+        <span class="k">if</span> <span class="n">collapse</span><span class="p">:</span>
+            <span class="n">up_ngram_dict</span><span class="p">,</span><span class="n">_</span> <span class="o">=</span> <span class="n">ngramUtilities</span><span class="o">.</span><span class="n">concatenate_ngrams</span><span class="p">(</span><span class="n">up_ngram_dict</span><span class="p">)</span>
+            <span class="n">down_ngram_dict</span><span class="p">,</span><span class="n">_</span> <span class="o">=</span> <span class="n">ngramUtilities</span><span class="o">.</span><span class="n">concatenate_ngrams</span><span class="p">(</span><span class="n">down_ngram_dict</span><span class="p">)</span>
+            
+
+        <span class="c1"># Exporting to the object</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">up_ngrams</span> <span class="o">=</span> <span class="p">[</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">up_ngram_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">()]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">down_ngrams</span> <span class="o">=</span> <span class="p">[</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">down_ngram_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">()]</span>
+
+
+<div class="viewcode-block" id="DEdansy.plot_DEG_ns">
+<a class="viewcode-back" href="../../dedansy.html#dansy.DEdansy.plot_DEG_ns">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">plot_DEG_ns</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">pos</span> <span class="o">=</span> <span class="p">[],</span><span class="n">deg_labels</span><span class="o">=</span><span class="p">[],</span> <span class="n">large_cc_mode</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Using the defined differentially expressed genes displaying a network graph of the n-grams that are associated or shared between the DEG conditions.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+
+        <span class="c1"># Setting default labels otherwise setting the label names for the legend.</span>
+        <span class="k">if</span> <span class="n">deg_labels</span><span class="p">:</span>
+            <span class="n">up_label</span> <span class="o">=</span> <span class="n">deg_labels</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">down_label</span> <span class="o">=</span> <span class="n">deg_labels</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">up_label</span> <span class="o">=</span> <span class="s1">&#39;Up&#39;</span>
+            <span class="n">down_label</span> <span class="o">=</span> <span class="s1">&#39;Down&#39;</span>
+
+        <span class="c1"># Retrieving the n-grams across both DEG conditions to filter out any isolates/connected components in the reference network that are not used.</span>
+        <span class="n">all_deg_ngrams</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">up_ngrams</span><span class="p">)</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">down_ngrams</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">large_cc_mode</span><span class="p">:</span>
+            <span class="n">large_ref_cc</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">nx</span><span class="o">.</span><span class="n">connected_components</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">G</span><span class="p">),</span> <span class="n">key</span><span class="o">=</span><span class="nb">len</span><span class="p">)</span>
+            <span class="n">all_deg_ngrams</span> <span class="o">=</span> <span class="n">all_deg_ngrams</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">large_ref_cc</span><span class="p">)</span>
+        
+        <span class="c1"># Setting up the node color list for plotting</span>
+        <span class="n">node_colors</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">G</span><span class="o">.</span><span class="n">subgraph</span><span class="p">(</span><span class="n">all_deg_ngrams</span><span class="p">):</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">up_ngrams</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">down_ngrams</span><span class="p">):</span>
+                <span class="n">node_colors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;tab:purple&#39;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">up_ngrams</span><span class="p">:</span>
+                <span class="n">node_colors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;tab:cyan&#39;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">down_ngrams</span><span class="p">:</span>
+                <span class="n">node_colors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;tab:red&#39;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">node_colors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;tab:gray&#39;</span><span class="p">)</span>
+        
+        <span class="c1"># Dropping connected components not shared with the DEGs and the reference network</span>
+        <span class="k">if</span> <span class="n">large_cc_mode</span><span class="p">:</span>
+            <span class="n">cc_2_keep</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">large_ref_cc</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">cc_2_keep</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">cc</span> <span class="ow">in</span> <span class="n">nx</span><span class="o">.</span><span class="n">connected_components</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">G</span><span class="p">):</span>
+                <span class="k">if</span> <span class="nb">set</span><span class="p">(</span><span class="n">cc</span><span class="p">)</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">all_deg_ngrams</span><span class="p">):</span>
+                    <span class="n">cc_2_keep</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">cc</span><span class="p">)</span>
+
+        <span class="c1"># Getting the node positions for network drawing if not supplied.</span>
+        <span class="k">if</span> <span class="n">pos</span> <span class="o">==</span> <span class="p">[]</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;network_params&#39;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="s1">&#39;pos&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">network_params</span><span class="p">:</span>
+                <span class="n">pos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">network_params</span><span class="p">[</span><span class="s1">&#39;pos&#39;</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="n">pos</span> <span class="o">==</span><span class="p">[]:</span>
+            <span class="n">pos</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">spring_layout</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">G</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mf">0.05</span><span class="p">)</span>
+        
+        <span class="c1"># Getting all the basic network parameters that are default in the n-gram networks</span>
+        <span class="c1"># Default values </span>
+        <span class="n">basic_network_params</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;node_size&#39;</span><span class="p">:</span><span class="mi">1</span><span class="p">,</span>
+                                  <span class="s1">&#39;edgecolors&#39;</span><span class="p">:</span><span class="s1">&#39;k&#39;</span><span class="p">,</span>
+                                  <span class="s1">&#39;linewidths&#39;</span><span class="p">:</span><span class="mf">0.1</span><span class="p">,</span>
+                                  <span class="s1">&#39;width&#39;</span><span class="p">:</span><span class="mf">0.25</span><span class="p">,</span>
+                                  <span class="s1">&#39;edge_color&#39;</span><span class="p">:</span><span class="s1">&#39;#808080&#39;</span><span class="p">,</span>
+                                  <span class="p">}</span>
+        <span class="n">net_draw_params</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">basic_network_params</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">param</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">network_params</span><span class="p">:</span>
+                <span class="n">net_draw_params</span><span class="p">[</span><span class="n">param</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">network_params</span><span class="p">[</span><span class="n">param</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">network_params</span><span class="p">[</span><span class="n">param</span><span class="p">]</span> <span class="o">=</span> <span class="n">basic_network_params</span><span class="p">[</span><span class="n">param</span><span class="p">]</span>
+                <span class="n">net_draw_params</span><span class="p">[</span><span class="n">param</span><span class="p">]</span> <span class="o">=</span> <span class="n">basic_network_params</span><span class="p">[</span><span class="n">param</span><span class="p">]</span>
+
+        <span class="c1"># Now drawing and adding legends</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">),</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
+        <span class="n">nx</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">G</span><span class="o">.</span><span class="n">subgraph</span><span class="p">(</span><span class="n">cc_2_keep</span><span class="p">),</span> <span class="n">pos</span><span class="p">,</span> <span class="n">node_color</span> <span class="o">=</span> <span class="s1">&#39;tab:gray&#39;</span><span class="p">,</span> <span class="n">alpha</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span> <span class="o">**</span><span class="n">net_draw_params</span><span class="p">)</span>
+        <span class="n">nx</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">G</span><span class="o">.</span><span class="n">subgraph</span><span class="p">(</span><span class="n">all_deg_ngrams</span><span class="p">),</span> <span class="n">pos</span><span class="p">,</span> <span class="n">node_color</span> <span class="o">=</span> <span class="n">node_colors</span><span class="p">,</span><span class="o">**</span><span class="n">net_draw_params</span><span class="p">)</span>
+
+        <span class="c1"># Legend drawing</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">([],[],</span><span class="n">c</span><span class="o">=</span><span class="s1">&#39;tab:cyan&#39;</span><span class="p">,</span><span class="n">s</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">up_label</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">([],[],</span><span class="n">c</span><span class="o">=</span><span class="s1">&#39;tab:red&#39;</span><span class="p">,</span><span class="n">s</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">down_label</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">([],[],</span><span class="n">c</span><span class="o">=</span><span class="s1">&#39;tab:purple&#39;</span><span class="p">,</span><span class="n">s</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Both&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">bbox_to_anchor</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mf">0.5</span><span class="p">),</span><span class="n">frameon</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="DEdansy.deg_summary">
+<a class="viewcode-back" href="../../dedansy.html#dansy.DEdansy.deg_summary">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">deg_summary</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">detailed</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        This provides a summary of the DEG information that has been used within this dataset.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+
+        <span class="n">summary_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;p-value threshold&#39;</span><span class="p">,</span> <span class="s1">&#39;Fold change threshold&#39;</span><span class="p">,</span> <span class="s1">&#39;Up Regulated DEGs&#39;</span><span class="p">,</span><span class="s1">&#39;Down Regulated DEGs&#39;</span><span class="p">],</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;&#39;</span><span class="p">])</span>
+
+        <span class="n">vals</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">alpha</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fcthres</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">up_DEGs</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">down_DEGs</span><span class="p">)]</span>
+
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">summary_df</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="n">vals</span><span class="p">):</span>
+            <span class="n">summary_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+        
+        <span class="k">if</span> <span class="n">detailed</span><span class="p">:</span>
+            <span class="n">extended_inds</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Data ID column&#39;</span><span class="p">,</span><span class="s1">&#39;p-val data column&#39;</span><span class="p">,</span> <span class="s1">&#39;FC data column&#39;</span><span class="p">,</span><span class="s1">&#39;Up-ngrams&#39;</span><span class="p">,</span><span class="s1">&#39;Down ngrams&#39;</span><span class="p">,</span><span class="s1">&#39;Common n-grams&#39;</span><span class="p">]</span>
+
+            <span class="c1"># Getting common ngram counts</span>
+            <span class="n">common</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">up_ngrams</span><span class="p">)</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">down_ngrams</span><span class="p">)</span>
+
+            <span class="n">extended_vals</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">data_id_col</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pval_data_col</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">fc_data_col</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">up_ngrams</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">down_ngrams</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">common</span><span class="p">)]</span>
+
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">extended_inds</span><span class="p">,</span> <span class="n">extended_vals</span><span class="p">):</span>
+                <span class="n">summary_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+
+        <span class="k">return</span> <span class="n">summary_df</span></div>
+
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">ngram_DEG_hypergeom</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">condition</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Performs the hypergeometric over-representation test on the n-grams associated with different conditions.</span>
+
+<span class="sd">        Parameters:</span>
+<span class="sd">        -----------</span>
+<span class="sd">            - condition: str</span>
+<span class="sd">                Which condition to perform the test on must be either Up or Down (case insensitive)</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">        --------</span>
+<span class="sd">            - p_vals: dict</span>
+<span class="sd">                The p-value of each n-gram given the condition relative to the whole potential universe of the n-gram reference background of the n-gram network.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+
+        <span class="c1"># Make the condition input all lower case</span>
+        <span class="n">condition</span> <span class="o">=</span> <span class="n">condition</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">condition</span> <span class="o">==</span> <span class="s1">&#39;up&#39;</span><span class="p">:</span>
+            <span class="n">ngramsOI</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">up_ngrams</span>
+            <span class="n">degsOI</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">up_DEGs</span>
+        <span class="k">elif</span> <span class="n">condition</span> <span class="o">==</span> <span class="s1">&#39;down&#39;</span><span class="p">:</span>
+            <span class="n">ngramsOI</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">down_ngrams</span>
+            <span class="n">degsOI</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">down_DEGs</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Please specify either up or down.&#39;</span><span class="p">)</span>
+        
+        <span class="n">p</span> <span class="o">=</span> <span class="n">ngram_enrichment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prots</span> <span class="o">=</span> <span class="n">degsOI</span><span class="p">,</span> <span class="n">ngrams</span><span class="o">=</span><span class="n">ngramsOI</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">p</span>
+
+<div class="viewcode-block" id="DEdansy.create_contrast_metadata">
+<a class="viewcode-back" href="../../dedansy.html#dansy.DEdansy.create_contrast_metadata">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create_contrast_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">comparisons</span><span class="p">,</span> <span class="n">fc_cols</span><span class="p">,</span> <span class="n">pval_cols</span><span class="p">,</span>  <span class="n">fcs</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span><span class="n">alphas</span> <span class="o">=</span> <span class="mf">0.05</span><span class="p">,</span> <span class="n">delim</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        This create the metadata for the deDANSy object that contains information for each comparison of interest and the cutoffs to define differentially expressed genes/proteins (DEGs). Must provide the same number of columns for both the fold change and p-value columns</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        -----------</span>
+<span class="sd">        comparisons : list</span>
+<span class="sd">            All comparisons that will be used that match what is provided in the deDANSy dataset</span>
+<span class="sd">        fc_cols : str or list</span>
+<span class="sd">            Either a stem or list of columns used for the foldchanges to define DEGs (Use the delim parameter and a stem if reoccurring patterns are used where the comparison is at the end.)</span>
+<span class="sd">        pval_cols : str or list</span>
+<span class="sd">            Either a stem or list of columns used for the p-values to define DEGs. (Use the delim parameter and a stem if reoccurring patterns are used where the comparison is at the end.)</span>
+<span class="sd">        fcs : float or list</span>
+<span class="sd">            The fold-change cutoff. Can either be a single value or a list of values of the same size as comparisons</span>
+<span class="sd">        alphas : float or list</span>
+<span class="sd">            The p-value cutoff. Can either be a single value or a list of values of the same size as comparisons</span>
+<span class="sd">        delim : str (Optional)</span>
+<span class="sd">            Delimiter used in column names separating the stem of the column from the comparison. If none then will take the </span>
+<span class="sd">    </span>
+<span class="sd">        Returns</span>
+<span class="sd">        --------</span>
+<span class="sd">        comp_meta : pandas DataFrame</span>
+<span class="sd">            DataFrame where each row is a single comparison</span>
+<span class="sd">        </span>
+<span class="sd">        &#39;&#39;&#39;</span>
+
+        <span class="c1"># Checking parameter inputs</span>
+        <span class="n">fc_list_flag</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">fcs</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="n">fc_list_flag</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">fcs</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">fcs</span> <span class="o">=</span> <span class="n">fcs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">fc_list_flag</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">fcs</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">comparisons</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Provide either a single value or list of values for each comparison of fold-change cutoffs&#39;</span><span class="p">)</span>
+        
+        <span class="n">alpha_list_flag</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">alphas</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="n">alpha_list_flag</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">alphas</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">alpha_list_flag</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="n">alphas</span> <span class="o">=</span> <span class="n">alphas</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">alphas</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">comparisons</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Provide either a single value or list of values for each comparison of p-value cutoffs&#39;</span><span class="p">)</span>
+        
+        <span class="n">col_lists</span> <span class="o">=</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">fc_cols</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pval_cols</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">col_lists</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">fc_cols</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">pval_cols</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;The number of fold change columns and p-value columns does not match.&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">col_lists</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">fc_cols</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">comparisons</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">fc_cols</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;The number of data columns does not match the number of comparisons.&#39;</span><span class="p">)</span>
+        
+        <span class="n">col_strs</span> <span class="o">=</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">fc_cols</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pval_cols</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">delim</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">col_strs</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">comparisons</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Cannot create feasible data columns without a delimiter&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="n">col_lists</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="ow">not</span> <span class="n">col_strs</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;The data columns have to be either lists or strings not a mixture of the two.&#39;</span><span class="p">)</span>
+
+        <span class="c1"># Now creating the DataFrame to populate with values</span>
+        <span class="n">comp_meta</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;fc_col&#39;</span><span class="p">,</span> <span class="s1">&#39;fc_thres&#39;</span><span class="p">,</span><span class="s1">&#39;pval_col&#39;</span><span class="p">,</span><span class="s1">&#39;alpha&#39;</span><span class="p">],</span> <span class="n">index</span><span class="o">=</span><span class="n">comparisons</span><span class="p">)</span>
+        
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">c</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">comparisons</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">col_strs</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">delim</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">fcol</span> <span class="o">=</span> <span class="n">fc_cols</span>
+                    <span class="n">pcol</span> <span class="o">=</span> <span class="n">pval_cols</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">fcol</span> <span class="o">=</span> <span class="n">delim</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">fc_cols</span><span class="p">,</span><span class="n">c</span><span class="p">])</span>
+                    <span class="n">pcol</span> <span class="o">=</span> <span class="n">delim</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">pval_cols</span><span class="p">,</span><span class="n">c</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">fcol</span> <span class="o">=</span> <span class="n">fc_cols</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                <span class="n">pcol</span> <span class="o">=</span> <span class="n">pval_cols</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+
+            <span class="n">comp_meta</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">c</span><span class="p">,</span><span class="s1">&#39;fc_col&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">fcol</span>
+            <span class="n">comp_meta</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">c</span><span class="p">,</span><span class="s1">&#39;pval_col&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pcol</span>
+            
+            <span class="c1"># Get the corresponding values for the cutoffs</span>
+            <span class="k">if</span> <span class="n">fc_list_flag</span><span class="p">:</span>
+                <span class="n">f</span> <span class="o">=</span> <span class="n">fcs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">f</span> <span class="o">=</span> <span class="n">fcs</span>
+
+            <span class="k">if</span> <span class="n">alpha_list_flag</span><span class="p">:</span>
+                <span class="n">a</span> <span class="o">=</span> <span class="n">alphas</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">a</span> <span class="o">=</span> <span class="n">alphas</span>
+            <span class="n">comp_meta</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">c</span><span class="p">,</span><span class="s1">&#39;fc_thres&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">f</span>
+            <span class="n">comp_meta</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">c</span><span class="p">,</span><span class="s1">&#39;alpha&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">a</span>
+
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;comp_metadata&#39;</span><span class="p">):</span>
+            <span class="n">temp</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">comp_metadata</span><span class="p">,</span> <span class="n">comp_meta</span><span class="p">],</span> <span class="n">axis</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">comp_metadata</span> <span class="o">=</span> <span class="n">temp</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">comp_metadata</span> <span class="o">=</span> <span class="n">comp_meta</span></div>
+
+
+<div class="viewcode-block" id="DEdansy.calculate_scores">
+<a class="viewcode-back" href="../../dedansy.html#dansy.DEdansy.calculate_scores">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">calculate_scores</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">comps</span><span class="p">,</span> <span class="n">fpr_trials</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">min_pval</span> <span class="o">=</span> <span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="n">num_ss_trials</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span> <span class="n">processes</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        This calculates the separation and distinct functional neighborhood scores for a deDANSy instance. It creates new attributes for the deDANSy instance containing all the information of interest. If scores for a condition have been generated, this will raise a warning and overwrite existing scores.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        -----------</span>
+<span class="sd">        dedansy : deDANSy object</span>
+<span class="sd">            The base deDANSy object containing all n-grams and expression data</span>
+<span class="sd">        comps : list or str</span>
+<span class="sd">            The conditions that will be compared</span>
+<span class="sd">        fpr_trials : int (Optional)</span>
+<span class="sd">            Number of FPR trials to perform.</span>
+<span class="sd">        min_pval : int (Optional)</span>
+<span class="sd">            The log10 transform of the minimum p-value to use for the p-value pruning sweep step.</span>
+<span class="sd">        num_ss_trials : int (Optional)</span>
+<span class="sd">            The number of subsampled (and random) networks used to build distributions for comparing the network separation and IQR</span>
+<span class="sd">        processes : int (Optional)</span>
+<span class="sd">            Number of processes to use if multiprocessing is desired. (Recommended having 4-8 when feasible)</span>
+<span class="sd">        seed : int</span>
+<span class="sd">            Seed for random numbers. If not provided will use system time</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        --------</span>
+<span class="sd">        The following attributes are added or adjusted:</span>
+<span class="sd">        scores : pandas DataFrame</span>
+<span class="sd">            All scores, p-values, and FPR values for each condition</span>
+<span class="sd">        raw_dists : pandas DataFrame</span>
+<span class="sd">            For each condition the raw values that made up the distributions for each score</span>
+<span class="sd">        fpr_dists : pandas DataFrame</span>
+<span class="sd">                For each condition the p-values from the random FPR trials for calculating the FPR&#39;&#39;&#39;</span>
+        
+        <span class="c1"># Check for existing scores for all conditions provided</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;scores&#39;</span><span class="p">):</span>
+            <span class="n">a</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">comps</span><span class="p">)</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scores</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">overwrite</span><span class="p">:</span>
+                    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;At least one condition has existing scores that will be overwritten.&#39;</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;At least one condition has existing scores that will be kept.&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">a</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+
+        <span class="n">temp_scores</span><span class="p">,</span> <span class="n">temp_raw_dists</span><span class="p">,</span> <span class="n">temp_fpr_dists</span> <span class="o">=</span> <span class="n">algorithm</span><span class="o">.</span><span class="n">calculate_scores</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">comps</span><span class="p">,</span> <span class="n">fpr_trials</span><span class="p">,</span><span class="n">min_pval</span><span class="p">,</span> <span class="n">num_ss_trials</span><span class="p">,</span><span class="n">processes</span><span class="p">,</span><span class="n">seed</span><span class="p">,</span> <span class="n">verbose</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;scores&#39;</span><span class="p">):</span>
+            <span class="n">cur_scores</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scores</span>
+            <span class="k">if</span> <span class="n">overwrite</span><span class="p">:</span>
+                <span class="n">cur_scores</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">temp_scores</span><span class="p">)</span>
+            <span class="n">new_scores</span> <span class="o">=</span> <span class="n">cur_scores</span><span class="o">.</span><span class="n">combine_first</span><span class="p">(</span><span class="n">temp_scores</span><span class="p">)</span>
+            <span class="n">new_raw_dist</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">raw_dists</span><span class="o">.</span><span class="n">combine_first</span><span class="p">(</span><span class="n">temp_raw_dists</span><span class="p">)</span>
+            <span class="n">new_fpr_dist</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fpr_dists</span><span class="o">.</span><span class="n">combine_first</span><span class="p">(</span><span class="n">temp_fpr_dists</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">new_scores</span> <span class="o">=</span> <span class="n">temp_scores</span>
+            <span class="n">new_raw_dist</span> <span class="o">=</span> <span class="n">temp_raw_dists</span>
+            <span class="n">new_fpr_dist</span> <span class="o">=</span> <span class="n">temp_fpr_dists</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">scores</span> <span class="o">=</span> <span class="n">new_scores</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">raw_dists</span> <span class="o">=</span> <span class="n">new_raw_dist</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fpr_dists</span> <span class="o">=</span> <span class="n">new_fpr_dist</span></div>
+
+
+<div class="viewcode-block" id="DEdansy.plot_scores">
+<a class="viewcode-back" href="../../dedansy.html#dansy.DEdansy.plot_scores">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">plot_scores</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">show_FPR</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">aspect</span> <span class="o">=</span> <span class="mf">0.9</span><span class="p">,</span> <span class="n">order</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        This creates the bubble plots for the separation and distinction scores. This is a wrapper function for the base plotting function found in the enrichment_plotting_helpers.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        show_FPR : bool (Optional)</span>
+<span class="sd">            Whether the FPR legend handles should be displayed.</span>
+<span class="sd">        aspect : float (Optional)</span>
+<span class="sd">            The aspect ratio for each score plot.</span>
+<span class="sd">        order : dict (Optional)</span>
+<span class="sd">            Key-value pairs for each comparison and what order they should be displayed on the axis.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        --------</span>
+<span class="sd">        ax : matplotlib Axes</span>
+<span class="sd">            The axes of the resulting plot </span>
+
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scores</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">x</span><span class="p">[</span><span class="s1">&#39;Separation_Significance&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;Separation_FPR&#39;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mf">0.05</span>
+        <span class="n">x</span><span class="p">[</span><span class="s1">&#39;Distinction_Significance&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;Distinction_FPR&#39;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mf">0.05</span>
+        <span class="n">ax</span> <span class="o">=</span> <span class="n">plot_functional_scores</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">show_FPR</span><span class="p">,</span><span class="n">aspect</span><span class="o">=</span><span class="n">aspect</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="n">order</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">ax</span></div>
+
+    
+<div class="viewcode-block" id="DEdansy.calculate_ngram_enrichment">
+<a class="viewcode-back" href="../../dedansy.html#dansy.DEdansy.calculate_ngram_enrichment">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">calculate_ngram_enrichment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">comparison</span><span class="p">,</span> <span class="n">fpr_trials</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span> <span class="n">seed</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Calculates the n-gram enrichment for the comparison of interest to find the most significant n-grams.</span>
+
+<span class="sd">        Parameters:</span>
+<span class="sd">        -----------</span>
+<span class="sd">            - comparison: str</span>
+<span class="sd">                The comparison of interest that contains the up- and down-regulated genes/proteins</span>
+<span class="sd">            - alpha: float (Optional, Default: 0.05)</span>
+<span class="sd">                Threshold of values to return</span>
+<span class="sd">            - fpr_trials: int (Optional, Default: 100)</span>
+<span class="sd">                The number of trials used to calculate the false positive rate</span>
+<span class="sd">            - seed: int (Optional)</span>
+<span class="sd">                Seed for the random state</span>
+<span class="sd">        </span>
+<span class="sd">        Return:</span>
+<span class="sd">        -------</span>
+<span class="sd">            Creates the new attribute</span>
+<span class="sd">            - ngram_results: dict of pandas DataFrame</span>
+<span class="sd">                All the n-gram enrichment values that pass the significance threshold for the comparison of interest</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="c1"># Setting the random state</span>
+        <span class="k">if</span> <span class="n">seed</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+
+        <span class="c1"># First determine and store the enriched n-grams for the comparison of interest</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">calc_DEG_ngrams</span><span class="p">(</span><span class="n">comparison</span><span class="p">)</span>        
+        <span class="n">enriched_ngrams</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;Up&#39;</span><span class="p">,</span> <span class="s1">&#39;Down&#39;</span><span class="p">]:</span>
+            <span class="n">enriched_ngrams</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ngram_DEG_hypergeom</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+        
+        <span class="c1"># Get the original DEGs for defining number of proteins to randomly choose</span>
+        <span class="n">true_up</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">up_DEGs</span>
+        <span class="n">true_dn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">down_DEGs</span>
+        <span class="n">total_degs</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">true_up</span><span class="p">)</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="n">true_dn</span><span class="p">))</span>
+        <span class="n">frac_up</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">true_up</span><span class="p">)</span><span class="o">/</span><span class="n">total_degs</span>
+
+        <span class="c1"># Getting the random protein generator</span>
+        <span class="n">rand_genes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">retrieve_random_ids</span><span class="p">(</span><span class="n">num</span><span class="o">=</span><span class="n">total_degs</span><span class="p">,</span> <span class="n">iters</span><span class="o">=</span><span class="n">fpr_trials</span><span class="p">)</span>
+        <span class="n">rand_ngram_pvals</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;Up&#39;</span><span class="p">:{},</span> <span class="s1">&#39;Down&#39;</span><span class="p">:{}}</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">fpr_trials</span><span class="p">):</span>
+            <span class="n">cur_DEGs</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">rand_genes</span><span class="p">)</span>
+            <span class="n">orig_up</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">cur_DEGs</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="nb">round</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">cur_DEGs</span><span class="p">)</span><span class="o">*</span><span class="n">frac_up</span><span class="p">))</span>
+            <span class="n">orig_dn</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">cur_DEGs</span><span class="p">)</span><span class="o">.</span><span class="n">difference</span><span class="p">(</span><span class="n">orig_up</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_DEG_ngrams</span><span class="p">(</span><span class="n">up_DEGs</span><span class="o">=</span><span class="n">orig_up</span><span class="p">,</span> <span class="n">down_DEGs</span><span class="o">=</span><span class="n">orig_dn</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="n">rand_up_hyper</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ngram_DEG_hypergeom</span><span class="p">(</span><span class="s1">&#39;Up&#39;</span><span class="p">)</span>
+            <span class="n">rand_dn_hyper</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ngram_DEG_hypergeom</span><span class="p">(</span><span class="s1">&#39;Down&#39;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">j</span><span class="p">,</span><span class="n">c_dir</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">([</span><span class="n">rand_up_hyper</span><span class="p">,</span><span class="n">rand_dn_hyper</span><span class="p">],[</span><span class="s1">&#39;Up&#39;</span><span class="p">,</span><span class="s1">&#39;Down&#39;</span><span class="p">]):</span>
+                <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">j</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">node</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">rand_ngram_pvals</span><span class="p">[</span><span class="n">c_dir</span><span class="p">]:</span>
+                        <span class="n">rand_ngram_pvals</span><span class="p">[</span><span class="n">c_dir</span><span class="p">][</span><span class="n">node</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+                    <span class="n">rand_ngram_pvals</span><span class="p">[</span><span class="n">c_dir</span><span class="p">][</span><span class="n">node</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">j</span><span class="p">[</span><span class="n">node</span><span class="p">])</span>
+        
+        <span class="c1"># Now getting the FPR values and putting the results in the correct order</span>
+        <span class="n">fpr_dict</span> <span class="o">=</span> <span class="n">calc_ngram_fpr_vals</span><span class="p">(</span><span class="n">enriched_ngrams</span><span class="p">,</span> <span class="n">rand_ngram_pvals</span><span class="p">)</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="n">gather_enrichment_results</span><span class="p">({</span><span class="s1">&#39;Up&#39;</span><span class="p">:</span><span class="n">enriched_ngrams</span><span class="p">[</span><span class="s1">&#39;Up&#39;</span><span class="p">],</span><span class="s1">&#39;Down&#39;</span><span class="p">:</span><span class="n">enriched_ngrams</span><span class="p">[</span><span class="s1">&#39;Down&#39;</span><span class="p">]},</span> <span class="n">fpr_dict</span><span class="p">)</span>
+    
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="s1">&#39;ngram_results&#39;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ngram_results</span><span class="p">[</span><span class="n">comparison</span><span class="p">]</span> <span class="o">=</span> <span class="n">res</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ngram_results</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ngram_results</span><span class="p">[</span><span class="n">comparison</span><span class="p">]</span> <span class="o">=</span> <span class="n">res</span></div>
+
+
+<div class="viewcode-block" id="DEdansy.plot_ngram_enrichment">
+<a class="viewcode-back" href="../../dedansy.html#dansy.DEdansy.plot_ngram_enrichment">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">plot_ngram_enrichment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">comparison</span><span class="p">,</span> <span class="n">p</span> <span class="o">=</span> <span class="mf">0.05</span><span class="p">,</span> <span class="n">q</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">show_FPR</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Creates a bubble plot of the enriched n-grams for up and down-regulated n-grams for the comparison of interest. The resulting plot can be paritally customized based on additional keyword parameters. This function is a wrapper for the plot_enriched_ngrams function from the enrichment_plotting_helpers module, but specific to the deDANSy object instance.</span>
+
+<span class="sd">        Parameters:</span>
+<span class="sd">        -----------</span>
+<span class="sd">            - comparison: str</span>
+<span class="sd">                The comparison to plot the enriched n-grams of</span>
+<span class="sd">            - q: float (Optional)</span>
+<span class="sd">                The quantile cutoff of values to plot. Default (0.05)</span>
+<span class="sd">            - p: float (Optional)</span>
+<span class="sd">                The p-value threshold to limit n-grams to plot. Default is 0.05 but if combined with the quantile (q) can be lower.</span>
+<span class="sd">            show_FPR: bool</span>
+<span class="sd">                Flag whether to show the FPR legend portion.</span>
+<span class="sd">            kwargs: optional keywords</span>
+<span class="sd">                - &#39;palette&#39;,&#39;edgecolor&#39;, &#39;linewidth&#39;, &#39;sizes&#39; that adjust the seaborn scatterplot aesthetics.</span>
+<span class="sd">                - &#39;loc&#39;, &#39;bbox_to_anchor&#39;, &#39;handletextpad&#39; to adjust matplotlib legend information.</span>
+<span class="sd">                - &#39;ax&#39; to specify a matplotlib Axes to plot onto</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">        --------</span>
+<span class="sd">            seaborn/matplotlib plot</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+
+        <span class="n">resOI</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ngram_results</span><span class="p">[</span><span class="n">comparison</span><span class="p">]</span>
+        <span class="n">plot_enriched_ngrams</span><span class="p">(</span><span class="n">resOI</span><span class="p">,</span> <span class="n">dansyOI</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">p</span> <span class="o">=</span> <span class="n">p</span><span class="p">,</span> <span class="n">q</span><span class="o">=</span><span class="n">q</span><span class="p">,</span> <span class="n">show_FPR</span><span class="o">=</span><span class="n">show_FPR</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">(</span><span class="o">-</span><span class="mf">0.5</span><span class="p">,</span><span class="mf">1.5</span><span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="DEdansy.get_ngram_results">
+<a class="viewcode-back" href="../../dedansy.html#dansy.DEdansy.get_ngram_results">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_ngram_results</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">comparison</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Returns the n-gram enrichment results of the comparison of interest.</span>
+
+<span class="sd">        Parameters:</span>
+<span class="sd">        -----------</span>
+<span class="sd">            - comparison: str</span>
+<span class="sd">                The comparison of interest</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">        --------</span>
+<span class="sd">            - res: pandas DataFrame</span>
+<span class="sd">                The n-gram enrichment dataframe</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+
+        <span class="n">temp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ngram_results</span><span class="p">[</span><span class="n">comparison</span><span class="p">]</span>
+        
+        <span class="c1"># Convert the n-gram IDs to legible names</span>
+        <span class="n">temp</span><span class="p">[</span><span class="s1">&#39;ngram_legible&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">temp</span><span class="p">[</span><span class="s1">&#39;ngram&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">return_legible_ngram</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+
+        <span class="c1"># Now putting the columns into a more logical order</span>
+        <span class="n">col_order</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;variable&#39;</span><span class="p">,</span> <span class="s1">&#39;ngram_legible&#39;</span><span class="p">,</span> <span class="s1">&#39;ngram&#39;</span><span class="p">,</span> <span class="s1">&#39;p&#39;</span><span class="p">,</span> <span class="s1">&#39;-log10(p)&#39;</span><span class="p">,</span> <span class="s1">&#39;FPR&#39;</span><span class="p">,</span> <span class="s1">&#39;FPR &lt;= 0.05&#39;</span><span class="p">]</span>
+        <span class="n">temp</span> <span class="o">=</span> <span class="n">temp</span><span class="p">[</span><span class="n">col_order</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">temp</span></div>
+</div>
+
+
+<span class="c1">## Helper functions for converting the IDs around</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">convert_2_uniprotIDs</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">id_conv</span><span class="p">,</span> <span class="n">conv_col</span> <span class="o">=</span> <span class="s1">&#39;Gene stable ID&#39;</span><span class="p">,</span> <span class="n">data_id_cols</span> <span class="o">=</span> <span class="s1">&#39;gene_id&#39;</span><span class="p">,</span> <span class="n">dbl_check</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    This takes a dataframe of interest and converts the specified column to UniProt IDs given a second dataframe consisting of UniProt IDs, ENSEMBL ids, and gene names/synonyms retrieved using biopython. If desired there will be a double check to ensure all IDs are retrieved if an archived version of ENSEMBL has been used and gene names are requested instead.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+
+    <span class="c1"># Now getting all possible UniProt IDs given the IDs of interest.</span>
+    <span class="n">ensembl_uni_dict</span> <span class="o">=</span> <span class="n">create_id_conv</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">id_conv</span><span class="o">=</span><span class="n">id_conv</span><span class="p">,</span><span class="n">conv_col</span><span class="o">=</span><span class="n">conv_col</span><span class="p">,</span> <span class="n">data_id_cols</span><span class="o">=</span><span class="n">data_id_cols</span><span class="p">,</span> <span class="n">dbl_check</span><span class="o">=</span><span class="n">dbl_check</span><span class="p">)</span>
+    <span class="n">uniprot_IDs</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">itertools</span><span class="o">.</span><span class="n">chain</span><span class="o">.</span><span class="n">from_iterable</span><span class="p">(</span><span class="n">ensembl_uni_dict</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span>
+
+    <span class="k">return</span> <span class="n">uniprot_IDs</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">create_id_conv</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">id_conv</span><span class="p">,</span> <span class="n">conv_col</span> <span class="o">=</span> <span class="s1">&#39;Gene stable ID&#39;</span><span class="p">,</span> <span class="n">data_id_cols</span> <span class="o">=</span> <span class="s1">&#39;gene_id&#39;</span><span class="p">,</span> <span class="n">dbl_check</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    This is an internal function that makes a dict to convert the ensembl IDs (by default) to UniProt IDs. </span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="c1"># Check if a list is provided for the data_id_cols or if a single/default value provided.</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data_id_cols</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">dbl_check</span><span class="p">:</span>
+            <span class="n">data_id_col</span> <span class="o">=</span> <span class="n">data_id_cols</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">data_id_col</span> <span class="o">=</span> <span class="n">data_id_cols</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;More than one column name was provided for converting, but a double check was not designated. Ignoring additional inputs.&#39;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">data_id_col</span> <span class="o">=</span> <span class="n">data_id_cols</span>
+
+    <span class="c1"># Retrieve all ENSEMBL IDs which are found within the dataset of interest</span>
+    <span class="n">success_mapping_ids</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">id_conv</span><span class="p">[</span><span class="n">id_conv</span><span class="p">[</span><span class="n">conv_col</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">data_id_col</span><span class="p">])][</span><span class="s1">&#39;Gene stable ID&#39;</span><span class="p">])</span>
+    
+    <span class="k">if</span> <span class="n">dbl_check</span><span class="p">:</span>
+        <span class="n">gene_dbl_chck</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="o">~</span><span class="n">df</span><span class="p">[</span><span class="n">data_id_col</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">success_mapping_ids</span><span class="p">)][</span><span class="n">data_id_cols</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
+        <span class="n">cands</span> <span class="o">=</span> <span class="n">id_conv</span><span class="p">[</span><span class="n">id_conv</span><span class="p">[</span><span class="s1">&#39;Gene name&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">gene_dbl_chck</span><span class="p">)]</span>
+        <span class="n">success_mapping_ids</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">cands</span><span class="p">[</span><span class="s1">&#39;Gene stable ID&#39;</span><span class="p">])</span>
+
+    <span class="n">id_dict</span> <span class="o">=</span> <span class="n">id_conv</span><span class="p">[</span><span class="n">id_conv</span><span class="p">[</span><span class="s1">&#39;Gene stable ID&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">success_mapping_ids</span><span class="p">)]</span><span class="o">.</span><span class="n">filter</span><span class="p">([</span><span class="s1">&#39;Gene stable ID&#39;</span><span class="p">,</span> <span class="s1">&#39;UniProtKB/Swiss-Prot ID&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">drop_duplicates</span><span class="p">()</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(</span><span class="s1">&#39;tight&#39;</span><span class="p">)</span>
+    <span class="n">id_dict</span> <span class="o">=</span> <span class="n">id_dict</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span>
+
+    <span class="c1"># Now to ensure that all potential UniProt IDs are accounted for have to go through and put them in lists as some Ensembl IDs map to multiple proteins.</span>
+    <span class="n">id_conversion</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">conversion_data</span> <span class="ow">in</span> <span class="n">id_dict</span><span class="p">:</span>
+        <span class="n">ensembl</span> <span class="o">=</span> <span class="n">conversion_data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">uniprot</span> <span class="o">=</span> <span class="n">conversion_data</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">ensembl</span> <span class="ow">in</span> <span class="n">id_conversion</span><span class="p">:</span>
+            <span class="n">id_conversion</span><span class="p">[</span><span class="n">ensembl</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">uniprot</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">id_conversion</span><span class="p">[</span><span class="n">ensembl</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">uniprot</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">id_conversion</span>
+
+<span class="c1"># Helper functions for n-gram enrichment.</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">ngram_enrichment</span><span class="p">(</span><span class="n">dansy</span><span class="p">,</span> <span class="n">prots</span><span class="p">,</span> <span class="n">collapse</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Calculates the enrichment of n-grams associated with a subset of proteins within a DANSy object by Fisher&#39;s exact test.</span>
+<span class="sd">    </span>
+<span class="sd">    Note: This method can specifically analyze specific n-grams within the protein subset. However, this process should only be accessed with the deDANSy object and is not recommended to be used.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">        - dansy: DANSY</span>
+<span class="sd">            The DANSy object which contains the proteins of interest. (This can be either the differential expression or standard class.)</span>
+<span class="sd">        - prots: list</span>
+<span class="sd">            List containing the proteins of interest for enrichment analysis.</span>
+<span class="sd">        - collapse: bool</span>
+<span class="sd">            Whether the n-grams should be collapsed to their most informative and non-redundant n-grams.</span>
+<span class="sd">        - kwargs: optional keyword arguments (Not recommended to use)</span>
+<span class="sd">            - ngrams: list</span>
+<span class="sd">                List of n-grams that are to be analyzed specifically.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+
+    <span class="n">p_vals</span> <span class="o">=</span> <span class="n">ngram_subset_enrichment</span><span class="p">(</span><span class="n">prots</span><span class="p">,</span> <span class="n">dansy</span><span class="o">.</span><span class="n">protsOI</span><span class="p">,</span> <span class="n">dansy</span><span class="p">,</span> <span class="n">collapse</span><span class="o">=</span><span class="n">collapse</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">=</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">p_vals</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">ngram_subset_enrichment</span><span class="p">(</span><span class="n">protsOI</span><span class="p">,</span> <span class="n">full_prots</span><span class="p">,</span><span class="n">dansy_bkg</span><span class="p">,</span> <span class="n">collapse</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;Peform Fisher&#39;s exact test for n-grams found in a subset of proteins that may be found in the full list of proteins. This is the more general version that does not require using the full DANSy protein list.</span>
+<span class="sd">    </span>
+<span class="sd">        Parameters:</span>
+<span class="sd">        -----------</span>
+<span class="sd">            - protsOI: list</span>
+<span class="sd">                List containing the proteins of interest for enrichment analysis.</span>
+<span class="sd">            - full_prots: list</span>
+<span class="sd">                List containing the proteins that make up the full background list.</span>
+<span class="sd">            - dansy_bkg: DANSy object</span>
+<span class="sd">                The DANSy that the proteins and n-grams are associated with</span>
+<span class="sd">            - collapse: bool</span>
+<span class="sd">                Whether the n-grams should be collapsed to their most informative and non-redundant n-grams.</span>
+<span class="sd">            - kwargs: key, value mappings (Not recommended)</span>
+<span class="sd">                Additional keyword arguments:</span>
+<span class="sd">                    - ngrams: list</span>
+<span class="sd">                        List of n-grams that are to be analyzed specifically.</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">        --------</span>
+<span class="sd">            - p_vals: dict</span>
+<span class="sd">                Key-value pairs of n-grams and their enrichment p-value.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+
+    <span class="k">if</span> <span class="s1">&#39;ngrams&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+        <span class="n">ngrams</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;ngrams&#39;</span><span class="p">]</span>
+        
+        <span class="c1"># Making sure all n-grams are found in at least one of the proteins. If any are not raise an error.</span>
+        <span class="n">internal_check</span> <span class="o">=</span> <span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">protsOI</span><span class="p">))</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">dansy_bkg</span><span class="o">.</span><span class="n">interpro2uniprot</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">ngrams</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">internal_check</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;At least one provided n-gram is not found in the proteins of interest.&#39;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">ngrams</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="n">subset_prots</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">protsOI</span><span class="p">)</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">full_prots</span><span class="p">))</span> <span class="c1"># Ensure that the foreground proteins are found within the background (removing any which are not) </span>
+    <span class="n">M</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">subset_prots</span><span class="p">)</span>
+    <span class="n">N</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">full_prots</span><span class="p">)</span>
+    <span class="n">p_vals</span> <span class="o">=</span> <span class="p">{}</span>
+    
+    <span class="k">if</span> <span class="n">full_prots</span> <span class="o">==</span> <span class="n">dansy_bkg</span><span class="o">.</span><span class="n">protsOI</span><span class="p">:</span>
+        <span class="n">full_check</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">full_check</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="c1"># Get the n-grams of the proteins of interest if they were not provided</span>
+    <span class="k">if</span> <span class="n">ngrams</span><span class="p">:</span>
+        <span class="n">ngramsOI</span> <span class="o">=</span> <span class="n">ngrams</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">ngram_cands</span> <span class="o">=</span> <span class="p">[</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">dansy_bkg</span><span class="o">.</span><span class="n">interpro2uniprot</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="nb">set</span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">subset_prots</span><span class="p">)]</span>
+        <span class="n">ngram_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span><span class="nb">set</span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">subset_prots</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">dansy_bkg</span><span class="o">.</span><span class="n">interpro2uniprot</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">ngram_cands</span><span class="p">}</span>
+
+        <span class="k">if</span> <span class="n">collapse</span><span class="p">:</span>
+            <span class="n">ngram_dict</span><span class="p">,</span><span class="n">_</span> <span class="o">=</span> <span class="n">ngramUtilities</span><span class="o">.</span><span class="n">concatenate_ngrams</span><span class="p">(</span><span class="n">ngram_dict</span><span class="p">)</span>
+        <span class="n">ngramsOI</span> <span class="o">=</span> <span class="p">[</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">ngram_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">()]</span>
+    
+    <span class="c1"># Now using the cdf/sf of the hypergeometric distribution to get p-values (This is equivalent to Fisher&#39;s exact)</span>
+    <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">ngramsOI</span><span class="p">:</span>
+        
+        <span class="c1"># Skip the filtering if using the full background</span>
+        <span class="k">if</span> <span class="n">full_check</span><span class="p">:</span>
+            <span class="n">full_prot_list</span> <span class="o">=</span> <span class="n">dansy_bkg</span><span class="o">.</span><span class="n">interpro2uniprot</span><span class="p">[</span><span class="n">node</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            
+            <span class="n">full_prot_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">u</span> <span class="k">for</span> <span class="n">u</span> <span class="ow">in</span> <span class="n">dansy_bkg</span><span class="o">.</span><span class="n">interpro2uniprot</span><span class="p">[</span><span class="n">node</span><span class="p">]</span> <span class="k">if</span> <span class="n">u</span> <span class="ow">in</span> <span class="n">full_prots</span><span class="p">]</span>
+            
+        <span class="c1"># Now getting the numbers for the hypergeom distribution and calculating the cdf (or really sf since it is equivalent to 1-cdf)</span>
+        <span class="n">k</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">full_prot_list</span><span class="p">)</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">subset_prots</span><span class="p">))</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">full_prot_list</span><span class="p">))</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">hypergeom</span><span class="o">.</span><span class="n">sf</span><span class="p">(</span><span class="n">k</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">N</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span><span class="n">M</span><span class="p">)</span>
+        <span class="n">p_vals</span><span class="p">[</span><span class="n">node</span><span class="p">]</span> <span class="o">=</span> <span class="n">p</span>
+
+    <span class="k">return</span> <span class="n">p_vals</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Naegle Lab.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

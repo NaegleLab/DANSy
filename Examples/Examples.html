@@ -1,0 +1,164 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Examples &mdash; DANSy 1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=29a6c3e3"></script>
+      <script src="../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Base DANSy Analysis" href="base_dansy.html" />
+    <link rel="prev" title="Overview" href="../Overview.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            DANSy
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../Overview.html">Overview</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#base-dansy-analysis">Base DANSy Analysis</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="base_dansy.html">Base DANSy Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="base_dansy.html#DANSy-Analysis-on-a-subset-of-proteins-of-interest">DANSy Analysis on a subset of proteins of interest</a></li>
+<li class="toctree-l2"><a class="reference internal" href="base_dansy.html#Useful-DANSy-attributes-and-methods-for-additional-analysis">Useful DANSy attributes and methods for additional analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="base_dansy.html#Generating-a-DANSy-without-the-collapsing-step">Generating a DANSy without the collapsing step</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="#differential-expression-dansy-dedansy-analysis">Differential Expression DANSy (deDANSy) Analysis</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="deDANSy.html">Performing deDANSy on an RNA-sequencing dataset (Shimpi &amp; Tan et al. 2021)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="deDANSy.html#Determining-the-enriched-n-grams-of-individual-conditions.">Determining the enriched n-grams of individual conditions.</a></li>
+<li class="toctree-l2"><a class="reference internal" href="deDANSy.html#Performing-deDANSy-analysis-with-(phospho-)proteomic-data">Performing deDANSy analysis with (phospho-)proteomic data</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../Dependencies.html">Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Installation.html">Installation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../dansy.html">DANSy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dansy.html#dansy-supporting-functions">DANSy Supporting Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dedansy.html">deDANSy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dedansy.html#dedansy-supporting-functions">deDANSy Supporting Functions</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">DANSy</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Examples</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/Examples/Examples.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="examples">
+<h1>Examples<a class="headerlink" href="#examples" title="Link to this heading"></a></h1>
+</section>
+<section id="base-dansy-analysis">
+<h1>Base DANSy Analysis<a class="headerlink" href="#base-dansy-analysis" title="Link to this heading"></a></h1>
+<p>In the base version of DANSy, a collection of proteins are analyzed. This creates a simple linguistic network class, which can be paired with existing network analysis tools (such as those found in the <a class="reference external" href="https://networkx.org/">networkx</a> package) to provide additional insights of abstract relationships between the functions of the proteins of interest. We have provided examples that demonstrate how to create the DANSy network for both a large and small collection of proteins.</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="base_dansy.html">Base DANSy Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="base_dansy.html#DANSy-Analysis-on-a-subset-of-proteins-of-interest">DANSy Analysis on a subset of proteins of interest</a></li>
+<li class="toctree-l1"><a class="reference internal" href="base_dansy.html#Useful-DANSy-attributes-and-methods-for-additional-analysis">Useful DANSy attributes and methods for additional analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="base_dansy.html#Generating-a-DANSy-without-the-collapsing-step">Generating a DANSy without the collapsing step</a></li>
+</ul>
+</div>
+</section>
+<section id="differential-expression-dansy-dedansy-analysis">
+<h1>Differential Expression DANSy (deDANSy) Analysis<a class="headerlink" href="#differential-expression-dansy-dedansy-analysis" title="Link to this heading"></a></h1>
+<p>In deDANSy, the expression of each protein/gene is incorporated into the linguistic network and used to describe how distinct and separated functions endowed by the domains are for up- or down-regulated genes. In this analysis, we assume the expression status (i.e. up- vs down-regulated) is determined by both a combination of fold-change and statistical significance.</p>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>This analysis can be conducted on either bulk RNA-sequencing or (phospho)proteomics datasets. We have not tested in other contexts, but if a set of gene IDs (e.g. ENSEMBL or Entrez IDs) or UniProt IDs are provided deDANSy can be potentially applied. However, we caution against using deDANSy for other applications currently.</p>
+</div>
+<p>Here, we provide example analyses that uses either RNA-sequencing results from <a class="reference external" href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10238572/">Shimpi and Tan, et al, Adv Healthcare Mater (2021)</a> or phosphoproteomic results from <a class="reference external" href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10762338/">Chen, et al, Mol Cancer Ther (2024)</a> to showcase the functionality of deDANSy.</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="deDANSy.html">Performing deDANSy on an RNA-sequencing dataset (Shimpi &amp; Tan et al. 2021)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="deDANSy.html#Running-additional-comparisons-after-scores-have-been-generated">Running additional comparisons after scores have been generated</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="deDANSy.html#Determining-the-enriched-n-grams-of-individual-conditions.">Determining the enriched n-grams of individual conditions.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="deDANSy.html#Performing-deDANSy-analysis-with-(phospho-)proteomic-data">Performing deDANSy analysis with (phospho-)proteomic data</a></li>
+</ul>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../Overview.html" class="btn btn-neutral float-left" title="Overview" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="base_dansy.html" class="btn btn-neutral float-right" title="Base DANSy Analysis" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Naegle Lab.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
