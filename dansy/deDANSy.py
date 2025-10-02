@@ -206,6 +206,8 @@ class DEdansy(dansy):
         if pos == [] and hasattr(self, 'network_params'):
             if 'pos' in self.network_params:
                 pos = self.network_params['pos']
+            else:
+                pos = nx.spring_layout(self.G, k=0.05)
         elif pos ==[]:
             pos = nx.spring_layout(self.G, k=0.05)
         
