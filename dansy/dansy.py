@@ -179,7 +179,17 @@ class dansy:
         if isinstance(ref, str):
             ref_df = ngramUtilities.import_reference_file(ref)
         elif isinstance(ref, pd.DataFrame):
-            ref_df = ref
+            
+            # Check that the reference file has the necessary information for generating the n-gram network
+            columns = ['Interpro Domains', 'Interpro Domain Architecture IDs']
+            if columns[1] in ref.columns: # Check if the IDs version of the domain architecture are present
+                ref_df = ref
+            elif columns[0] in ref.columns:
+                ref['Interpro Domain Architecture IDs'] = ref['Interpro Domains'].map(create_arch_ids)
+                ref_df = ref
+            else:
+                raise DomainArchError('Interpro Domain Architecture Information is missing. ')
+
         else:
             raise TypeError('Reference File is not correct')
         
@@ -442,3 +452,31 @@ class dansy:
             rand_ids = random.sample(full_id_list, k = num)
             yield rand_ids
 
+def create_arch_ids(arch):
+    '''
+    This takes the architectures returned from the InterPro module of CoDIAC, which follows the format Name:InterPro_ID:Start:Stop for each domain separated by a semicolon and creates the full architecture with only the IDs seperated by a pipe (|).
+
+    Parameters
+    ----------
+        - arch: str
+            The full domain architecture string containing all the domain information
+    
+    Returns
+    -------
+        - arch_id: str
+            The abbreviated domain architecture of only InterPro IDs
+    '''
+    try:
+        arch_list = arch.split(';')
+        ids_list = [x.split(':')[1] for x in arch_list]
+        arch_id = '|'.join(ids_list)
+    except:
+        raise DomainArchError('The domain architecture information was incorrectly formatted.')
+    
+    return arch_id
+
+class DomainArchError(TypeError):
+    '''
+    Custom error for domain architectures that are not properly formatted or missing.
+    '''
+    pass
