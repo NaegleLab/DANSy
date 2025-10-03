@@ -538,36 +538,3 @@ def import_reference_file(reference_file):
     df,_ = add_Interpro_ID_architecture(df)
 
     return df
-
-def get_ngram_cutoff(ngram_counts, thres = 0.8):
-    """
-    Get a cutoff for the maximum length of an n-gram to use in downstream analysis. Values are computed by the relative fraction of the cumulative sum described by the n-gram length. 
-
-    NOTE: Plan is to deprecate this function as it is no longer required for downstream analysis and is redundant with other functions that are available.
-
-    Parameters:
-    -----------
-        - ngram_counts: dict 
-            The instances an n-gram occurs
-        - thres: int
-            The relative fraction of proteins to be considered
-
-    Returns:
-    --------
-        - n_cutoff: int
-            N-gram length cutoff
-    """
-    for i in range(1, np.max(list(ngram_counts.keys()))):
-        if i not in ngram_counts.keys():
-            ngram_counts[i] = 0
-    ngram_counts = dict(sorted(ngram_counts.items(), key=lambda x:x[0], reverse=False))
-
-    ngram_cumsum = np.array(list(ngram_counts.items())).cumsum(axis=0)[:,1]
-    ngram_cumsum_norm = ngram_cumsum/np.max(ngram_cumsum)
-    n_cutoff = np.where(ngram_cumsum_norm > thres)[0].tolist()
-    n_cutoff = n_cutoff[0]+1
-
-    # Returning the normalized cumulative sum to provide information about where the cutoff came from.
-    ngram_cumsum_norm = dict(zip(ngram_counts.keys(), ngram_cumsum_norm))
-
-    return n_cutoff, ngram_cumsum_norm
