@@ -2,8 +2,8 @@ import warnings
 import random
 import networkx as nx
 import pandas as pd
-import dansy.generateCompleteProteome as generateCompleteProteome
 import dansy.ngramUtilities as ngramUtilities
+import dansy.helper as helper
 
 class dansy:
     '''
@@ -89,7 +89,7 @@ class dansy:
         
         # Import the complete proteome reference file if no reference file has been specified.
         if self.ref is None:
-            ref_data,_ = generateCompleteProteome.import_proteome_files()
+            ref_data = helper.import_proteome_files()
         
         # Ensure the reference data is a dataframe and not just the string to the reference file.
         else:

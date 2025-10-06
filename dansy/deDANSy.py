@@ -8,7 +8,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy.stats as stats
 import dansy.ngramUtilities as ngramUtilities
-import dansy.generateCompleteProteome as generateCompleteProteome
 import dansy.dedansy_algorithm as algorithm
 from dansy.dansy import dansy
 from dansy.network_separation_helpers import network_separation,build_network_reference_dict
