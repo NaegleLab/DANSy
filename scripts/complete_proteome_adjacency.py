@@ -23,14 +23,38 @@ def main():
     else:
         print('Generating the complete proteome adjacency analysis.')
         _,_ = generate_complete_adjacency()
-    
-
 
 def check_dirs():
     if not os.path.exists(DANSY_DATA_DIR):
         os.makedirs(DANSY_DATA_DIR, exist_ok=True)
 
-        
+def import_proteome_data(adj_file = DANSY_ADJ_FILE, adj_dir = DANSY_DATA_DIR,col_ngrams_file = DANSY_COLLAPSED_NGRAMS_FILE, colngram_dir = DANSY_DATA_DIR):
+    '''
+    This imports both the adjacency matrix and collapsed n-grams from DANSy for the complete proteome.
+
+    Parameters
+    ----------
+        - adj_file: str
+            Name of the file containing the adjacency data (should be a json file)
+        - adj_dir: str
+            Directory of where the adjacency file is located
+        - col_ngrams_file: str
+            Name of the txt file containing the collapsed n-grams information
+        - colngram_dir: str
+            Directory where the collapsed n-gram file is located.
+
+    Returns
+    -------
+        - adj: pandas DataFrame
+            Dataframe containing the adjacency matrix of the complete proteome
+        - collapsed_ngrams: list
+            List of the collapsed n-grams from the DANSy analysis
+    '''
+    adj = import_adjacency(adj_file=adj_file, adj_dir=adj_dir)
+    collapsed_ngrams = import_collapsed_ngrams(col_ngrams_file=col_ngrams_file,
+                                               col_ngram_dir = colngram_dir)
+    
+    return adj, collapsed_ngrams
 
 def generate_complete_adjacency(ref_dir = None,ref_version = None, target_dir = None):
     '''
@@ -75,7 +99,8 @@ def generate_complete_adjacency(ref_dir = None,ref_version = None, target_dir = 
    
     # Now save the files for later loading
     generate_adjacency_json(full_adj)
-    np.savetxt(DANSY_COLLAPSED_NGRAMS_FILE, collapsed_ngrams, delimiter = ',', fmt = '%s')
+    col_fullpath = os.path.join(target_dir, DANSY_COLLAPSED_NGRAMS_FILE)
+    np.savetxt(col_fullpath, collapsed_ngrams, delimiter = ',', fmt = '%s')
     return full_adj, collapsed_ngrams
 
 def import_proteome_files(ref_file_dir = DANSY_DATA_DIR, ref_file_suffix = DANSY_PROTEOME_VERSION):
@@ -143,7 +168,7 @@ def import_adjacency(adj_file = DANSY_ADJ_FILE, adj_dir = DANSY_DATA_DIR):
 
     return full_adj
 
-def import_collapsed_ngrams(col_ngrams_file = DANSY_COLLAPSED_NGRAMS_FILE, rm_dir = DANSY_DATA_DIR):
+def import_collapsed_ngrams(col_ngrams_file = DANSY_COLLAPSED_NGRAMS_FILE, col_ngram_dir = DANSY_DATA_DIR):
     '''
     Imports the list of n-grams that were removed during n-gram analysis of the complete proteome from either the file or via the n-gram analysis.
 
@@ -161,7 +186,7 @@ def import_collapsed_ngrams(col_ngrams_file = DANSY_COLLAPSED_NGRAMS_FILE, rm_di
 
     '''
 
-    full_path = rm_dir + col_ngrams_file
+    full_path = os.path.join(col_ngram_dir, col_ngrams_file)
     if os.path.exists(full_path):
         temp = pd.read_csv(full_path, header = None)
         collapsed_ngrams = temp[0].tolist()
