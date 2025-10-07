@@ -16,7 +16,13 @@ with open(directory_loc,'r') as f:
         dirs.append(line)
         
 DANSY_DATA_DIR = dirs[0]
-DANSY_PROTEOME_VERSION = '20250512.csv'
+
+current_version_file = f'{DANSY_DIR}/dansy/current_proteome_version.txt'
+prot_ver = []
+with open(current_version_file, 'r') as f:
+    for line in f:    
+        prot_ver.append(line)
+DANSY_PROTEOME_VERSION = prot_ver[0]
 
 def create_DANSy_dirs(target_dir):
 
@@ -30,9 +36,14 @@ def create_DANSy_dirs(target_dir):
         with open(f"{DANSY_DIR}/dansy/directories.txt",'w') as f:
             f.write(install_dir)
 
-def update_proteome_version(version):
-    global DANSY_PROTEOME_VERSION 
+def update_proteome_version(version, default = True):
+    
+    global DANSY_PROTEOME_VERSION
     DANSY_PROTEOME_VERSION = version
+    if default:
+        with open(f"{DANSY_DIR}/dansy/current_proteome_version.txt", 'w') as f:
+            f.write(version)
+        print(f'Updated the default proteome file to look for {version}')
 
 
 if __name__ == '__main__':

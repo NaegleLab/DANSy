@@ -1,1 +1,2 @@
 include dansy/directories.txt
+include dansy/current_proteome_version.txt
