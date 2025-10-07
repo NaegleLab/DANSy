@@ -13,7 +13,7 @@ directory_loc = f"{DANSY_DIR}/dansy/directories.txt"
 dirs = []
 with open(directory_loc,'r') as f:
     for line in f:
-        dirs.append(line.split()[0])
+        dirs.append(line)
         
 DANSY_DATA_DIR = dirs[0]
 DANSY_PROTEOME_VERSION = '20250512.csv'
