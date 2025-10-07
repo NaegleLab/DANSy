@@ -28,8 +28,10 @@ def import_proteome_files(ref_file_dir = DANSY_DATA_DIR, ref_file_suffix = DANSY
         if fileName.endswith(ref_file_suffix):
             fullpath = os.path.join(ref_file_dir, fileName)
             all_refs.append(fullpath)
-
-    ref_df = ngramUtilities.import_reference_file(all_refs)
+    if all_refs:
+        ref_df = ngramUtilities.import_reference_file(all_refs)
+    else:
+        raise FileNotFoundError(f'No reference file with the suffix {ref_file_suffix} was found')
     #ref_df, interpro_dict = ngramUtilities.add_Interpro_ID_architecture(ref_df)
     
     return ref_df
