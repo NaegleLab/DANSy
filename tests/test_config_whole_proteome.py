@@ -5,7 +5,8 @@ import pandas as pd
 def main():
 
     # Checking that the config module works as intended
-    dansy.config.create_DANSy_dirs()
+    cwd = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    dansy.config.create_DANSy_dirs(cwd)
     assert os.path.exists(dansy.DANSY_DATA_DIR), "Issue with creating the data directory"
 
     # Check that updating the proteome can be imported
