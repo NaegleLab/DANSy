@@ -62,7 +62,3 @@ def update_proteome_version(version, default = True):
         with open(f"{DANSY_DIR}/dansy/current_proteome_version.txt", 'w') as f:
             f.write(version)
         print(f'Updated the default proteome file to look for {version}')
-
-
-if __name__ == '__main__':
-    create_DANSy_dirs()
