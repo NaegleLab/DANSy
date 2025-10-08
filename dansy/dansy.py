@@ -20,6 +20,41 @@ class dansy:
     interproIDs : list (Optional)
         List of Interpro IDs to extract n-grams. If omitted, all n-grams will be extracted.
 
+    Attributes
+    ----------
+
+        At Initialization
+        -----------------
+        G: networkx Graph
+            The network graph representation of the DANSy n-gram network
+        ref: pandas DataFrame
+            The reference file information for the proteins within the dataset
+        n: int
+            The maximum length of n-grams being extracted
+        interproIDs: list
+            A list of all protein domain InterPro IDs that were found within the dataset
+        protsOI: list
+            The UniProt IDs for the proteins found within the dataset
+        ngrams: list
+            The extracted domain n-grams
+        collapsed_ngrams: list
+            The domain n-grams which were collapsed into other n-grams which represent the set of proteins
+        adj: pandas DataFrame
+            The adjacency matrix for the n-gram network for the DANSy analysis
+        interpro2uniprot: dict
+            The keys of InterPro IDs with values of a list of UniProt IDs that have the InterPro ID
+        min_arch: int (Default: 1)
+            The minimum number of domain architectures for an n-gram to be retained.
+        max_node_len: int
+            The maximum n-gram length that will be retained during the collapsing step to represent n-grams sharing the same set of proteins. This will not be larger than n (Default of 10).
+        collapse: bool
+            Whether the n-grams were collapsed
+        readable_flag: bool
+            Whether the n-grams are human-legible
+        verbose: bool
+            Whether progress statements are to be printed during calculations
+        network_params: dict
+            Key-value pairs of acceptable networkx drawing parameters
     '''
     def __init__(self,protsOI = None, ref = None,n = 10,interproIDs = None, **kwargs):
         

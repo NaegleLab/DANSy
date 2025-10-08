@@ -17,8 +17,109 @@ from dansy.enrichment_plotting_helpers import plot_functional_scores, gather_enr
 class DEdansy(dansy):
     '''
     A container class of multiple Domain n-gram networks related to a differentially expressed dataset that was generated using the DESeq analysis pipeline. This provides methods to analyze and contrast pairs of domain architecture subnetworks to understand changes in functional molecular ecosystems available to different conditions.
+
+    Parameters
+    ----------
+    dataset: pandas DataFrame
+        The expression dataset that contains the proteins of interest and expression values to designate differentially expressed genes/proteins
+    uniprot_ref: pandas DataFrame (Optional)
+        The base reference file that contains all the proteins of interest within the dataset. Note: It is recommended to include if multiple instances of a DEdansy object are being instantiated that share a common set of proteins.
+    n: int (Optional)
+        Length of n-grams to extract. Default is 10
+    id_conv: pandas DataFrame (Optional)
+        A dataframe with a column of UniProt IDs and a column for a IDs used in the expression dataset to help in converting
+    conv_cols: str (Optional)
+        The name of the column with IDs matching in the id_conv dataframe. Assumes the naming convention generated from pybiomart
+    data_ids: str (Optional)
+        The name of the column in the dataset dataframe for the IDs to be converted to UniProt IDs
+    penalty: 'dynamic' or int (Optional)
+        The value or 'dynamic' for the penalty during network separation calculations. 
+    run_conversion: bool
+        Whether the dataset IDs have to be converted using a provided id_conv dataframe
+    kwargs
+        Additional keyword arguments for generating the DANSy network. See dansy.set_ngram_parameters for details acceptable values are reproduced below
+            - 'min_arch'
+            - 'max_node_len'
+            - 'collapse'
+            - 'readable_flag'
+            - 'verbose'
+
+    Attributes
+    ----------
+
+        At Initialization
+        -----------------
+        dataset: pandas DataFrame
+            The expression dataset for DANSy analysis
+        ref: pandas DataFrame
+            The reference file information for the proteins within the dataset
+        n: int
+            The maximum length of n-grams being extracted
+        interproIDs: list
+            A list of all protein domain InterPro IDs that were found within the dataset
+        protsOI: list
+            The UniProt IDs for the proteins found within the dataset
+        ngrams: list
+            The extracted domain n-grams
+        collapsed_ngrams: list
+            The domain n-grams which were collapsed into other n-grams which represent the set of proteins
+        G: networkx Graph
+            The network graph representation of the DANSy n-gram network
+        adj: pandas DataFrame
+            The adjacency matrix for the n-gram network for the DANSy analysis
+        interpro2uniprot: dict
+            The keys of InterPro IDs with values of a list of UniProt IDs that have the InterPro ID
+        id_conversion_dict: dict
+            A dictionary containing the conversion of the provided gene/protein ID to a UniProt ID. If UniProt IDs were provided, returns a dict of UniProt to UniProt IDs.
+        data_id_cols: str
+            The ID column used in the dataset for conversion
+        network_params: dict
+            Key-value pairs of acceptable networkx drawing parameters
+        min_arch: int (Default: 1)
+            The minimum number of domain architectures for an n-gram to be retained.
+        max_node_len: int
+            The maximum n-gram length that will be retained during the collapsing step to represent n-grams sharing the same set of proteins. This will not be larger than n (Default of 10).
+        collapse: bool
+            Whether the n-grams were collapsed
+        readable_flag: bool
+            Whether the n-grams are human-legible
+        verbose: bool
+            Whether progress statements are to be printed during calculations
+        
+        After Establishing Comparison MetaData 
+        --------------------------------------
+        comp_metadata: pandas DataFrame
+            The metadata information for comparisons of interest in the dataset
+
+        After DEG Calculations
+        ----------------------
+        up_DEGs/down_DEGs: list
+            List of UniProts that have were designated as up or down for a specific condition
+        up_ngrams/down_ngrams: list
+            The n-grams for either up- or down-regulated proteins/genes
+        alpha: float
+            The p-value cutoff for designating DEGs
+        fcthres: float
+            The fold-change cutoff for designating DEGs
+        pval_data_col: str
+            The column name in the datasetused for the p-value data for DEGs
+        fc_data_col: str
+            The column name in the dataset used for fold-change data for DEGs
+        
+
+        After creating deDANSy scores
+        -----------------------------
+        - scores: pandas DataFrame
+            The scores, p-values, and FPR values for the deDANSy Separation and Distinction scores for the comparisons
+        - raw_dists: pandas DataFrame
+            The raw distribution of values for each score
+        - fpr_dists: pandas DataFrame
+            The raw distribution of FPR values for each score
+        
+
+
     '''
-    def __init__(self,dataset, id_conv = None, conv_cols = 'Gene stable ID', data_ids = 'gene_id', uniprot_ref = None,n = 10, penalty = 'dynamic',run_conversion = True, **kwargs):
+    def __init__(self,dataset,uniprot_ref = None,n = 10, id_conv = None, conv_cols = 'Gene stable ID', data_ids = 'gene_id',  penalty = 'dynamic',run_conversion = True, **kwargs):
         
         # Bare minimum attributes required for setting up an empty n-gram network.
         self.dataset = dataset
