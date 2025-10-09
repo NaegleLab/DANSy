@@ -14,7 +14,7 @@ setup(
     classifiers= [
         "Programming Language :: Python :: 3",
         "Intended Audience :: Science/Research",
-        "Operationg System :: OS Independent"
+        "Operating System :: OS Independent"
         ],
     packages=find_packages(),
     include_package_data=True,
