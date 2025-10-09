@@ -31,8 +31,8 @@ def create_DANSy_dirs(target_dir):
 
     Parameters
     ----------
-        - target_dir: str
-            The directory where the DANSy data folder should be generated in and/or checked for the existence of
+     target_dir: str
+        The directory where the DANSy data folder should be generated in and/or checked for the existence of
     '''
 
     install_dir = f"{target_dir}/DANSY_DATA/"
@@ -51,10 +51,10 @@ def update_proteome_version(version, default = True):
 
     Parameters
     ----------
-        - version: str
-            The suffix (or full name) of the file(s) for the default reference files that dansy will look at.
-        - default: bool (optional)
-            Whether the change in version is to be kept as the new default version used afterwards
+    version: str
+        The suffix (or full name) of the file(s) for the default reference files that dansy will look at.
+    default: bool (optional)
+        Whether the change in version is to be kept as the new default version used afterwards
     '''
     global DANSY_PROTEOME_VERSION
     DANSY_PROTEOME_VERSION = version
