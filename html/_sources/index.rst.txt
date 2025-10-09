@@ -30,6 +30,7 @@ Please see our `bioRxiv paper <manuscript_>`_ for full details and the applicati
 	:titlesonly:
 	:caption: Reference:
 
+	config
 	dansy
 	dedansy
 

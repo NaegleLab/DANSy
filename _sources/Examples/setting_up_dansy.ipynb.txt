@@ -1,0 +1,123 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "id": "6fc26a40",
+   "metadata": {},
+   "source": [
+    "# Configuring your DANSy workspace\n",
+    "\n",
+    "For DANSy and deDANSy analysis, we recommend having a DANSy-specific directory for holding reference files created by CoDIAC. This become especially useful if you have multiple projects that use the same reference file(s) for analysis (i.e. the same build of the whole proteome reference file from CoDIAC) or with deDANSy to ensure the same proteome builds are being used across analyses.\n",
+    "\n",
+    "We have provided our `config` module to create this for your convenience, and can be run a single time after installing DANSy."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "id": "9d3d5d93",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "from dansy import config"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "025efcd4",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# We recommend using the path to your working directory, which will then create a DANSY_DATA folder in the provided directory\n",
+    "config.create_DANSy_dirs(target_dir='/user/working/directory')"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "5b738baf",
+   "metadata": {},
+   "source": [
+    "This directory can then house the [CoDIAC](https://github.com/NaegleLab/CoDIAC) reference files that can be generated. Here we show an example which uses the [GENCODE SwissProt metadata file](https://www.gencodegenes.org/human/) to get UniProt IDs. A dedicated script for generating the reference file from the command line can be found at our [GitHub repo in the scripts folder](https://github.com/NaegleLab/DANSy), which checks for current csv files that end with the same suffix and verifies all UniProt IDs were retrieved or continues to grab additional ones.\n",
+    "\n",
+    "**Note:** Getting all the InterPro and UniProt information does take >1 hour when run the first time."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "fe324c14",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "from CoDIAC import UniProt\n",
+    "from datetime import date\n",
+    "import pandas as pd\n",
+    "import os"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "80cb20e7",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "data_folder = config.DANSY_DATA_DIR\n",
+    "retrieval_date = date.today().strftime('%Y%m%d')\n",
+    "file_suffix = retrieval_date+'.csv'\n",
+    "gencode = pd.read_table('gencode.v47.metadata.SwissProt',header=None) # Change this based on which version you download\n",
+    "uniprot_ids = gencode[1].tolist()\n",
+    "ref_file_name = os.path.join(data_folder,'Complete_Proteome_Reference_File'+file_suffix)\n",
+    "_ = UniProt.makeRefFile(uniprot_ids, ref_file_name)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "219f9941",
+   "metadata": {},
+   "source": [
+    "Now we can update the default proteome version that DANSy will look for whenever it needs to import the reference file for the whole proteome."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "bea0a050",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "config.update_proteome_version(file_suffix)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "c282c3c9",
+   "metadata": {},
+   "source": [
+    "Your DANSy workspace is now fully configured for whole proteome based analysis and/or deDANSy analysis if a reference file is not provided."
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "dansy_codiac",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.9.23"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}

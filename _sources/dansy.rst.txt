@@ -11,5 +11,5 @@ DANSy Supporting Functions
 
 These are functions integrated into DANSy, which are not necessary to call, but can aid in initial setup of a DANSy object.
 
-.. automodule:: dansy.generateCompleteProteome
+.. automodule:: dansy.helper
     :members: import_proteome_files

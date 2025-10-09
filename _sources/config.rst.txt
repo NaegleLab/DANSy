@@ -1,0 +1,7 @@
+The config Module
+-----------------
+
+This helps configure the DANSy workspace especially when looking for default data structures.
+
+.. automodule:: dansy.config
+    :members: 

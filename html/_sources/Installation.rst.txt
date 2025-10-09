@@ -1,27 +1,25 @@
 Installation
 =============
-DANSy can be installed directly from the Git repository. 
+DANSy can be installed  via `pip`, `conda`, tarball, and directly from the Git repository. We recommend using conda forge to install scientific packages `conda install conda-forge` before installing DANSy. 
 
-.. via `pip`, `conda`, tarball, and We recommend using conda to install the scientific packages `conda install anaconda` before installing DANSy. 
+ Pip
+----
+To install via pip, execute `pip install dansy`.
 
-.. Pip
-    ----
-    To install via pip, execute `pip install dansy`.
+Conda
+---------
+To install via conda, execute `conda install -c naeglelab dansy`.
 
-    Conda
-    ---------
-    To install via conda, execute `conda install -c naeglelab dansy`.
+Tarball
+---------
+To install via a tarball, head over to the `Releases page <https://github.com/NaegleLab/DANSY/releases>`_ and download the latest stable tar release.
 
-.. Tarball
-    ---------
-    To install via a tarball, head over to the `Releases page <https://github.com/NaegleLab/DANSY/releases>`_ and download the latest stable tar release.
-
-    Afterwards, navigate to your downloads directory and execute the following commands, substituting <version> for the release's version number:
-    ```
-    tar -xvf dansy-<version>.tar.gz
-    cd DANSY-<version>
-    python setup.py install
-    ```
+Afterwards, navigate to your downloads directory and execute the following commands, substituting <version> for the release's version number:
+```
+tar -xvf dansy-<version>.tar.gz
+cd DANSY-<version>
+python setup.py install
+```
 
 Git
 ----

@@ -44,18 +44,19 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../Overview.html">Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../Examples/Examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Examples/Examples.html#configuring-the-dansy-workspace">Configuring the DANSy workspace</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../Examples/Examples.html#base-dansy-analysis">Base DANSy Analysis</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../Examples/Examples.html#differential-expression-dansy-dedansy-analysis">Differential Expression DANSy (deDANSy) Analysis</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../Dependencies.html">Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Installation.html">Installation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../config.html">The config Module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../dansy.html">DANSy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../dansy.html#dansy-supporting-functions">DANSy Supporting Functions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../dedansy.html">deDANSy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../dedansy.html#dedansy-supporting-functions">deDANSy Supporting Functions</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../Installation.html">Installation</a></li>
-</ul>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../../dansy.html">DANSy</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../dansy.html#dansy-supporting-functions">DANSy Supporting Functions</a></li>
 </ul>
 
         </div>
@@ -87,8 +88,8 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">random</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">networkx</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nx</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">dansy.generateCompleteProteome</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">generateCompleteProteome</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">dansy.ngramUtilities</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ngramUtilities</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">dansy.helper</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">helper</span>
 
 <div class="viewcode-block" id="dansy">
 <a class="viewcode-back" href="../../dansy.html#dansy.dansy">[docs]</a>
@@ -107,6 +108,38 @@
 <span class="sd">    interproIDs : list (Optional)</span>
 <span class="sd">        List of Interpro IDs to extract n-grams. If omitted, all n-grams will be extracted.</span>
 
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    G: networkx Graph</span>
+<span class="sd">        The network graph representation of the DANSy n-gram network</span>
+<span class="sd">    ref: pandas DataFrame</span>
+<span class="sd">        The reference file information for the proteins within the dataset</span>
+<span class="sd">    n: int</span>
+<span class="sd">        The maximum length of n-grams being extracted</span>
+<span class="sd">    interproIDs: list</span>
+<span class="sd">        A list of all protein domain InterPro IDs that were found within the dataset</span>
+<span class="sd">    protsOI: list</span>
+<span class="sd">        The UniProt IDs for the proteins found within the dataset</span>
+<span class="sd">    ngrams: list</span>
+<span class="sd">        The extracted domain n-grams</span>
+<span class="sd">    collapsed_ngrams: list</span>
+<span class="sd">        The domain n-grams which were collapsed into other n-grams which represent the set of proteins</span>
+<span class="sd">    adj: pandas DataFrame</span>
+<span class="sd">        The adjacency matrix for the n-gram network for the DANSy analysis</span>
+<span class="sd">    interpro2uniprot: dict</span>
+<span class="sd">        The keys of InterPro IDs with values of a list of UniProt IDs that have the InterPro ID</span>
+<span class="sd">    min_arch: int (Default: 1)</span>
+<span class="sd">        The minimum number of domain architectures for an n-gram to be retained.</span>
+<span class="sd">    max_node_len: int</span>
+<span class="sd">        The maximum n-gram length that will be retained during the collapsing step to represent n-grams sharing the same set of proteins. This will not be larger than n (Default of 10).</span>
+<span class="sd">    collapse: bool</span>
+<span class="sd">        Whether the n-grams were collapsed</span>
+<span class="sd">    readable_flag: bool</span>
+<span class="sd">        Whether the n-grams are human-legible</span>
+<span class="sd">    verbose: bool</span>
+<span class="sd">        Whether progress statements are to be printed during calculations</span>
+<span class="sd">    network_params: dict</span>
+<span class="sd">        Key-value pairs of acceptable networkx drawing parameters</span>
 <span class="sd">    &#39;&#39;&#39;</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">protsOI</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">ref</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span><span class="n">n</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span><span class="n">interproIDs</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         
@@ -176,7 +209,7 @@
         
         <span class="c1"># Import the complete proteome reference file if no reference file has been specified.</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ref</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">ref_data</span><span class="p">,</span><span class="n">_</span> <span class="o">=</span> <span class="n">generateCompleteProteome</span><span class="o">.</span><span class="n">import_proteome_files</span><span class="p">()</span>
+            <span class="n">ref_data</span> <span class="o">=</span> <span class="n">helper</span><span class="o">.</span><span class="n">import_proteome_files</span><span class="p">()</span>
         
         <span class="c1"># Ensure the reference data is a dataframe and not just the string to the reference file.</span>
         <span class="k">else</span><span class="p">:</span>
@@ -269,7 +302,17 @@
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ref</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
             <span class="n">ref_df</span> <span class="o">=</span> <span class="n">ngramUtilities</span><span class="o">.</span><span class="n">import_reference_file</span><span class="p">(</span><span class="n">ref</span><span class="p">)</span>
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ref</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">):</span>
-            <span class="n">ref_df</span> <span class="o">=</span> <span class="n">ref</span>
+            
+            <span class="c1"># Check that the reference file has the necessary information for generating the n-gram network</span>
+            <span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Interpro Domains&#39;</span><span class="p">,</span> <span class="s1">&#39;Interpro Domain Architecture IDs&#39;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">columns</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="ow">in</span> <span class="n">ref</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span> <span class="c1"># Check if the IDs version of the domain architecture are present</span>
+                <span class="n">ref_df</span> <span class="o">=</span> <span class="n">ref</span>
+            <span class="k">elif</span> <span class="n">columns</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">in</span> <span class="n">ref</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+                <span class="n">ref</span><span class="p">[</span><span class="s1">&#39;Interpro Domain Architecture IDs&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ref</span><span class="p">[</span><span class="s1">&#39;Interpro Domains&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">create_arch_ids</span><span class="p">)</span>
+                <span class="n">ref_df</span> <span class="o">=</span> <span class="n">ref</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">DomainArchError</span><span class="p">(</span><span class="s1">&#39;Interpro Domain Architecture Information is missing. &#39;</span><span class="p">)</span>
+
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;Reference File is not correct&#39;</span><span class="p">)</span>
         
@@ -548,6 +591,34 @@
 </div>
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">create_arch_ids</span><span class="p">(</span><span class="n">arch</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    This takes the architectures returned from the InterPro module of CoDIAC, which follows the format Name:InterPro_ID:Start:Stop for each domain separated by a semicolon and creates the full architecture with only the IDs seperated by a pipe (|).</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">        - arch: str</span>
+<span class="sd">            The full domain architecture string containing all the domain information</span>
+<span class="sd">    </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">        - arch_id: str</span>
+<span class="sd">            The abbreviated domain architecture of only InterPro IDs</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">arch_list</span> <span class="o">=</span> <span class="n">arch</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;;&#39;</span><span class="p">)</span>
+        <span class="n">ids_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">arch_list</span><span class="p">]</span>
+        <span class="n">arch_id</span> <span class="o">=</span> <span class="s1">&#39;|&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">ids_list</span><span class="p">)</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">DomainArchError</span><span class="p">(</span><span class="s1">&#39;The domain architecture information was incorrectly formatted.&#39;</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">arch_id</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">DomainArchError</span><span class="p">(</span><span class="ne">TypeError</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Custom error for domain architectures that are not properly formatted or missing.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">pass</span>
 </pre></div>
 
            </div>

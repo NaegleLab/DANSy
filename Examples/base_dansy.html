@@ -21,8 +21,8 @@
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Dependencies" href="../Dependencies.html" />
-    <link rel="prev" title="Examples" href="Examples.html" /> 
+    <link rel="next" title="Performing deDANSy on an RNA-sequencing dataset (Shimpi &amp; Tan et al. 2021)" href="deDANSy.html" />
+    <link rel="prev" title="Configuring your DANSy workspace" href="setting_up_dansy.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -46,22 +46,27 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
-<li class="toctree-l1 current"><a class="reference internal" href="Examples.html">Examples</a><ul class="current">
-<li class="toctree-l2 current"><a class="reference internal" href="Examples.html#base-dansy-analysis">Base DANSy Analysis</a><ul class="current">
-<li class="toctree-l3 current"><a class="current reference internal" href="#">Base DANSy Analysis</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#DANSy-Analysis-on-a-subset-of-proteins-of-interest">DANSy Analysis on a subset of proteins of interest</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#Useful-DANSy-attributes-and-methods-for-additional-analysis">Useful DANSy attributes and methods for additional analysis</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#Generating-a-DANSy-without-the-collapsing-step">Generating a DANSy without the collapsing step</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Examples.html#configuring-the-dansy-workspace">Configuring the DANSy workspace</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="Examples.html#base-dansy-analysis">Base DANSy Analysis</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Base DANSy Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#DANSy-Analysis-on-a-subset-of-proteins-of-interest">DANSy Analysis on a subset of proteins of interest</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Useful-DANSy-attributes-and-methods-for-additional-analysis">Useful DANSy attributes and methods for additional analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Generating-a-DANSy-without-the-collapsing-step">Generating a DANSy without the collapsing step</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="Examples.html#differential-expression-dansy-dedansy-analysis">Differential Expression DANSy (deDANSy) Analysis</a></li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="Examples.html#differential-expression-dansy-dedansy-analysis">Differential Expression DANSy (deDANSy) Analysis</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../Dependencies.html">Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Installation.html">Installation</a></li>
 </ul>
+<p class="caption" role="heading"><span class="caption-text">Reference:</span></p>
 <ul>
+<li class="toctree-l1"><a class="reference internal" href="../config.html">The config Module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../dansy.html">DANSy</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../dansy.html#supporting-functions">Supporting Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dansy.html#dansy-supporting-functions">DANSy Supporting Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dedansy.html">deDANSy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dedansy.html#dedansy-supporting-functions">deDANSy Supporting Functions</a></li>
 </ul>
 
         </div>
@@ -105,16 +110,16 @@
 </div>
 <p>First need to import a reference file that contains all the protein information. Here, we import a reference file for the entire proteome.</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ref</span><span class="p">,</span><span class="n">_</span> <span class="o">=</span> <span class="n">dansy</span><span class="o">.</span><span class="n">import_proteome_files</span><span class="p">(</span><span class="n">ref_file_dir</span><span class="o">=</span><span class="s1">&#39;../&#39;</span><span class="p">,</span> <span class="n">reference_file_suffix</span><span class="o">=</span><span class="s1">&#39;Jan7_2025.csv&#39;</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ref</span> <span class="o">=</span> <span class="n">dansy</span><span class="o">.</span><span class="n">import_proteome_files</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
 <p>Now building the DANSy object and showing the resulting network.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[23]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">my_dansy</span> <span class="o">=</span> <span class="n">dansy</span><span class="o">.</span><span class="n">dansy</span><span class="p">(</span><span class="n">ref</span><span class="o">=</span><span class="n">ref</span><span class="p">)</span>
@@ -146,7 +151,7 @@ Finished building adjacency.
 <p>If we want to focus on a small subset of proteins rather than the whole proteome, we can provide a list of UniProt IDs in addition to the reference file.</p>
 <p>For example, if we want to visualize the domain n-grams of the ERBB, FGFR, EPHA, and EPHB receptor tyrosine kinase families:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">rtks</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;P00533&#39;</span><span class="p">,</span><span class="s1">&#39;P04626&#39;</span><span class="p">,</span><span class="s1">&#39;P21860&#39;</span><span class="p">,</span><span class="s1">&#39;Q15303&#39;</span><span class="p">,</span> <span class="c1"># ERBB family</span>
@@ -190,24 +195,36 @@ Finished building adjacency.
 </div>
 <p>We can then extract all the n-grams by calling the ngram attribute</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">rtk_dansy</span><span class="o">.</span><span class="n">collapsed_ngrams</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">rtk_dansy</span><span class="o">.</span><span class="n">ngrams</span>
 </pre></div>
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-52
+[&#39;IPR000719&#39;,
+ &#39;IPR001090&#39;,
+ &#39;IPR003961|IPR027936|IPR000719|IPR001660&#39;,
+ &#39;IPR003961|IPR003961|IPR027936|IPR000719|IPR001660&#39;,
+ &#39;IPR001090|IPR011641|IPR003961|IPR003961|IPR027936|IPR000719|IPR001660&#39;,
+ &#39;IPR001090|IPR003961&#39;,
+ &#39;IPR000494|IPR006211|IPR000494|IPR032778&#39;,
+ &#39;IPR003598|IPR003598|IPR003598|IPR000719&#39;,
+ &#39;IPR000494|IPR006211|IPR000494|IPR032778|IPR049328|IPR000719&#39;,
+ &#39;IPR001090|IPR003961|IPR003961|IPR027936|IPR000719|IPR001660&#39;,
+ &#39;IPR001090|IPR003961|IPR027936|IPR000719|IPR001660&#39;,
+ &#39;IPR000494|IPR006211|IPR000494|IPR032778|IPR000719&#39;]
 </pre></div></div>
 </div>
 <p>However, these can be a little difficult to parse since the default values returned use the InterPro IDs rather than a human legible form. To convert these to the domain names we can use the return_legible_ngram method.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[35]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">rtk_dansy</span><span class="o">.</span><span class="n">return_legible_ngram</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">rtk_dansy</span><span class="o">.</span><span class="n">ngrams</span><span class="p">]</span>
@@ -215,7 +232,7 @@ Finished building adjacency.
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[35]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
 </pre></div>
 </div>
 <div class="output_area docutils container">
@@ -228,8 +245,8 @@ Finished building adjacency.
  &#39;Ephrin_rcpt_lig-bd_dom|FN3_dom&#39;,
  &#39;Rcpt_L-dom|Furin-like_Cys-rich_dom|Rcpt_L-dom|GF_recep_IV&#39;,
  &#39;Ig_sub2|Ig_sub2|Ig_sub2|Prot_kinase_dom&#39;,
- &#39;Ephrin_rcpt_lig-bd_dom|FN3_dom|FN3_dom|Eph_TM|Prot_kinase_dom|SAM&#39;,
  &#39;Rcpt_L-dom|Furin-like_Cys-rich_dom|Rcpt_L-dom|GF_recep_IV|TM_ErbB1|Prot_kinase_dom&#39;,
+ &#39;Ephrin_rcpt_lig-bd_dom|FN3_dom|FN3_dom|Eph_TM|Prot_kinase_dom|SAM&#39;,
  &#39;Ephrin_rcpt_lig-bd_dom|FN3_dom|Eph_TM|Prot_kinase_dom|SAM&#39;,
  &#39;Rcpt_L-dom|Furin-like_Cys-rich_dom|Rcpt_L-dom|GF_recep_IV|Prot_kinase_dom&#39;]
 </pre></div></div>
@@ -238,7 +255,7 @@ Finished building adjacency.
 <section id="Useful-DANSy-attributes-and-methods-for-additional-analysis">
 <h1>Useful DANSy attributes and methods for additional analysis<a class="headerlink" href="#Useful-DANSy-attributes-and-methods-for-additional-analysis" title="Link to this heading"></a></h1>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[51]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># The G attribute is a Graph object from the networkx package so any analysis that can be performed with the a networkx Graph can be used on the dansy.G</span>
@@ -253,7 +270,7 @@ Finished building adjacency.
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[38]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># To get a summary of all the DANSy analysis</span>
@@ -262,7 +279,7 @@ Finished building adjacency.
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[38]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
 </pre></div>
 </div>
 <div class="output_area rendered_html docutils container">
@@ -325,7 +342,7 @@ Finished building adjacency.
 </div></div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[39]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Getting protein information for a specific protein that was used for the analysis</span>
@@ -334,7 +351,7 @@ Finished building adjacency.
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[39]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
 </pre></div>
 </div>
 <div class="output_area rendered_html docutils container">
@@ -370,7 +387,7 @@ Finished building adjacency.
   </thead>
   <tbody>
     <tr>
-      <th>13158</th>
+      <th>2839</th>
       <td>P00533</td>
       <td>EGFR</td>
       <td>Homo sapiens</td>
@@ -387,7 +404,7 @@ Finished building adjacency.
 </div></div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[42]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Getting protein information for all proteins that have a specific ngram (e.g. &#39;FN3_dom|Eph_TM|Prot_kinase_dom|SAM&#39;:&#39;IPR003961|IPR027936|IPR000719|IPR001660&#39;)</span>
@@ -396,7 +413,7 @@ Finished building adjacency.
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[42]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
 </pre></div>
 </div>
 <div class="output_area rendered_html docutils container">
@@ -432,20 +449,20 @@ Finished building adjacency.
   </thead>
   <tbody>
     <tr>
-      <th>267</th>
-      <td>P29317</td>
-      <td>EPHA2</td>
+      <th>501</th>
+      <td>P29323</td>
+      <td>EPHB2</td>
       <td>Homo sapiens</td>
-      <td>Eph LBD:28:206;Fibronectin type-III 1:328:432;...</td>
-      <td>MELQAARACFALLWGCALAAAAAAQGKEVVLLDFAAAGGELGWLTH...</td>
-      <td>1MQB;2E8N;2K9Y;2KSO;2X10;2X11;3C8X;3CZU;3FL7;3...</td>
+      <td>Eph LBD:20:202;Fibronectin type-III 1:324:434;...</td>
+      <td>MALRRLGAALLLLPLLAAVEETLMDSTTATAELGWMVHPPSGWEEV...</td>
+      <td>1B4F;1F0M;2QBX;3ZFM;8EBL</td>
       <td>Eph LBD|Fibronectin type-III 1|Fibronectin typ...</td>
-      <td>Ephrin_rcpt_lig-bd_dom:IPR001090:28:206;FN3_do...</td>
-      <td>Ephrin_rcpt_lig-bd_dom|FN3_dom|FN3_dom|Eph_TM|...</td>
-      <td>IPR001090|IPR003961|IPR003961|IPR027936|IPR000...</td>
+      <td>Ephrin_rcpt_lig-bd_dom:IPR001090:20:202;Tyr-ki...</td>
+      <td>Ephrin_rcpt_lig-bd_dom|Tyr-kin_ephrin_A/B_rcpt...</td>
+      <td>IPR001090|IPR011641|IPR003961|IPR003961|IPR027...</td>
     </tr>
     <tr>
-      <th>509</th>
+      <th>834</th>
       <td>Q15375</td>
       <td>EPHA7</td>
       <td>Homo sapiens</td>
@@ -458,7 +475,7 @@ Finished building adjacency.
       <td>IPR001090|IPR011641|IPR003961|IPR003961|IPR027...</td>
     </tr>
     <tr>
-      <th>4248</th>
+      <th>2298</th>
       <td>P54762</td>
       <td>EPHB1</td>
       <td>Homo sapiens</td>
@@ -471,7 +488,7 @@ Finished building adjacency.
       <td>IPR001090|IPR003961|IPR027936|IPR000719|IPR001660</td>
     </tr>
     <tr>
-      <th>5230</th>
+      <th>3227</th>
       <td>P54760</td>
       <td>EPHB4</td>
       <td>Homo sapiens</td>
@@ -484,33 +501,7 @@ Finished building adjacency.
       <td>IPR001090|IPR011641|IPR003961|IPR003961|IPR027...</td>
     </tr>
     <tr>
-      <th>6258</th>
-      <td>P29323</td>
-      <td>EPHB2</td>
-      <td>Homo sapiens</td>
-      <td>Eph LBD:20:202;Fibronectin type-III 1:324:434;...</td>
-      <td>MALRRLGAALLLLPLLAAVEETLMDSTTATAELGWMVHPPSGWEEV...</td>
-      <td>1B4F;1F0M;2QBX;3ZFM</td>
-      <td>Eph LBD|Fibronectin type-III 1|Fibronectin typ...</td>
-      <td>Ephrin_rcpt_lig-bd_dom:IPR001090:20:202;Tyr-ki...</td>
-      <td>Ephrin_rcpt_lig-bd_dom|Tyr-kin_ephrin_A/B_rcpt...</td>
-      <td>IPR001090|IPR011641|IPR003961|IPR003961|IPR027...</td>
-    </tr>
-    <tr>
-      <th>8748</th>
-      <td>P54764</td>
-      <td>EPHA4</td>
-      <td>Homo sapiens</td>
-      <td>Eph LBD:30:209;Fibronectin type-III 1:328:439;...</td>
-      <td>MAGIFYFALFSCLFGICDAVTGSRVYPANEVTLLDSRSVQGELGWI...</td>
-      <td>2LW8;2WO1;2WO2;2WO3;3CKH;3GXU;4BK4;4BK5;4BKA;4...</td>
-      <td>Eph LBD|Fibronectin type-III 1|Fibronectin typ...</td>
-      <td>Ephrin_rcpt_lig-bd_dom:IPR001090:30:209;Tyr-ki...</td>
-      <td>Ephrin_rcpt_lig-bd_dom|Tyr-kin_ephrin_A/B_rcpt...</td>
-      <td>IPR001090|IPR011641|IPR003961|IPR003961|IPR027...</td>
-    </tr>
-    <tr>
-      <th>9669</th>
+      <th>3569</th>
       <td>P54756</td>
       <td>EPHA5</td>
       <td>Homo sapiens</td>
@@ -523,46 +514,20 @@ Finished building adjacency.
       <td>IPR001090|IPR003961|IPR003961|IPR027936|IPR000...</td>
     </tr>
     <tr>
-      <th>11351</th>
-      <td>Q9UF33</td>
-      <td>EPHA6</td>
+      <th>4409</th>
+      <td>P54764</td>
+      <td>EPHA4</td>
       <td>Homo sapiens</td>
-      <td>Eph LBD:34:212;Fibronectin type-III 1:331:441;...</td>
-      <td>MGGCEVREFLLQFGFFLPLLTAWPGDCSHVSNNQVVLLDTTTVLGE...</td>
-      <td></td>
+      <td>Eph LBD:30:209;Fibronectin type-III 1:328:439;...</td>
+      <td>MAGIFYFALFSCLFGICDAVTGSRVYPANEVTLLDSRSVQGELGWI...</td>
+      <td>2LW8;2WO1;2WO2;2WO3;3CKH;3GXU;4BK4;4BK5;4BKA;4...</td>
       <td>Eph LBD|Fibronectin type-III 1|Fibronectin typ...</td>
-      <td>Ephrin_rcpt_lig-bd_dom:IPR001090:34:212;Tyr-ki...</td>
+      <td>Ephrin_rcpt_lig-bd_dom:IPR001090:30:209;Tyr-ki...</td>
       <td>Ephrin_rcpt_lig-bd_dom|Tyr-kin_ephrin_A/B_rcpt...</td>
       <td>IPR001090|IPR011641|IPR003961|IPR003961|IPR027...</td>
     </tr>
     <tr>
-      <th>11849</th>
-      <td>P54753</td>
-      <td>EPHB3</td>
-      <td>Homo sapiens</td>
-      <td>Eph LBD:39:217;Fibronectin type-III 1:339:451;...</td>
-      <td>MARARPPPPPSPPPGLLPLLPPLLLLPLLLLPAGCRALEETLMDTK...</td>
-      <td>3P1I;3ZFY;5L6O;5L6P</td>
-      <td>Eph LBD|Fibronectin type-III 1|Fibronectin typ...</td>
-      <td>Ephrin_rcpt_lig-bd_dom:IPR001090:39:217;Tyr-ki...</td>
-      <td>Ephrin_rcpt_lig-bd_dom|Tyr-kin_ephrin_A/B_rcpt...</td>
-      <td>IPR001090|IPR011641|IPR003961|IPR003961|IPR027...</td>
-    </tr>
-    <tr>
-      <th>12914</th>
-      <td>P21709</td>
-      <td>EPHA1</td>
-      <td>Homo sapiens</td>
-      <td>Eph LBD:27:209;Fibronectin type-III 1:332:445;...</td>
-      <td>MERRWPLGLGLVLLLCAPLPPGARAKEVTLMDTSKAQGELGWLLDP...</td>
-      <td>2K1K;2K1L;3HIL;3KKA</td>
-      <td>Eph LBD|Fibronectin type-III 1|Fibronectin typ...</td>
-      <td>Ephrin_rcpt_lig-bd_dom:IPR001090:27:209;Tyr-ki...</td>
-      <td>Ephrin_rcpt_lig-bd_dom|Tyr-kin_ephrin_A/B_rcpt...</td>
-      <td>IPR001090|IPR011641|IPR003961|IPR003961|IPR027...</td>
-    </tr>
-    <tr>
-      <th>14835</th>
+      <th>6629</th>
       <td>P29322</td>
       <td>EPHA8</td>
       <td>Homo sapiens</td>
@@ -575,7 +540,20 @@ Finished building adjacency.
       <td>IPR001090|IPR003961|IPR003961|IPR027936|IPR000...</td>
     </tr>
     <tr>
-      <th>15565</th>
+      <th>7772</th>
+      <td>P54753</td>
+      <td>EPHB3</td>
+      <td>Homo sapiens</td>
+      <td>Eph LBD:39:217;Fibronectin type-III 1:339:451;...</td>
+      <td>MARARPPPPPSPPPGLLPLLPPLLLLPLLLLPAGCRALEETLMDTK...</td>
+      <td>3P1I;3ZFY;5L6O;5L6P</td>
+      <td>Eph LBD|Fibronectin type-III 1|Fibronectin typ...</td>
+      <td>Ephrin_rcpt_lig-bd_dom:IPR001090:39:217;Tyr-ki...</td>
+      <td>Ephrin_rcpt_lig-bd_dom|Tyr-kin_ephrin_A/B_rcpt...</td>
+      <td>IPR001090|IPR011641|IPR003961|IPR003961|IPR027...</td>
+    </tr>
+    <tr>
+      <th>12235</th>
       <td>P29320</td>
       <td>EPHA3</td>
       <td>Homo sapiens</td>
@@ -584,6 +562,45 @@ Finished building adjacency.
       <td>2GSF;2QO2;2QO7;2QO9;2QOB;2QOC;2QOD;2QOF;2QOI;2...</td>
       <td>Eph LBD|Fibronectin type-III 1|Fibronectin typ...</td>
       <td>Ephrin_rcpt_lig-bd_dom:IPR001090:29:207;Tyr-ki...</td>
+      <td>Ephrin_rcpt_lig-bd_dom|Tyr-kin_ephrin_A/B_rcpt...</td>
+      <td>IPR001090|IPR011641|IPR003961|IPR003961|IPR027...</td>
+    </tr>
+    <tr>
+      <th>13622</th>
+      <td>P29317</td>
+      <td>EPHA2</td>
+      <td>Homo sapiens</td>
+      <td>Eph LBD:28:206;Fibronectin type-III 1:328:432;...</td>
+      <td>MELQAARACFALLWGCALAAAAAAQGKEVVLLDFAAAGGELGWLTH...</td>
+      <td>1MQB;2E8N;2K9Y;2KSO;2X10;2X11;3C8X;3CZU;3FL7;3...</td>
+      <td>Eph LBD|Fibronectin type-III 1|Fibronectin typ...</td>
+      <td>Ephrin_rcpt_lig-bd_dom:IPR001090:28:206;FN3_do...</td>
+      <td>Ephrin_rcpt_lig-bd_dom|FN3_dom|FN3_dom|Eph_TM|...</td>
+      <td>IPR001090|IPR003961|IPR003961|IPR027936|IPR000...</td>
+    </tr>
+    <tr>
+      <th>17323</th>
+      <td>Q9UF33</td>
+      <td>EPHA6</td>
+      <td>Homo sapiens</td>
+      <td>Eph LBD:34:212;Fibronectin type-III 1:331:441;...</td>
+      <td>MGGCEVREFLLQFGFFLPLLTAWPGDCSHVSNNQVVLLDTTTVLGE...</td>
+      <td></td>
+      <td>Eph LBD|Fibronectin type-III 1|Fibronectin typ...</td>
+      <td>Ephrin_rcpt_lig-bd_dom:IPR001090:34:212;Tyr-ki...</td>
+      <td>Ephrin_rcpt_lig-bd_dom|Tyr-kin_ephrin_A/B_rcpt...</td>
+      <td>IPR001090|IPR011641|IPR003961|IPR003961|IPR027...</td>
+    </tr>
+    <tr>
+      <th>17777</th>
+      <td>P21709</td>
+      <td>EPHA1</td>
+      <td>Homo sapiens</td>
+      <td>Eph LBD:27:209;Fibronectin type-III 1:332:445;...</td>
+      <td>MERRWPLGLGLVLLLCAPLPPGARAKEVTLMDTSKAQGELGWLLDP...</td>
+      <td>2K1K;2K1L;3HIL;3KKA</td>
+      <td>Eph LBD|Fibronectin type-III 1|Fibronectin typ...</td>
+      <td>Ephrin_rcpt_lig-bd_dom:IPR001090:27:209;Tyr-ki...</td>
       <td>Ephrin_rcpt_lig-bd_dom|Tyr-kin_ephrin_A/B_rcpt...</td>
       <td>IPR001090|IPR011641|IPR003961|IPR003961|IPR027...</td>
     </tr>
@@ -596,7 +613,7 @@ Finished building adjacency.
 <h1>Generating a DANSy without the collapsing step<a class="headerlink" href="#Generating-a-DANSy-without-the-collapsing-step" title="Link to this heading"></a></h1>
 <p>A key step in DANSy is collapsing n-grams that are non-redundant, or in other words n-grams that represent the same family of proteins. This allows only domain n-grams that represent the maximum information in the network to be displayed. We can omit the collapsing step during the dansy object creation, but recommend only considering this step for small protein collections (&lt;50) because the network can become difficult to understand otherwise.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[43]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">rtk_dansy_uncollapsed</span> <span class="o">=</span> <span class="n">dansy</span><span class="o">.</span><span class="n">dansy</span><span class="p">(</span><span class="n">protsOI</span><span class="o">=</span><span class="n">rtks</span><span class="p">,</span> <span class="n">ref</span><span class="o">=</span><span class="n">ref</span><span class="p">,</span> <span class="n">collapse</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
@@ -615,7 +632,7 @@ Finished building adjacency.
 </pre></div></div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[44]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pos</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">spring_layout</span><span class="p">(</span><span class="n">rtk_dansy_uncollapsed</span><span class="o">.</span><span class="n">G</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">123</span><span class="p">)</span>
@@ -639,7 +656,7 @@ Finished building adjacency.
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[47]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">rtk_dansy_uncollapsed</span><span class="o">.</span><span class="n">summary</span><span class="p">(</span><span class="n">detailed</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -647,7 +664,7 @@ Finished building adjacency.
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[47]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
 </pre></div>
 </div>
 <div class="output_area rendered_html docutils container">
@@ -715,8 +732,8 @@ Finished building adjacency.
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="Examples.html" class="btn btn-neutral float-left" title="Examples" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="../Dependencies.html" class="btn btn-neutral float-right" title="Dependencies" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="setting_up_dansy.html" class="btn btn-neutral float-left" title="Configuring your DANSy workspace" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="deDANSy.html" class="btn btn-neutral float-right" title="Performing deDANSy on an RNA-sequencing dataset (Shimpi &amp; Tan et al. 2021)" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

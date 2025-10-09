@@ -1,6 +1,15 @@
 Examples
 =========================================
 
+Configuring the DANSy workspace
+=========================================
+For DANSy, we recommend having a whole proteome reference file within a central data directory that DANSy will use as a default reference file for any analysis. We provide an example that includes how to configure the workspace and create a reference file for the human protome using `CoDIAC <codiac_>`_.
+
+.. toctree::
+   :maxdepth: 2
+   
+   setting_up_dansy.ipynb
+
 Base DANSy Analysis
 =========================================
 
@@ -29,3 +38,4 @@ Here, we provide example analyses that uses either RNA-sequencing results from `
 .. _networkx: https://networkx.org/
 .. _shimpi_data: https://pmc.ncbi.nlm.nih.gov/articles/PMC10238572/
 .. _chen_data: https://pmc.ncbi.nlm.nih.gov/articles/PMC10762338/
+.. _codiac: https://github.com/NaegleLab/CoDIAC

@@ -21,7 +21,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="deDANSy" href="dedansy.html" />
-    <link rel="prev" title="Overview" href="Overview.html" /> 
+    <link rel="prev" title="The config Module" href="config.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -44,35 +44,22 @@
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
-<ul class="current">
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="Overview.html">Overview</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">DANSy</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#dansy.dansy"><code class="docutils literal notranslate"><span class="pre">dansy</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#dansy.dansy.draw_network"><code class="docutils literal notranslate"><span class="pre">dansy.draw_network()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#dansy.dansy.ngram_protein_count"><code class="docutils literal notranslate"><span class="pre">dansy.ngram_protein_count()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#dansy.dansy.retrieve_longest_arch"><code class="docutils literal notranslate"><span class="pre">dansy.retrieve_longest_arch()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#dansy.dansy.retrieve_protein_info"><code class="docutils literal notranslate"><span class="pre">dansy.retrieve_protein_info()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#dansy.dansy.retrieve_random_ids"><code class="docutils literal notranslate"><span class="pre">dansy.retrieve_random_ids()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#dansy.dansy.summary"><code class="docutils literal notranslate"><span class="pre">dansy.summary()</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="#dansy-supporting-functions">DANSy Supporting Functions</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#dansy.generateCompleteProteome.import_proteome_files"><code class="docutils literal notranslate"><span class="pre">import_proteome_files()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="dedansy.html">deDANSy</a></li>
-<li class="toctree-l1"><a class="reference internal" href="dedansy.html#dedansy-supporting-functions">deDANSy Supporting Functions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Examples/Examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Examples/Examples.html#configuring-the-dansy-workspace">Configuring the DANSy workspace</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Examples/Examples.html#base-dansy-analysis">Base DANSy Analysis</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Examples/Examples.html#differential-expression-dansy-dedansy-analysis">Differential Expression DANSy (deDANSy) Analysis</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Dependencies.html">Dependencies</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Installation.html">Installation</a></li>
 </ul>
+<p class="caption" role="heading"><span class="caption-text">Reference:</span></p>
 <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="config.html">The config Module</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">DANSy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="#dansy-supporting-functions">DANSy Supporting Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dedansy.html">deDANSy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dedansy.html#dedansy-supporting-functions">deDANSy Supporting Functions</a></li>
 </ul>
 
         </div>
@@ -116,6 +103,40 @@
 <dt><strong>n</strong><span class="classifier">int (Optional)</span></dt><dd><p>N-gram lengths to be extracted</p>
 </dd>
 <dt><strong>interproIDs</strong><span class="classifier">list (Optional)</span></dt><dd><p>List of Interpro IDs to extract n-grams. If omitted, all n-grams will be extracted.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Attributes<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>G: networkx Graph</strong></dt><dd><p>The network graph representation of the DANSy n-gram network</p>
+</dd>
+<dt><strong>ref: pandas DataFrame</strong></dt><dd><p>The reference file information for the proteins within the dataset</p>
+</dd>
+<dt><strong>n: int</strong></dt><dd><p>The maximum length of n-grams being extracted</p>
+</dd>
+<dt><strong>interproIDs: list</strong></dt><dd><p>A list of all protein domain InterPro IDs that were found within the dataset</p>
+</dd>
+<dt><strong>protsOI: list</strong></dt><dd><p>The UniProt IDs for the proteins found within the dataset</p>
+</dd>
+<dt><strong>ngrams: list</strong></dt><dd><p>The extracted domain n-grams</p>
+</dd>
+<dt><strong>collapsed_ngrams: list</strong></dt><dd><p>The domain n-grams which were collapsed into other n-grams which represent the set of proteins</p>
+</dd>
+<dt><strong>adj: pandas DataFrame</strong></dt><dd><p>The adjacency matrix for the n-gram network for the DANSy analysis</p>
+</dd>
+<dt><strong>interpro2uniprot: dict</strong></dt><dd><p>The keys of InterPro IDs with values of a list of UniProt IDs that have the InterPro ID</p>
+</dd>
+<dt><strong>min_arch: int (Default: 1)</strong></dt><dd><p>The minimum number of domain architectures for an n-gram to be retained.</p>
+</dd>
+<dt><strong>max_node_len: int</strong></dt><dd><p>The maximum n-gram length that will be retained during the collapsing step to represent n-grams sharing the same set of proteins. This will not be larger than n (Default of 10).</p>
+</dd>
+<dt><strong>collapse: bool</strong></dt><dd><p>Whether the n-grams were collapsed</p>
+</dd>
+<dt><strong>readable_flag: bool</strong></dt><dd><p>Whether the n-grams are human-legible</p>
+</dd>
+<dt><strong>verbose: bool</strong></dt><dd><p>Whether progress statements are to be printed during calculations</p>
+</dd>
+<dt><strong>network_params: dict</strong></dt><dd><p>Key-value pairs of acceptable networkx drawing parameters</p>
 </dd>
 </dl>
 </dd>
@@ -167,9 +188,9 @@
 <section id="dansy-supporting-functions">
 <h1>DANSy Supporting Functions<a class="headerlink" href="#dansy-supporting-functions" title="Link to this heading"></a></h1>
 <p>These are functions integrated into DANSy, which are not necessary to call, but can aid in initial setup of a DANSy object.</p>
-<span class="target" id="module-dansy.generateCompleteProteome"></span><dl class="py function">
-<dt class="sig sig-object py" id="dansy.generateCompleteProteome.import_proteome_files">
-<span class="sig-prename descclassname"><span class="pre">dansy.generateCompleteProteome.</span></span><span class="sig-name descname"><span class="pre">import_proteome_files</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reference_file_suffix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ref_file_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dansy/generateCompleteProteome.html#import_proteome_files"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dansy.generateCompleteProteome.import_proteome_files" title="Link to this definition"></a></dt>
+<span class="target" id="module-dansy.helper"></span><dl class="py function">
+<dt class="sig sig-object py" id="dansy.helper.import_proteome_files">
+<span class="sig-prename descclassname"><span class="pre">dansy.helper.</span></span><span class="sig-name descname"><span class="pre">import_proteome_files</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ref_file_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'./DANSY_DATA/'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ref_file_suffix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'20250512.csv'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dansy/helper.html#import_proteome_files"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dansy.helper.import_proteome_files" title="Link to this definition"></a></dt>
 <dd><p>Imports the files that are used for the generation of the reference dataframe of the complete canonical proteome.</p>
 <p>Note: Need to adjust this so it looks in only one folder from here on out.</p>
 </dd></dl>
@@ -180,7 +201,7 @@
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="Overview.html" class="btn btn-neutral float-left" title="Overview" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="config.html" class="btn btn-neutral float-left" title="The config Module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="dedansy.html" class="btn btn-neutral float-right" title="deDANSy" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 

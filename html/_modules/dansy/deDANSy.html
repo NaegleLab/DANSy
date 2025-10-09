@@ -44,18 +44,19 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../Overview.html">Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../Examples/Examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Examples/Examples.html#configuring-the-dansy-workspace">Configuring the DANSy workspace</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../Examples/Examples.html#base-dansy-analysis">Base DANSy Analysis</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../Examples/Examples.html#differential-expression-dansy-dedansy-analysis">Differential Expression DANSy (deDANSy) Analysis</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../Dependencies.html">Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Installation.html">Installation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../config.html">The config Module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../dansy.html">DANSy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../dansy.html#dansy-supporting-functions">DANSy Supporting Functions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../dedansy.html">deDANSy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../dedansy.html#dedansy-supporting-functions">deDANSy Supporting Functions</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../Installation.html">Installation</a></li>
-</ul>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../../dansy.html">DANSy</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../dansy.html#dansy-supporting-functions">DANSy Supporting Functions</a></li>
 </ul>
 
         </div>
@@ -93,7 +94,6 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">scipy.stats</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">stats</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">dansy.ngramUtilities</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ngramUtilities</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">dansy.generateCompleteProteome</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">generateCompleteProteome</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">dansy.dedansy_algorithm</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">algorithm</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dansy.dansy</span><span class="w"> </span><span class="kn">import</span> <span class="n">dansy</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dansy.network_separation_helpers</span><span class="w"> </span><span class="kn">import</span> <span class="n">network_separation</span><span class="p">,</span><span class="n">build_network_reference_dict</span>
@@ -105,8 +105,111 @@
 <span class="k">class</span><span class="w"> </span><span class="nc">DEdansy</span><span class="p">(</span><span class="n">dansy</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">    A container class of multiple Domain n-gram networks related to a differentially expressed dataset that was generated using the DESeq analysis pipeline. This provides methods to analyze and contrast pairs of domain architecture subnetworks to understand changes in functional molecular ecosystems available to different conditions.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    dataset: pandas DataFrame</span>
+<span class="sd">        The expression dataset that contains the proteins of interest and expression values to designate differentially expressed genes/proteins</span>
+<span class="sd">    uniprot_ref: pandas DataFrame (Optional)</span>
+<span class="sd">        The base reference file that contains all the proteins of interest within the dataset. Note: It is recommended to include if multiple instances of a DEdansy object are being instantiated that share a common set of proteins.</span>
+<span class="sd">    n: int (Optional)</span>
+<span class="sd">        Length of n-grams to extract. Default is 10</span>
+<span class="sd">    id_conv: pandas DataFrame (Optional)</span>
+<span class="sd">        A dataframe with a column of UniProt IDs and a column for a IDs used in the expression dataset to help in converting</span>
+<span class="sd">    conv_cols: str (Optional)</span>
+<span class="sd">        The name of the column with IDs matching in the id_conv dataframe. Assumes the naming convention generated from pybiomart</span>
+<span class="sd">    data_ids: str (Optional)</span>
+<span class="sd">        The name of the column in the dataset dataframe for the IDs to be converted to UniProt IDs</span>
+<span class="sd">    penalty: &#39;dynamic&#39; or int (Optional)</span>
+<span class="sd">        The value or &#39;dynamic&#39; for the penalty during network separation calculations. </span>
+<span class="sd">    run_conversion: bool</span>
+<span class="sd">        Whether the dataset IDs have to be converted using a provided id_conv dataframe</span>
+<span class="sd">    kwargs</span>
+<span class="sd">        Additional keyword arguments for generating the DANSy network. See dansy.set_ngram_parameters for details acceptable values are reproduced below</span>
+<span class="sd">            - &#39;min_arch&#39;</span>
+<span class="sd">            - &#39;max_node_len&#39;</span>
+<span class="sd">            - &#39;collapse&#39;</span>
+<span class="sd">            - &#39;readable_flag&#39;</span>
+<span class="sd">            - &#39;verbose&#39;</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    -----------------</span>
+<span class="sd">    At Initialization</span>
+<span class="sd">    -----------------</span>
+<span class="sd">    dataset: pandas DataFrame</span>
+<span class="sd">        The expression dataset for DANSy analysis</span>
+<span class="sd">    ref: pandas DataFrame</span>
+<span class="sd">        The reference file information for the proteins within the dataset</span>
+<span class="sd">    n: int</span>
+<span class="sd">        The maximum length of n-grams being extracted</span>
+<span class="sd">    interproIDs: list</span>
+<span class="sd">        A list of all protein domain InterPro IDs that were found within the dataset</span>
+<span class="sd">    protsOI: list</span>
+<span class="sd">        The UniProt IDs for the proteins found within the dataset</span>
+<span class="sd">    ngrams: list</span>
+<span class="sd">        The extracted domain n-grams</span>
+<span class="sd">    collapsed_ngrams: list</span>
+<span class="sd">        The domain n-grams which were collapsed into other n-grams which represent the set of proteins</span>
+<span class="sd">    G: networkx Graph</span>
+<span class="sd">        The network graph representation of the DANSy n-gram network</span>
+<span class="sd">    adj: pandas DataFrame</span>
+<span class="sd">        The adjacency matrix for the n-gram network for the DANSy analysis</span>
+<span class="sd">    interpro2uniprot: dict</span>
+<span class="sd">        The keys of InterPro IDs with values of a list of UniProt IDs that have the InterPro ID</span>
+<span class="sd">    id_conversion_dict: dict</span>
+<span class="sd">        A dictionary containing the conversion of the provided gene/protein ID to a UniProt ID. If UniProt IDs were provided, returns a dict of UniProt to UniProt IDs.</span>
+<span class="sd">    data_id_cols: str</span>
+<span class="sd">        The ID column used in the dataset for conversion</span>
+<span class="sd">    network_params: dict</span>
+<span class="sd">        Key-value pairs of acceptable networkx drawing parameters</span>
+<span class="sd">    min_arch: int (Default: 1)</span>
+<span class="sd">        The minimum number of domain architectures for an n-gram to be retained.</span>
+<span class="sd">    max_node_len: int</span>
+<span class="sd">        The maximum n-gram length that will be retained during the collapsing step to represent n-grams sharing the same set of proteins. This will not be larger than n (Default of 10).</span>
+<span class="sd">    collapse: bool</span>
+<span class="sd">        Whether the n-grams were collapsed</span>
+<span class="sd">    readable_flag: bool</span>
+<span class="sd">        Whether the n-grams are human-legible</span>
+<span class="sd">    verbose: bool</span>
+<span class="sd">        Whether progress statements are to be printed during calculations</span>
+<span class="sd">    </span>
+<span class="sd">    --------------------------------------</span>
+<span class="sd">    After Establishing Comparison MetaData </span>
+<span class="sd">    --------------------------------------</span>
+<span class="sd">    comp_metadata: pandas DataFrame</span>
+<span class="sd">        The metadata information for comparisons of interest in the dataset</span>
+
+<span class="sd">    ----------------------</span>
+<span class="sd">    After DEG Calculations</span>
+<span class="sd">    ----------------------</span>
+<span class="sd">    up_DEGs/down_DEGs: list</span>
+<span class="sd">        List of UniProts that have were designated as up or down for a specific condition</span>
+<span class="sd">    up_ngrams/down_ngrams: list</span>
+<span class="sd">        The n-grams for either up- or down-regulated proteins/genes</span>
+<span class="sd">    alpha: float</span>
+<span class="sd">        The p-value cutoff for designating DEGs</span>
+<span class="sd">    fcthres: float</span>
+<span class="sd">        The fold-change cutoff for designating DEGs</span>
+<span class="sd">    pval_data_col: str</span>
+<span class="sd">        The column name in the datasetused for the p-value data for DEGs</span>
+<span class="sd">    fc_data_col: str</span>
+<span class="sd">        The column name in the dataset used for fold-change data for DEGs</span>
+<span class="sd">    </span>
+<span class="sd">    -----------------------------</span>
+<span class="sd">    After creating deDANSy scores</span>
+<span class="sd">    -----------------------------</span>
+<span class="sd">    scores: pandas DataFrame</span>
+<span class="sd">        The scores, p-values, and FPR values for the deDANSy Separation and Distinction scores for the comparisons</span>
+<span class="sd">    raw_dists: pandas DataFrame</span>
+<span class="sd">        The raw distribution of values for each score</span>
+<span class="sd">    fpr_dists: pandas DataFrame</span>
+<span class="sd">        The raw distribution of FPR values for each score</span>
+<span class="sd">        </span>
+
+
 <span class="sd">    &#39;&#39;&#39;</span>
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">dataset</span><span class="p">,</span> <span class="n">id_conv</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">conv_cols</span> <span class="o">=</span> <span class="s1">&#39;Gene stable ID&#39;</span><span class="p">,</span> <span class="n">data_ids</span> <span class="o">=</span> <span class="s1">&#39;gene_id&#39;</span><span class="p">,</span> <span class="n">uniprot_ref</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span><span class="n">n</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span> <span class="n">penalty</span> <span class="o">=</span> <span class="s1">&#39;dynamic&#39;</span><span class="p">,</span><span class="n">run_conversion</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">dataset</span><span class="p">,</span><span class="n">uniprot_ref</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span><span class="n">n</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span> <span class="n">id_conv</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">conv_cols</span> <span class="o">=</span> <span class="s1">&#39;Gene stable ID&#39;</span><span class="p">,</span> <span class="n">data_ids</span> <span class="o">=</span> <span class="s1">&#39;gene_id&#39;</span><span class="p">,</span>  <span class="n">penalty</span> <span class="o">=</span> <span class="s1">&#39;dynamic&#39;</span><span class="p">,</span><span class="n">run_conversion</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         
         <span class="c1"># Bare minimum attributes required for setting up an empty n-gram network.</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">dataset</span> <span class="o">=</span> <span class="n">dataset</span>
@@ -301,6 +404,8 @@
         <span class="k">if</span> <span class="n">pos</span> <span class="o">==</span> <span class="p">[]</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;network_params&#39;</span><span class="p">):</span>
             <span class="k">if</span> <span class="s1">&#39;pos&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">network_params</span><span class="p">:</span>
                 <span class="n">pos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">network_params</span><span class="p">[</span><span class="s1">&#39;pos&#39;</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">pos</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">spring_layout</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">G</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mf">0.05</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">pos</span> <span class="o">==</span><span class="p">[]:</span>
             <span class="n">pos</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">spring_layout</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">G</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mf">0.05</span><span class="p">)</span>
         

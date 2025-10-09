@@ -19,7 +19,9 @@
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" /> 
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="The config Module" href="config.html" />
+    <link rel="prev" title="Dependencies" href="Dependencies.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -42,13 +44,27 @@
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
-<ul>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="Overview.html">Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Examples/Examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Examples/Examples.html#configuring-the-dansy-workspace">Configuring the DANSy workspace</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Examples/Examples.html#base-dansy-analysis">Base DANSy Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Examples/Examples.html#differential-expression-dansy-dedansy-analysis">Differential Expression DANSy (deDANSy) Analysis</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Dependencies.html">Dependencies</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#conda">Conda</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#tarball">Tarball</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#git">Git</a></li>
 </ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference:</span></p>
 <ul>
+<li class="toctree-l1"><a class="reference internal" href="config.html">The config Module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="dansy.html">DANSy</a></li>
-<li class="toctree-l1"><a class="reference internal" href="dansy.html#supporting-functions">Supporting Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dansy.html#dansy-supporting-functions">DANSy Supporting Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dedansy.html">deDANSy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dedansy.html#dedansy-supporting-functions">deDANSy Supporting Functions</a></li>
 </ul>
 
         </div>
@@ -77,7 +93,24 @@
              
   <section id="installation">
 <h1>Installation<a class="headerlink" href="#installation" title="Link to this heading"></a></h1>
-<p>DANSy can be installed directly from the Git repository.</p>
+<p>DANSy can be installed  via <cite>pip</cite>, <cite>conda</cite>, tarball, and directly from the Git repository. We recommend using conda forge to install scientific packages <cite>conda install conda-forge</cite> before installing DANSy.</p>
+<blockquote>
+<div><p>Pip</p>
+</div></blockquote>
+<section id="conda">
+<h2>Conda<a class="headerlink" href="#conda" title="Link to this heading"></a></h2>
+<p>To install via conda, execute <cite>conda install -c naeglelab dansy</cite>.</p>
+</section>
+<section id="tarball">
+<h2>Tarball<a class="headerlink" href="#tarball" title="Link to this heading"></a></h2>
+<p>To install via a tarball, head over to the <a class="reference external" href="https://github.com/NaegleLab/DANSY/releases">Releases page</a> and download the latest stable tar release.</p>
+<p>Afterwards, navigate to your downloads directory and execute the following commands, substituting &lt;version&gt; for the release’s version number:
+<code class="docutils literal notranslate"><span class="pre">`</span>
+<span class="pre">tar</span> <span class="pre">-xvf</span> <span class="pre">dansy-&lt;version&gt;.tar.gz</span>
+<span class="pre">cd</span> <span class="pre">DANSY-&lt;version&gt;</span>
+<span class="pre">python</span> <span class="pre">setup.py</span> <span class="pre">install</span>
+<span class="pre">`</span></code></p>
+</section>
 <section id="git">
 <h2>Git<a class="headerlink" href="#git" title="Link to this heading"></a></h2>
 <p>If you want to try out the latest commit, you can install directly from the Git repository by executing the following commands:
@@ -92,7 +125,10 @@
 
            </div>
           </div>
-          <footer>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="Dependencies.html" class="btn btn-neutral float-left" title="Dependencies" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="config.html" class="btn btn-neutral float-right" title="The config Module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
 
   <hr/>
 
