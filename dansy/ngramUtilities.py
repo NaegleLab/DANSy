@@ -25,7 +25,7 @@ def reduce_ngram_dict(ngram_dict, num_arch =1):
     return ngram_dict_sub
 
     
-def return_ngram_adjacency(ngram_dict, interpro_conversion_dict, readable = 1):
+def return_ngram_adjacency(ngram_dict):
     """
     Creates an adjacency matrix of all unique ngrams. If one is a subset of another, it will 
     put an entry in the matrix, which is the number of family members. This is sorted by length of the ngram 
@@ -35,10 +35,6 @@ def return_ngram_adjacency(ngram_dict, interpro_conversion_dict, readable = 1):
     -----------
         - ngram_dict: dict
             n-grams produced from a dataframe and processed to remove redundant architectures
-        - interpro_conversion_dict: dict
-            key-value pairs of interpro names and IDs
-        - readable: bool (Optional)
-            flag to determine whether to pass a human readable adjacency matrix
 
     Returns:
     --------
@@ -73,20 +69,6 @@ def return_ngram_adjacency(ngram_dict, interpro_conversion_dict, readable = 1):
             if outer_ngram in inner_ngram:
                 ngram_adj_df.loc[outer_ngram, inner_ngram] = ngram_numdom_dict[inner_ngram]
 
-    # Convert the Interpro ID-based naming to the domain name to make it human readable in exported files
-    if readable:
-        ngram_sorted_names = []
-        for arch in ngram_sorted:
-            dom_arch = arch.split('|')
-            dom_arch_convert = []
-            for dom_id in dom_arch:
-                dom_arch_convert.append(interpro_conversion_dict[dom_id])
-            dom_arch_convert = '|'.join(dom_arch_convert)
-            ngram_sorted_names.append(dom_arch_convert)
-        
-        # Creating dictionary for column and index conversion
-        ngram_id_dict = dict(zip(ngram_sorted, ngram_sorted_names))
-        ngram_adj_df.rename(columns=ngram_id_dict, index=ngram_id_dict, inplace=True)
     return ngram_adj_df
 
 def concatenate_ngrams(ngram_dict, max_length = None):
@@ -361,8 +343,8 @@ def add_Interpro_ID_architecture(orig_df):
         df['Interpro Domain Architecture IDs'] = id_arch_list
     else:
         df = orig_df.copy()
-        interpro_conversion = {}
-    return df, interpro_conversion
+
+    return df
 
 def generate_interpro_conversion(df):
     '''
@@ -400,7 +382,7 @@ def generate_interpro_conversion(df):
 
     return interpro_conversion
 
-def full_ngram_analysis(df, Interpro_ID,min_arch = 1, max_node_len = None, max_ngram = None, readable_flag = False, concat_flag = True, verbose = True):
+def full_ngram_analysis(df, Interpro_ID, max_ngram = None, min_arch = 1, concat_flag = True, verbose = True):
     """
     Conduct n-gram analysis on a protein domain dataframe whose n-grams must include specific seeding domains.
 
@@ -414,10 +396,6 @@ def full_ngram_analysis(df, Interpro_ID,min_arch = 1, max_node_len = None, max_n
             Maximum length of n-grams to be extracted. Can be omitted if the max_node_length is provided.
         min_arch: int (Optional)
             Minimum occurrences for an architecture to be retained (Default = 2)
-        max_node_length: int (Optional)
-            Maximum length of n-grams that can be concatenated into
-        readable_flag: bool (Optional)
-            flag as to whether the adjacency matrix should be human legible    
         concat_flag: bool (Optional)
             Flag as whether the n-gram collapsing is to be conducted.
         verbose: bool (Optional)
@@ -441,70 +419,38 @@ def full_ngram_analysis(df, Interpro_ID,min_arch = 1, max_node_len = None, max_n
     # Checking the parameters
 
     # If parameters were both provided comparing the two to ensure there are no weird issues
-    if max_ngram != None and max_node_len != None:
-        if max_ngram != max_node_len:
-            if max_ngram < max_node_len:
-                max_node_len = max_ngram
-    
-    # If only the max_ngram is provided will set the maximum node length to be equivalent
-    elif max_ngram != None and max_node_len == None:
-        max_node_len = max_ngram
-    
-    # If neither are provided then erroring out for the time being.
-    else:
+    if max_ngram is None:
         raise ValueError('Please provide a maximum length of n-gram to be extracted.')
 
     # Getting n-gram information
     if verbose:
         print('Starting to fetch n-grams.')
+
     interpro_conversion_dict = generate_interpro_conversion(df)
     ngram_dict_sub, ngram_dict_comp = get_ngrams_from_df(df,Interpro_ID, min_arch, max_ngram)
+    
     if verbose:
         print('Finished getting all n-grams')
 
     # Starting to collapse the n-grams to non-redundant n-grams
     if concat_flag:
-        ngram_dict_concat, vals_to_delete = concatenate_ngrams(ngram_dict_sub,max_node_len)
+        ngram_dict_concat, collapsed_ngrams = concatenate_ngrams(ngram_dict_sub,max_ngram)
     else:
         ngram_dict_concat = ngram_dict_comp
-        vals_to_delete = []
+        collapsed_ngrams = []
     
     # Generating the adjacency matrix
     if verbose:
         print('Starting to generate adjacency')
-    ngram_adj_df = return_ngram_adjacency(ngram_dict_concat, interpro_conversion_dict, readable_flag)
+
+    ngram_adj_df = return_ngram_adjacency(ngram_dict_concat)
+    
     if verbose:
         print('Finished building adjacency.')
 
-    # Returning a human legible version of the results
-    if readable_flag:
-        # Pass a human-readable dictionary of the identifying
-        ngram_dict_convert = {}
-        for ngram in ngram_dict_concat.keys():
-            gram = ngram.split('|')
-            gram_convert = []
-            for k in gram:
-                k_con = interpro_conversion_dict[k]
-                gram_convert.append(k_con)
-            gram_convert_str = '|'.join(gram_convert)
-            ngram_dict_convert[gram_convert_str] = ngram_dict_concat[ngram]
-
-        # Passing a human-readable dictionary of the removed ngrams
-        removed_ngrams = []
-        for ngram in vals_to_delete:
-            gram = ngram.split('|')
-            gram_convert = []
-            for k in gram:
-                k_con = interpro_conversion_dict[k]
-                gram_convert.append(k_con)
-            gram_convert_str = '|'.join(gram_convert)
-            removed_ngrams.append(gram_convert_str)
-    else:
-        ngram_dict_convert = ngram_dict_concat
-        removed_ngrams = vals_to_delete
-
     ngram_adj_df.fillna(0,inplace=True)
-    return ngram_adj_df, df, ngram_dict_convert, removed_ngrams, interpro_conversion_dict
+
+    return ngram_adj_df, ngram_dict_concat, collapsed_ngrams, interpro_conversion_dict
 
 def import_reference_file(reference_file):
     """
@@ -535,6 +481,6 @@ def import_reference_file(reference_file):
     df.fillna('',inplace=True,)
 
     # Adding in the Interpro Domain Architecture IDs here
-    df,_ = add_Interpro_ID_architecture(df)
+    df = add_Interpro_ID_architecture(df)
 
     return df
