@@ -1,3 +1,4 @@
+import itertools
 import pandas as pd
 import numpy as np
 import networkx as nx
@@ -450,7 +451,7 @@ def full_ngram_analysis(df, Interpro_ID, max_ngram = None, min_arch = 1, concat_
 
     ngram_adj_df.fillna(0,inplace=True)
 
-    return ngram_adj_df, ngram_dict_concat, collapsed_ngrams, interpro_conversion_dict
+    return ngram_adj_df, ngram_dict_comp, collapsed_ngrams, interpro_conversion_dict
 
 def import_reference_file(reference_file):
     """
@@ -484,3 +485,17 @@ def import_reference_file(reference_file):
     df = add_Interpro_ID_architecture(df)
 
     return df
+
+def return_ngrams_from_list(l:list, max_ngram = None):
+    '''
+    Takes a list of domain architectures and returns all the n-grams and their counts
+    '''
+    
+    # First get all the unique 1-grams from the list
+    one_grams = set(itertools.chain.from_iterable([x.split('|') for x in l]))
+    
+    # Now get all the n-grams 
+    ngram_list = sorted(itertools.chain.from_iterable([return_all_n_grams_from_key(x, one_grams, max_ngram) for x in l]))
+    ngram_res = Counter(ngram_list)
+
+    return ngram_res
