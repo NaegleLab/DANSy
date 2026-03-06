@@ -144,12 +144,10 @@ class dansy:
 
     # Building the actual domain n-gram network
     def build_dgNet(self):
-        self.adj,_,self.interpro2uniprot,self.collapsed_ngrams,self.interpro_conversion = ngramUtilities.full_ngram_analysis(self.ref,
+        self.adj,self.interpro2uniprot,self.collapsed_ngrams,self.interpro_conversion = ngramUtilities.full_ngram_analysis(self.ref,
                                                                                                                             self.interproIDs,
                                                                                                                             max_ngram=self.n, 
                                                                                                                             min_arch=self.min_arch,
-                                                                                                                            readable_flag=self.readable_flag,
-                                                                                                                            max_node_len=self.max_node_len,
                                                                                                                             concat_flag=self.collapse,
                                                                                                                             verbose=self.verbose)
 
@@ -282,9 +280,7 @@ class dansy:
         
         opts = ['name',
                 'collapse',
-                'max_node_len',
                 'min_arch',
-                'readable_flag',
                 'verbose']
 
         network_opts = ['pos',
