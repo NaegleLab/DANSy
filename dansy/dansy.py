@@ -450,18 +450,13 @@ class dansy:
         if self.n >  max_possible:
             warnings.warn('The maximum possible n-gram that can be extracted was smaller than the desired maximum n-gram length.')
 
-    def retrieve_protein_info(self, prot = None, ngram = None):
+    def retrieve_protein_info(self, prot = None):
         '''
-        Retrieves the reference information of proteins of interest. If an InterPro ID/n-gram is provided it will use that instead and search for the proteins with that ID and return that instead.
+        Retrieves the reference information of proteins of interest.
         '''
 
-        if prot == None and ngram == None:
+        if prot == None:
             raise TypeError('Either a protein list or an n-gram are necessary. Please provide either one.')
-        elif prot != None and ngram != None:
-            raise TypeError('Please provide either a protein list or an n-gram and not both.')
-        
-        if ngram != None:
-            prot = self.interpro2uniprot[ngram]
         
         if isinstance(prot, str):
             prot = [prot]
@@ -470,6 +465,13 @@ class dansy:
 
         return prot_info
     
+    def retrieve_ngram_protein_info(self, ngram = None):
+        
+        if ngram != None:
+            prot = self.interpro2uniprot[ngram]
+
+        return self.retrieve_protein_info(prot)
+
     def retrieve_random_ids(self,num, iters = 50, seed = 882):
         '''Generator of random UniProt IDs from the base network.'''
         random.seed(seed)
