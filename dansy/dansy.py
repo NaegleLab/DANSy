@@ -482,6 +482,32 @@ class dansy:
             rand_ids = random.sample(full_id_list, k = num)
             yield rand_ids
 
+    def plot_domain_subset(self, domain, k = None, filter_ngrams=False,**kwargs):
+        x = NgramNetworkPlot(self, domain, k,filter_ngrams,**kwargs)
+        x.plot()
+        self.ngram_subnetwork = x
+
+    def get_domain_subset_network(self, domain, k=None, filter_ngrams = False):
+        
+        # Check if the n-gram subnetwork exists already to get some of the information
+        if 'ngram_subnetwork' in self.__dict__:
+            # Check that it was the same inputs as before
+            x1 = self.ngram_subnetwork.domain == domain
+            x2 = self.ngram_subnetwork.k == k
+            if filter_ngrams:
+                x3 = 'filtered_neighbors' in self.ngram_subnetwork.__dict__
+            else:
+                x3 = 'filtered_neighbors' not in self.ngram_subnetwork.__dict__
+            if all([x1, x2, x3]):
+                pass
+            else:
+                self.ngram_subnetwork = NgramNetworkPlot(self, domain, k,filter_ngrams)
+        else:
+            self.ngram_subnetwork = NgramNetworkPlot(self, domain, k,filter_ngrams)
+
+        return self.ngram_subnetwork
+
+
 def create_arch_ids(arch):
     '''
     This takes the architectures returned from the InterPro module of CoDIAC, which follows the format Name:InterPro_ID:Start:Stop for each domain separated by a semicolon and creates the full architecture with only the IDs seperated by a pipe (|).
@@ -504,6 +530,60 @@ def create_arch_ids(arch):
         raise DomainArchError('The domain architecture information was incorrectly formatted.')
     
     return arch_id
+
+class NgramNetworkPlot():
+    '''
+    The view of a network of domain n-grams for DANSy analysis that is focused on a subset of the network.
+    '''
+
+    def __init__(self, d:dansy,domain:str,k:int=None, filter_ngrams = False,**attribs):
+        self.d = d
+        self.domain = domain
+        self.k = k
+        self.attribs = attribs
+        self._get_neighbors()
+        if filter_ngrams:
+            self._limit_neighbors()
+        self._get_subgraph()
+
+
+    def _get_neighbors(self):
+        '''
+        Get's the neighbors of the domain of interest and the number of proteins that have that n-gram
+        '''
+        neighs = nx.neighbors(self.d.G, self.domain)
+        neighbor_counts = {i:self.d.adj.loc[i,i] for i in neighs}
+        neighbor_counts = dict(sorted(neighbor_counts.items(), key=lambda x:x[1], reverse=True))
+        self.neighbors = neighbor_counts
+    
+    def plot(self):
+
+        self._get_subgraph()
+        nx.draw(self.d.G.subgraph(self.subgraph), **self.attribs)
+
+    def _limit_neighbors(self):
+        
+        neighbors = self.neighbors
+        dom_len = len(self.domain.split('|'))
+        limits = [dom_len-1, dom_len+1]
+        self.filtered_neighbors = {x:v for x,v in neighbors.items() if len(x.split('|')) in limits}
+         
+    def _get_subgraph(self):
+        
+        if 'filtered_neighbors' in self.__dict__:
+            ngrams_4_plotting = self.filtered_neighbors
+        else:
+            ngrams_4_plotting = self.neighbors
+        
+        # Determine how many of the nodes to provide
+        if self.k is None:
+            i = len(ngrams_4_plotting.keys())
+        else:
+            i = min(len(ngrams_4_plotting.keys()), self.k)
+        
+        neighbors_2_plot = list(ngrams_4_plotting.keys())[0:i]
+        neighbors_2_plot += [self.domain]
+        self.subgraph = neighbors_2_plot
 
 class DomainArchError(TypeError):
     '''
