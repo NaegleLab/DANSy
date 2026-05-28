@@ -472,14 +472,16 @@ def import_reference_file(reference_file):
     if isinstance(reference_file, str):
         df = pd.read_csv(reference_file)
     elif isinstance(reference_file, list):
-        df = pd.DataFrame()
+        df_list = []
         for ref_file in reference_file:
             temp_df = pd.read_csv(ref_file)
-            df = pd.concat([temp_df, df])
+            df_list.append(temp_df)
+        df = pd.concat(df_list)
         df.drop_duplicates(inplace=True, ignore_index=True, subset='UniProt ID')   
 
     # Just a bit of cleanup of the strings and adding in the Interpro ID based architecture
-    df.fillna('',inplace=True,)
+    #df[df.columns]=df[df.columns].astype(str)
+    df.fillna('',inplace=True,dtype = str)
 
     # Adding in the Interpro Domain Architecture IDs here
     df = add_Interpro_ID_architecture(df)
