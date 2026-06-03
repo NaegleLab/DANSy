@@ -8,17 +8,17 @@ def reduce_ngram_dict(ngram_dict, num_arch =1):
     """
     Filters the n-gram dictionary to n-grams that meet the specified threshold.
     
-    Parameters:
-    -----------
-        - ngram_dict: dict 
-            key-value pairs of domain architecture ngram and a list of protein identifiers containing the ngram
-        - num_arch: int
-            threshold for number of instances of specific architecture to retain
+    Parameters
+    ----------
+    ngram_dict: dict 
+        key-value pairs of domain architecture ngram and a list of protein identifiers containing the ngram
+    num_arch: int
+        threshold for number of instances of specific architecture to retain
 
-    Returns:
-    --------
-        - ngram_dict_sub: dict 
-            a reduced version of the inputted dictionary
+    Returns
+    -------
+    ngram_dict_sub: dict 
+        a reduced version of the inputted dictionary
     """
     
     ngram_dict_sub = {ngram:v for ngram,v in ngram_dict.items() if len(v) >= num_arch}
@@ -32,15 +32,15 @@ def return_ngram_adjacency(ngram_dict):
     put an entry in the matrix, which is the number of family members. This is sorted by length of the ngram 
     (i.e. 1-gram, 2-gram, 3-gram, etc.)
 
-    Parameters:
-    -----------
-        - ngram_dict: dict
-            n-grams produced from a dataframe and processed to remove redundant architectures
+    Parameters
+    ----------
+    ngram_dict: dict
+        n-grams produced from a dataframe and processed to remove redundant architectures
 
-    Returns:
-    --------
-        - ngram_adj_df: Pandas dataframe
-            The adjacency matrix where values correspond to the number of instances the (sub)member occurs.
+    Returns
+    -------
+    ngram_adj_df: Pandas dataframe
+        The adjacency matrix where values correspond to the number of instances the (sub)member occurs.
     """
     
     #first setup the unique and sorted architectures
@@ -78,19 +78,19 @@ def concatenate_ngrams(ngram_dict, max_length = None):
     (i.e. this will remove the architectures that are redundant as they only capture a single family of proteins that increased
     domain complexity, but for which there is no other overlap)
 
-    Parameters:
-    -----------
-        - ngram_dict: dict 
-            N-grams produced from a dataframe and processed to remove redundant architectures
-        - max_length: int, optional
-            Threshold of the maximum length of n-grams that are extracted and concatenated
+    Parameters
+    ----------
+    ngram_dict: dict 
+        N-grams produced from a dataframe and processed to remove redundant architectures
+    max_length: int, optional
+        Threshold of the maximum length of n-grams that are extracted and concatenated
 
-    Returns:
-    --------
-        - ngram_dict_sub_concat: dict 
-            Contains the nonredundant n-grams and their protein members
-        - vals_to_delete_total: list
-            Key values that were removed from the original dict
+    Returns
+    -------
+    ngram_dict_sub_concat: dict 
+        Contains the nonredundant n-grams and their protein members
+    vals_to_delete_total: list
+        Key values that were removed from the original dict
     """
     
     # Go through an initial time to get the first obvious ones
@@ -108,19 +108,19 @@ def concatenate_ngrams_inner(ngram_dict, max_length = None):
     """ 
     Inner function of the concatenating function that merges n-grams together in the dictionary if their architecture is a subarchitecture of another and they are fully overlapping.
 
-    Parameters:
-    -----------
-        - ngram_dict: dict 
-            N-grams produced from a dataframe and processed to remove redundant architectures
-        - max_length: int (Optional)
-            Threshold of the maximum length of n-grams that are extracted and concatenated
+    Parameters
+    ----------
+    ngram_dict: dict 
+        N-grams produced from a dataframe and processed to remove redundant architectures
+    max_length: int (Optional)
+        Threshold of the maximum length of n-grams that are extracted and concatenated
 
-    Returns:
-    --------
-        - ngram_dict_sub_concat: dict 
-            Contains the nonredundant n-grams and their protein members
-        - ngrams_to_remove: list
-            Key values that were removed from the original dict
+    Returns
+    -------
+    ngram_dict_sub_concat: dict 
+        Contains the nonredundant n-grams and their protein members
+    ngrams_to_remove: list
+        Key values that were removed from the original dict
     """
     if max_length == None:
         max_length = 303 # Within the human proteome this is the maximum length
@@ -157,19 +157,19 @@ def return_all_n_grams_from_key(domain_architecture_str, domains, max_ngram = No
     """
     Given a domain architecture find all n-grams that are possible from starting from the domain(s) of interest.
 
-    Parameters:
-    -----------
-        - domain_architecture_str : str
-            The domain architecture to be assessed
-        - domains : str
-            The domain(s) of interest that n-grams must contain
-        - max_ngram: int (Optional)
-            the maximum length an n-gram can be extracted. If no maximum is set then will determine it based on the length of the full architecture.
+    Parameters
+    ----------
+    domain_architecture_str : str
+        The domain architecture to be assessed
+    domains : str
+        The domain(s) of interest that n-grams must contain
+    max_ngram: int (Optional)
+        the maximum length an n-gram can be extracted. If no maximum is set then will determine it based on the length of the full architecture.
 
-    Returns:
-    --------
-        - ngram_list : list
-            all possible n-grams extracted from the complete architecture
+    Returns
+    -------
+    ngram_list : list
+        all possible n-grams extracted from the complete architecture
     """
     
     # Ensure it is a list
@@ -233,23 +233,23 @@ def get_ngrams_from_df(df, interpro_id, arch_num=1, max_ngram = None):
     """
     Given a dataframe containing the Interpro and Uniprot reference values return a dict of n-grams and their relative number limited to those with a specified number of instances.
 
-    Parameters:
-    -----------
-        df: Pandas dataframe
-            Contains all architectures and UniProt and InterPro IDs
-        interpro_id: str
-            The InterPro ID that seeds the n-grams. Note this has to be the ID not the name to prevent mismatching due to substrings within domain names
-        arch_num: int (Optional)
-            The minimum number of instances an architecture occurs to be kept in the final dict
-        max_ngram: int (Optional)
-            The maximum length an n-gram can be
+    Parameters
+    ----------
+    df: Pandas dataframe
+        Contains all architectures and UniProt and InterPro IDs
+    interpro_id: str
+        The InterPro ID that seeds the n-grams. Note this has to be the ID not the name to prevent mismatching due to substrings within domain names
+    arch_num: int (Optional)
+        The minimum number of instances an architecture occurs to be kept in the final dict
+    max_ngram: int (Optional)
+        The maximum length an n-gram can be
     
-    Returns:
-    --------
-        ngram_dict_sub: dict 
-            Key value pairs of the n-grams and the UniProt IDs associated with them but limited to those with the minimum number of instances
-        ngram_dict: dict
-            Same as ngram_dict_sub but all extracted ngrams
+    Returns
+    -------
+    ngram_dict_sub: dict 
+        Key value pairs of the n-grams and the UniProt IDs associated with them but limited to those with the minimum number of instances
+    ngram_dict: dict
+        Same as ngram_dict_sub but all extracted ngrams
     """
 
     ngram_dict = {}
@@ -271,23 +271,23 @@ def get_all_ngrams_from_df(df, max_ngram = None):
     """
     Given a dataframe containing the Interpro architectures and IDs along with Uniprot IDs extracts all possible n-grams and the adjacency matrix.
 
-    Parameters:
-    -----------
-        df: Pandas dataframe
-            Reference dataframe containing all values of interest
-        max_ngram: int (Optional)
-            maximum length of an n-gram that can be found
-    
+    Parameters
+    ----------
+    df: Pandas dataframe
+        Reference dataframe containing all values of interest
+    max_ngram: int (Optional)
+        maximum length of an n-gram that can be found
+
     Returns:
     --------
-        ngram_adj_df: Pandas dataframe
-            The adjacency matrix where entries represent the number of instances a (sub)member occurs
-        df: Pandas DataFrame
-            A modified reference dataframe containing Interpro ID architectures
-        ngram_dict_convert: dict
-            Dictionary that contains the UniProt IDs for each n-gram
-        removed_ngrams: list
-            The n-grams that were collapsed into other n-grams due to complete overlap
+    ngram_adj_df: Pandas dataframe
+        The adjacency matrix where entries represent the number of instances a (sub)member occurs
+    df: Pandas DataFrame
+        A modified reference dataframe containing Interpro ID architectures
+    ngram_dict_convert: dict
+        Dictionary that contains the UniProt IDs for each n-gram
+    removed_ngrams: list
+        The n-grams that were collapsed into other n-grams due to complete overlap
     """
 
     # Find all domains within the dataframe
@@ -301,15 +301,15 @@ def add_Interpro_ID_architecture(orig_df):
     """
     Add in a new column to a reference dataframe containing the domain architecture as the Interpro IDs rather than domain names to prevent substring mismatching due to similarities in domain names.
 
-    Inputs:
-        - df: Pandas dataframe
-            Reference data frame containing the starting information
+    Parameters
+    ----------
+    orig_df: Pandas dataframe
+        Reference data frame containing the starting information
     
-    Outputs:
-        - df: Pandas dataframe
-            Amended dataframe containing the new architecture string as the new column
-        - interpro_conversion: dict 
-            Key-value pairs of the Interpro IDs to the Interpro domain name. Note: If the ID architecture column exists already this will be an empty dictionary.
+    Returns
+    -------
+    df: Pandas dataframe
+        Amended dataframe containing the new architecture string as the new column
     """
     if 'Interpro Domain Architecture IDs' not in orig_df.columns:
         df = orig_df.copy()
@@ -351,15 +351,15 @@ def generate_interpro_conversion(df):
     '''
     Generates the dict that contains the conversion from interpro ids to a human legible name.
 
-    Parameters:
+    Parameters
     -----------
-        - df: pandas DataFrame
-            reference dataframe that contains all the InterPro domain information
+    df: pandas DataFrame
+        reference dataframe that contains all the InterPro domain information
     
-    Returns:
+    Returns
     --------
-        - interpro_conversion: dict
-            dict containing the InterPro IDs as keys with the human legible name as values.
+    interpro_conversion: dict
+        dict containing the InterPro IDs as keys with the human legible name as values.
 
     '''
 
@@ -389,31 +389,29 @@ def full_ngram_analysis(df, Interpro_ID, max_ngram = None, min_arch = 1, concat_
 
     Parameters
     ----------
-        df: Pandas DataFrame
-            dataframe containing the reference file(s) data
-        Interpro_ID: str | list
-            Interpro IDs that seed the n-gram extraction
-        max_ngram: int (Optional, Recommended)
-            Maximum length of n-grams to be extracted. Can be omitted if the max_node_length is provided.
-        min_arch: int (Optional)
-            Minimum occurrences for an architecture to be retained (Default = 2)
-        concat_flag: bool (Optional)
-            Flag as whether the n-gram collapsing is to be conducted.
-        verbose: bool (Optional)
-            Flag as to whether to print statements that indicate process of the analysis.
+    df: Pandas DataFrame
+        dataframe containing the reference file(s) data
+    Interpro_ID: str | list
+        Interpro IDs that seed the n-gram extraction
+    max_ngram: int (Optional, Recommended)
+        Maximum length of n-grams to be extracted. Can be omitted if the max_node_length is provided.
+    min_arch: int (Optional)
+        Minimum occurrences for an architecture to be retained (Default = 2)
+    concat_flag: bool (Optional)
+        Flag as whether the n-gram collapsing is to be conducted.
+    verbose: bool (Optional)
+        Flag as to whether to print statements that indicate process of the analysis.
 
     Returns
     -------
-        ngram_adj_df: Pandas DataFrame
-            The adjacency matrix of n-grams
-        df: Pandas DataFrame
-            A modified reference dataframe containing Interpro ID architectures
-        ngram_dict_convert: dict
-            Dictionary that contains the UniProt IDs for each n-gram
-        removed_ngrams: dict
-            Dictionary containing the n-grams that were concatenated into other n-grams due to complete overlap
-        interpro_conversion_dict: dict
-            Dictionary that contains all the InterPro IDs and the corresponding names for conversion as needed
+    ngram_adj_df: Pandas DataFrame
+        The adjacency matrix of n-grams
+    ngram_dict_comp: dict
+        Key-value pairs of n-grams to a list of UniProt IDs containing the n-gram. This is limited to only non-collapsed n-grams.
+    collapsed_ngrams: dict
+        Dictionary containing the n-grams that were concatenated into other n-grams due to complete overlap
+    interpro_conversion_dict: dict
+        Dictionary that contains all the InterPro IDs and the corresponding names for conversion as needed
 
     """
 
@@ -459,13 +457,13 @@ def import_reference_file(reference_file):
 
     Paremeters:
     ----------- 
-        -reference_file: str | list
-            Path(s) to the reference files
+    reference_file: str | list
+        Path(s) to the reference files
 
     Returns:
     --------
-        - df: Pandas dataframe
-            Processed dataframe of the imported data
+    df: Pandas dataframe
+        Processed dataframe of the imported data
     """
 
     # Checking if the reference_files are a list or not
@@ -487,9 +485,21 @@ def import_reference_file(reference_file):
 
     return df
 
-def return_ngrams_from_list(l:list, max_ngram = None):
+def return_ngrams_from_list(l:list, max_ngram:int = None):
     '''
     Takes a list of domain architectures and returns all the n-grams and their counts
+
+    Parameters
+    ----------
+    l: list
+        The list of domain architectures to extract all n-grams from
+    max_ngram: int, optional
+        The maximum length of n-grams to return. Optional parameter that defaults to the maximum length found within the list.
+
+    Returns
+    -------
+    ngram_res: dict
+        Dictionary of all n-grams as keys and the number of instances in the list as values.
     '''
     
     # First get all the unique 1-grams from the list

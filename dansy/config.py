@@ -5,7 +5,6 @@ This sets up some of the directories that DANSy will look into for specific data
 '''
 
 # Global variables for the complete proteome on what default values will look like.
-# Note for memory efficiency we save the adjacency as a json file as it is a sparse matrix.
 DANSY_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # For the data files these need to be first set up prior to the experiment so that dansy knows where to look for them. This can be updated with the create_DANSy_dirs function
