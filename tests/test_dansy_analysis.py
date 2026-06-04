@@ -46,6 +46,9 @@ def main():
 
     assert error_flag, "Domain architecture format erroring check failed."
 
+    # Now check the subnetwork function
+    assert len(d.get_domain_subset_network('IPR000719').subgraph) > 1
+
 
 if __name__ == '__main__':
     main()
