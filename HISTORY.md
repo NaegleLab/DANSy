@@ -1,3 +1,11 @@
+## 2026-06-03
+
+DANSy was updated to v0.2.0 that includes several changes:
+    
+- No longer including deDANSy within the main package structure, instead this has been moved to a development branch.
+- Small improvements in reference file import and n-gram extraction
+- Addition of plotting module that generates an n-gram subnetwork centered on a specific n-gram of interest.
+
 ## 2025-07-25
 
 - Updated DANSy to a package structure
